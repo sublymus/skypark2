@@ -1,0 +1,333 @@
+{
+    "obj": {
+        "user": {},
+        "name": {
+            "trim": true,
+            "minlength": [
+                3,
+                "MINIMAL_LENGTH"
+            ],
+            "maxlength": [
+                20,
+                "trop long"
+            ],
+            "required": true
+        },
+        "email": {
+            "trim": true,
+            "unique": true,
+            "required": true
+        },
+        "password": {
+            "required": true
+        },
+        "telephone": {
+            "required": true,
+            "type":"String"
+        },
+        "address": {
+            "ref": "adress"
+        },
+        "favorites": {
+            "ref": "favorites"
+        },
+        "profile": {
+            "ref": "profile"
+        }
+    },
+    "paths": {
+        "user": {
+            "path": "user",
+            "instance": "ObjectID",
+            "validators": [],
+            "getters": [],
+            "setters": [],
+            "_presplitPath": [
+                "user"
+            ],
+            "options": {},
+            "_index": null
+        },
+        "name": {
+            "enumValues": [],
+            "regExp": null,
+            "path": "name",
+            "instance": "String",
+            "validators": [
+                {
+                    "message": "Path `{PATH}` is required.",
+                    "type": "required"
+                },
+                {
+                    "message": "trop court",
+                    "type": "minlength",
+                    "minlength": 3
+                },
+                {
+                    "message": "trop long",
+                    "type": "maxlength",
+                    "maxlength": 20
+                }
+            ],
+            "getters": [],
+            "setters": [
+                null
+            ],
+            "_presplitPath": [
+                "name"
+            ],
+            "options": {
+                "trim": true,
+                "minlength": [
+                    3,
+                    "trop court"
+                ],
+                "maxlength": [
+                    20,
+                    "trop long"
+                ],
+                "required": true
+            },
+            "_index": null,
+            "isRequired": true,
+            "originalRequiredValue": true
+        },
+        "email": {
+            "enumValues": [],
+            "regExp": null,
+            "path": "email",
+            "instance": "String",
+            "validators": [
+                {
+                    "message": "Path `{PATH}` is required.",
+                    "type": "required"
+                }
+            ],
+            "getters": [],
+            "setters": [
+                null
+            ],
+            "_presplitPath": [
+                "email"
+            ],
+            "options": {
+                "trim": true,
+                "unique": true,
+                "required": true
+            },
+            "_index": {
+                "unique": true
+            },
+            "isRequired": true,
+            "originalRequiredValue": true
+        },
+        "password": {
+            "enumValues": [],
+            "regExp": null,
+            "path": "password",
+            "instance": "String",
+            "validators": [
+                {
+                    "message": "Path `{PATH}` is required.",
+                    "type": "required"
+                }
+            ],
+            "getters": [],
+            "setters": [],
+            "_presplitPath": [
+                "password"
+            ],
+            "options": {
+                "required": true
+            },
+            "_index": null,
+            "isRequired": true,
+            "originalRequiredValue": true
+        },
+        "telephone": {
+            "enumValues": [],
+            "regExp": null,
+            "path": "telephone",
+            "instance": "String",
+            "validators": [
+                {
+                    "message": "Path `{PATH}` is required.",
+                    "type": "required"
+                }
+            ],
+            "getters": [],
+            "setters": [],
+            "_presplitPath": [
+                "telephone"
+            ],
+            "options": {
+                "required": true
+            },
+            "_index": null,
+            "isRequired": true,
+            "originalRequiredValue": true
+        },
+        "address": {
+            "path": "address",
+            "instance": "ObjectID",
+            "validators": [],
+            "getters": [],
+            "setters": [],
+            "_presplitPath": [
+                "address"
+            ],
+            "options": {
+                "ref": "adress"
+            },
+            "_index": null
+        },
+        "favorites": {
+            "path": "favorites",
+            "instance": "ObjectID",
+            "validators": [],
+            "getters": [],
+            "setters": [],
+            "_presplitPath": [
+                "favorites"
+            ],
+            "options": {
+                "ref": "favorites"
+            },
+            "_index": null
+        },
+        "profile": {
+            "path": "profile",
+            "instance": "ObjectID",
+            "validators": [],
+            "getters": [],
+            "setters": [],
+            "_presplitPath": [
+                "profile"
+            ],
+            "options": {
+                "ref": "profile"
+            },
+            "_index": null
+        },
+        "createdDate": {
+            "path": "createdDate",
+            "instance": "Number",
+            "validators": [],
+            "getters": [],
+            "setters": [],
+            "_presplitPath": [
+                "createdDate"
+            ],
+            "options": {},
+            "_index": null
+        },
+        "updatedDate": {
+            "path": "updatedDate",
+            "instance": "Number",
+            "validators": [],
+            "getters": [],
+            "setters": [],
+            "_presplitPath": [
+                "updatedDate"
+            ],
+            "options": {},
+            "_index": null
+        },
+        "_id": {
+            "path": "_id",
+            "instance": "ObjectID",
+            "validators": [],
+            "getters": [],
+            "setters": [
+                null
+            ],
+            "_presplitPath": [
+                "_id"
+            ],
+            "options": {
+                "auto": true,
+                "type": "ObjectId"
+            },
+            "_index": null
+        }
+    },
+    "aliases": {},
+    "subpaths": {},
+    "virtuals": {},
+    "singleNestedPaths": {},
+    "nested": {},
+    "inherits": {},
+    "callQueue": [],
+    "_indexes": [],
+    "methods": {},
+    "methodOptions": {},
+    "statics": {},
+    "tree": {
+        "user": {},
+        "name": {
+            "trim": true,
+            "minlength": [
+                3,
+                "trop court"
+            ],
+            "maxlength": [
+                20,
+                "trop long"
+            ],
+            "required": true
+        },
+        "email": {
+            "trim": true,
+            "unique": true,
+            "required": true
+        },
+        "password": {
+            "required": true
+        },
+        "telephone": {
+            "required": true
+        },
+        "address": {
+            "ref": "adress"
+        },
+        "favorites": {
+            "ref": "favorites"
+        },
+        "profile": {
+            "ref": "profile"
+        },
+        "_id": {
+            "auto": true,
+            "type": "ObjectId"
+        }
+    },
+    "query": {},
+    "childSchemas": [],
+    "plugins": [],
+    "$id": 5,
+    "mapPaths": [],
+    "s": {
+        "hooks": {
+            "_pres": {},
+            "_posts": {}
+        }
+    },
+    "_userProvidedOptions": {},
+    "options": {
+        "typeKey": "type",
+        "id": true,
+        "_id": true,
+        "validateBeforeSave": true,
+        "read": null,
+        "shardKey": null,
+        "discriminatorKey": "__t",
+        "autoIndex": null,
+        "minimize": true,
+        "optimisticConcurrency": false,
+        "versionKey": "__v",
+        "capped": false,
+        "bufferCommands": true,
+        "strictQuery": true,
+        "strict": true
+    }
+}

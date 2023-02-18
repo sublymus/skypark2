@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      .app {
+        display: flex;
+        height: 100vh;
+        background-color: #123;
+      }
+
+      li {
+        all: unset;
+        padding: 20px;
+      }
+
+      ul {
+        all: unset;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      .page {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+      }
+
+      .top-bar {
+        background: #823;
+      }
+
+      textarea {
+        width: 80%;
+        max-width: 400px;
+        height: 300px;
+        background: #345;
+        margin: 10px;
+        padding: 10px;
+        color: white;
+      }
+
+      .l1,
+      .l2 {
+        width: 100%;
+        min-width: 300px;
+        display: flex;
+        flex-direction: row;
+      }
+
+      .carte-ctn {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .name {
+        font-size: 70px;
+        margin: 0;
+      }
+
+      .title {
+        display: inline;
+      }
+
+      .carte {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <div class="top-bar">
+        <ul>
+          <li class="user">User</li>
+          <li class="account">Account</li>
+          <li class="profile">Profile</li>
+          <li class="address">Address</li>
+          <li class="favorites">Favorites</li>
+          <li class="folder">Folder</li>
+          <li class="article">article</li>
+          <li> <a href="http://localhost:3000/login">login</a></li>
+          <li class="file">server-model <input multiple type="file" /></li>
+          <li class="login">
+            <textarea cols="10" rows="30"></textarea>
+            <input type="button" id="login" value="login" />
+          </li>
+        </ul>
+      </div>
+    </div>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+    <script type="module">
+      import { load } from "./js/p.js";
+      import SQuery from "./js/lib/squery/SQueryClient.js";
+      const socket = SQuery.socket;
+
+      SQuery.ModelsInfo = [];
+
+      socket.emit("_$server_all_model", (res) => {
+        if (res.error) return console.error(res.message) || resolve(null);
+
+        res.response.forEach((modelInfo) => {
+          console.log(modelInfo);
+        });
+      });
+
+      const fileElm = document.querySelector("input");
+
+      fileElm.addEventListener("change", async () => {
+        console.log();
+        const files = [];
+        for (const p in fileElm.files) {
+          if (Object.hasOwnProperty.call(fileElm.files, p)) {
+            const file = fileElm.files[p];
+            const info = {
+              fileName: file.name,
+              size: file.size,
+              type: file.type,
+              buffer: await file.arrayBuffer(),
+            };
+            files.push(info);
+          }
+        }
+        socket.emit("upload", files, (status) => {
+          console.log(status);
+        });
+      });
+
+      ///////////////////////////////////////////////////////////////////////////
+      //////////////////////////                           //////////////////////
+      //////////////////////////         SQUERY-CLIENT     //////////////////////
+      //////////////////////////                           //////////////////////
+      ///////////////////////////////////////////////////////////////////////////
+
+      const createCarte = () => {
+        const carte = document.createElement("div");
+        carte.className = "carte";
+        const title = document.createElement("h1");
+        title.className = "title";
+        const text = document.createElement("textarea");
+        text.className = "textarea";
+        carte.append(title, text);
+        return {
+          carte,
+          title,
+          text,
+        };
+      };
+
+      const pageList = [];
+      let userId = "";
+      const createPage = (modelPath) => {
+        const btn = document.querySelector("." + modelPath);
+        btn.addEventListener("click", () => {
+          pageList.forEach((page) => {
+            page.style.display = "none";
+          });
+          document.querySelector(".page." + modelPath).style.display = "flex";
+        });
+        const app = document.querySelector(".app");
+        const page = document.createElement("div");
+        page.className = "page " + modelPath;
+        page.style.display = "none";
+        app.append(page);
+        pageList.push(page);
+
+        const name = document.createElement("h1");
+        name.className = "name";
+        name.textContent = modelPath;
+
+        const carteCtn = document.createElement("div");
+        carteCtn.classList = "carte-ctn";
+        page.append(name, carteCtn);
+
+        const l1 = document.createElement("div");
+        l1.className = "l1";
+
+        const l2 = document.createElement("div");
+        l2.className = "l2";
+
+        carteCtn.append(l1, l2);
+
+        const restCarte = createCarte();
+
+        restCarte.title.textContent = "response";
+        restCarte.text.style.backgroundColor = "black";
+
+        let modelId = "";
+        const fun = (ligne) => {
+          return (action) => {
+            const { carte, title, text } = createCarte();
+            ligne.append(carte);
+            title.textContent = action;
+            text.value = JSON.stringify(load[modelPath][action])
+              ?.replace(",", ",\n")
+              .replace("}", "\n}")
+              .replace("{", "{\n");
+
+            title.addEventListener("click", () => {
+              try {
+                if (socket.connected) {
+                  socket.emit(
+                    modelPath,
+                    {
+                      id: modelId,
+                      userId,
+                      __action : action,
+                      ...JSON.parse(text.value),
+                    },
+                    (res) => {
+                      try {
+                        console.log(res);
+                        restCarte.text.value = JSON.stringify(res)
+                          ?.replace(",", " , \n")
+                          .replace("}", " \n} ")
+                          .replace("{", " {\n ");
+                      } catch (e) {
+                        restCarte.text.value = JSON.stringify(e)
+                          ?.replace(",", " , \n")
+                          .replace("}", " \n} ")
+                          .replace("{", " {\n ");
+                      }
+                    }
+                  );
+                } else {
+                  restCarte.text.value = "DISCONNECT FROM SERVER";
+                }
+              } catch (e) {
+                restCarte.text.value = e;
+              }
+            });
+          };
+        };
+        ["create", "read", "update"].forEach(fun(l1));
+        ["delete"].forEach(fun(l2));
+        l2.append(restCarte.carte);
+      };
+
+      createPage("user");
+      createPage("account");
+      createPage("folder");
+      createPage("profile");
+      createPage("favorites");
+      createPage("address");
+      createPage("article");
+
+      const areaLogin = document.querySelector(".login textarea");
+      areaLogin.value = JSON.stringify(load.login)
+        ?.replace(",", ",\n")
+        .replace("}", "\n}")
+        .replace("{", "{\n");
+
+  
+
+      const submit = document.querySelector("#login");
+      submit.addEventListener("click", () => {
+        if (socket.connected) {
+          socket.emit("login", JSON.parse(areaLogin.value), res => console.log(res) );
+        } else {
+        }
+      });
+    </script>
+  </body>
+</html>
