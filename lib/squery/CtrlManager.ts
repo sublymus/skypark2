@@ -4,9 +4,9 @@ import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { Config } from "../../squeryconfig";
 import { ContextSchema } from "./Context";
-import { AloFiles, Controllers, ControllerSchema, CtrlMakerSchema, EventPostSchema, EventPreSchema, EventSting, From_optionSchema, ListenerPostSchema, ListenerPreSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, RestSchema } from "./Initialize";
+import { AloFiles, Controllers, ControllerSchema, CtrlMakerSchema, EventPostSchema, EventPreSchema, EventSting, From_optionSchema, ListenerPostSchema, ListenerPreSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, RestSchema, RuleSchema, TypeRuleSchema } from "./Initialize";
 
-// les tableau 2D sont pas telere
+// les tableau 2D sont pas tolere
 const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
     option: From_optionSchema
 ): CtrlMakerSchema => {
@@ -18,7 +18,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
     } = {};
     const callPre: (e: EventPreSchema) => void = (e: EventPreSchema) => {
         EventManager[e.event]?.pre.forEach((listener) => {
-            listener(e);
+           listener(e);
         });
     };
     const callPost: (e: EventPostSchema) => RestSchema = (e: EventPostSchema) => {
@@ -37,7 +37,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             if (!accessValidator(ctx, event, option.access, "controller")) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more },
                     event,
                     res: {
                         error: "BAD_AUTH",
@@ -49,7 +49,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             }
             callPre({
                 ctx,
-                more,
+                more: {...more},
                 event,
             });
             const description = option.schema.obj;
@@ -66,7 +66,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                 if (Object.prototype.hasOwnProperty.call(description, property)) {
                     const rule = description[property];
                     if (rule.ref) {
-                        const ctrl = Controllers["_" + rule.ref]();
+                        const ctrl = Controllers[rule.ref]();
                         // Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
                         const res = await (ctrl.create || ctrl.store)(
                             {
@@ -77,14 +77,14 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                             },
                             more
                         );
-                        //Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
+                        // Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
                         if (!res) {
                             more.modelPath = option.modelPath;
                             await backDestroy(ctx, more);
-                            //Log('log', { res })
+                            // Log('log', { res })
                             return callPost({
                                 ctx,
-                                more,
+                                more: {...more},
                                 event,
                                 res: {
                                     error: "ACCESS_NOT_FOUND",
@@ -99,7 +99,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                             await backDestroy(ctx, more);
                             return callPost({
                                 ctx,
-                                more,
+                                more: {...more },
                                 event,
                                 res,
                             });
@@ -110,14 +110,13 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                             ? ctx.data[property]
                             : [];
                         accu[property] = [];
-                        const ctrl = Controllers["_" + rule[0].ref]();
+                        const ctrl = Controllers[rule[0].ref]();
                         for (let i = 0; i < ctx.data[property].length; i++) {
                             const res = await (ctrl.create || ctrl.store)(
                                 {
                                     ...ctx,
                                     data: {
                                         ...ctx.data[property][i],
-                                        __key: ctx.__key,
                                     },
                                 },
                                 more
@@ -129,7 +128,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                                 //Log('log', { res })
                                 return callPost({
                                     ctx,
-                                    more,
+                                    more: {...more },
                                     event,
                                     res,
                                 });
@@ -139,7 +138,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                                 await backDestroy(ctx, more);
                                 return callPost({
                                     ctx,
-                                    more,
+                                    more: {...more },
                                     event,
                                     res,
                                 });
@@ -159,7 +158,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                             await backDestroy(ctx, more);
                             return callPost({
                                 ctx,
-                                more,
+                                more: {...more },
                                 event,
                                 res: {
                                     error: "NOT_CREATED",
@@ -176,7 +175,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                 }
             }
             accu["__key"] = ctx.__key;
-            //Log('logAccu', { accu });
+            // Log('logAccu', { accu });
             try {
                 modelInstance = new option.model({
                     ...accu,
@@ -195,13 +194,14 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                 await backDestroy(ctx, more);
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more },
                     event,
                     res: {
                         error: "NOT_CREATED",
                         ...(await STATUS.NOT_CREATED(ctx, {
                             target: option.modelPath.toLocaleUpperCase(),
                             message: error.message,
+                
                         })),
                     },
                 });
@@ -209,10 +209,10 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             //Log('apresPromise', modelId)
             return callPost({
                 ctx,
-                more,
+                more: {...more , modelInstance},
                 event,
                 res: {
-                    response: modelId,
+                    response: modelId, 
                     ...(await STATUS.CREATED(ctx, {
                         target: option.modelPath.toLocaleUpperCase(),
                     })),
@@ -224,7 +224,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             if (!accessValidator(ctx, event, option.access, "controller")) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more },
                     event,
                     res: {
                         error: "BAD_AUTH",
@@ -236,7 +236,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             }
             callPre({
                 ctx,
-                more,
+                more: {...more},
                 event,
             });
             let modelInstance: ModelInstanceSchema;
@@ -248,7 +248,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                 if (!modelInstance) {
                     return callPost({
                         ctx,
-                        more,
+                        more: {...more , modelInstance},
                         event,
                         res: {
                             error: "NOT_FOUND",
@@ -275,7 +275,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             } catch (error) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more , modelInstance},
                     event,
                     res: {
                         error: "NOT_FOUND catch",
@@ -289,7 +289,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
 
             return callPost({
                 ctx,
-                more,
+                more: {...more , modelInstance},
                 event,
                 res: {
                     response: modelInstance,
@@ -305,7 +305,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             if (!accessValidator(ctx, event, option.access, "controller")) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more },
                     event,
                     res: {
                         error: "BAD_AUTH",
@@ -317,7 +317,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             }
             callPre({
                 ctx,
-                more,
+                more: {...more },
                 event,
             });
 
@@ -331,7 +331,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                 if (!modelInstance) {
                     return callPost({
                         ctx,
-                        more,
+                        more: {...more , modelInstance},
                         event,
                         res: {
                             error: "NOT_FOUND",
@@ -372,7 +372,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                                 } catch (error) {
                                     return callPost({
                                         ctx,
-                                        more,
+                                        more: {...more , modelInstance},
                                         event,
                                         res: {
                                             error: "NOT_FOUND",
@@ -392,7 +392,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             } catch (error) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more , modelInstance},
                     event,
                     res: {
                         error: "NOT_FOUND",
@@ -409,7 +409,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             } catch (error) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more , modelInstance},
                     event,
                     res: {
                         error: "OPERATION_FAILED",
@@ -423,7 +423,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
 
             return callPost({
                 ctx,
-                more,
+                more: {...more , modelInstance},
                 event,
                 res: {
                     response: await (await controller.read(ctx)).response,
@@ -442,7 +442,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             if (!accessValidator(ctx, event, option.access, "controller")) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more},
                     event,
                     res: {
                         error: "BAD_AUTH",
@@ -454,7 +454,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             }
             callPre({
                 ctx,
-                more,
+                more: {...more},
                 event,
             });
             let modelInstance: ModelInstanceSchema;
@@ -467,7 +467,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                 if (!modelInstance) {
                     return callPost({
                         ctx,
-                        more,
+                        more: {...more , modelInstance},
                         event,
                         res: {
                             error: "NOT_FOUND",
@@ -481,7 +481,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                     if (Object.prototype.hasOwnProperty.call(description, p)) {
                         const rule = description[p];
                         if (rule.ref) {
-                            const ctrl = Controllers["_" + rule.ref]();
+                            const ctrl = Controllers[rule.ref]();
                             const res = await (ctrl.delete || ctrl.destroy)({
                                 ...ctx,
                                 data: {
@@ -491,7 +491,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                             });
                         } else if (Array.isArray(rule) && rule[0].ref) {
                             for (let i = 0; i < modelInstance[p].length; i++) {
-                                const ctrl = Controllers["_" + rule[0].ref]();
+                                const ctrl = Controllers[rule[0].ref]();
                                 const res = await (ctrl.delete || ctrl.destroy)({
                                     ...ctx,
                                     data: {
@@ -513,7 +513,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
                             } catch (error) {
                                 return callPost({
                                     ctx,
-                                    more,
+                                    more: {...more , modelInstance},
                                     event,
                                     res: {
                                         error: "NOT_FOUND",
@@ -529,7 +529,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             } catch (error) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more , modelInstance},
                     event,
                     res: {
                         error: "NOT_FOUND",
@@ -544,7 +544,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
             } catch (error) {
                 return callPost({
                     ctx,
-                    more,
+                    more: {...more , modelInstance},
                     event,
                     res: {
                         error: "NOT_DELETED",
@@ -558,7 +558,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
 
             return callPost({
                 ctx,
-                more,
+                more: {...more , modelInstance},
                 event,
                 res: {
                     response: "OPERATION_SUCCESS",
@@ -593,7 +593,7 @@ const MakeCtlForm: (option: From_optionSchema) => CtrlMakerSchema = (
         }
         EventManager[event].post.push(listener);
     };
-    return (Controllers["_" + option.modelPath] = ctrlMaker);
+    return (Controllers[option.modelPath] = ctrlMaker);
 };
 
 
@@ -604,7 +604,7 @@ function deepPopulate(
     info: PopulateSchema,
     isUser?: boolean
 ) {
-    const description = Controllers["_" + ref].option.schema.obj;
+    const description = Controllers[ref].option.schema.obj;
     info.populate = [];
     info.select = "";
     for (const p in description) {
@@ -640,14 +640,7 @@ type FileSchema = {
     fileName: string;
     buffer: NodeJS.ArrayBufferView;
 };
-type RuleSchema = {
-    file: {
-        type?: string[];
-        size?: number[] | number;
-        length?: number[] | number;
-        dir?: string;
-    };
-};
+
 
 function isValideType(ruleTypes: string[], type: string): boolean {
     const typeSide = type.split("/");
@@ -676,7 +669,7 @@ function isValideType(ruleTypes: string[], type: string): boolean {
 async function FileValidator(
     ctx: ContextSchema,
     event: EventSting,
-    rule: RuleSchema,
+    rule:TypeRuleSchema ,
     files: FileSchema[],
     actualPaths?: string[]
 ): Promise<string[]> {
@@ -684,7 +677,7 @@ async function FileValidator(
         if (!files) return;
         rule.file.type = rule.file.type || ["*/*"];
         rule.file.size = rule.file.size || 2_000_000;
-        rule.file.dir = rule.file.dir || Config.__dirname + "/temp";
+        rule.file.dir = rule.file.dir || Config.rootDir + "/temp";
         rule.file.length = rule.file.length || 1;
 
         let sizeMin =

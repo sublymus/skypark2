@@ -1,10 +1,14 @@
-import { serialize } from "cookie";
+import mongoose, { mongo, Schema } from "mongoose";
 import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import Log from "sublymus_logger";
 import { ContextSchema } from "./Context";
-import { Controllers, GlobalMiddlewares, Middlewares } from "./Initialize";
-import Descriptions from "./ModelDescription";
+import { Controllers, DescriptionSchema, GlobalMiddlewares, Middlewares } from "./Initialize";
 
+setTimeout(() => {
+
+
+}, 1000);
 export type FirstDataSchema = {
   __action: "create" | "read" | "update" | "delete";
   [p: string]: any;
@@ -15,12 +19,17 @@ export type DataSchema = {
 
 type CallBack = (...arg: any) => any;
 
+type SQuerySchema = Function & {
+  io:(server:any)=>Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
+  Schema: (description:DescriptionSchema)=> any
+}
 const SQuery = function (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) {
+
   return (modelPath: string) => {
     return async (data: FirstDataSchema, cb?: CallBack) => {
-      console.log({ data });
+      //Log("squery", { data, modelPath })
 
       const ctx: ContextSchema = {
         action: data.__action,
@@ -47,7 +56,7 @@ const SQuery = function (
       }
 
       //Log('log', { Controllers })
-      const res = await Controllers["_" + modelPath]?.()[data.__action]?.(ctx);
+      const res = await Controllers[modelPath]?.()[data.__action]?.(ctx);
 
       if (res === undefined) {
         return cb?.({
@@ -62,54 +71,47 @@ const SQuery = function (
   };
 };
 
+
+
 SQuery.io = (server: any) => {
+  /********************    Cookies   *********************** */
   const io = new Server(server, {
     cookie: true,
   });
-  // called during the handshake
-  io.engine.on("initial_headers", (headers, request) => {
-    console.log("first");
 
-    headers["set-cookie"] = serialize("uid", "1234", { sameSite: "strict" });
+  io.on("connection", async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
+    /********************    Models  *********************** */
+    const squery = SQuery(socket);
+    for (const modelPath in Controllers) {
+      if (Object.prototype.hasOwnProperty.call(Controllers, modelPath)) {
+        const model = Controllers[modelPath];
+        socket.on(modelPath, squery(modelPath));
+      }
+    }
+    /********************   Description   *********************** */
+    socket.on('server:description', getDescription);;
   });
 
-  io.on("connection", async (socket: any) => {
-    socket.on("server_model", (data: DataSchema, cb: CallBack) => {
-      /*
-      Controller[data._model].description()
-      */
-
-      let modelPath: string = data?.modelPath;
-      if (!modelPath || typeof modelPath != "string") {
-        return cb?.({
-          error: "NOT_FOUND",
-          status: 404,
-          code: "UNDEFINED",
-          message: modelPath + " is not found in Model Resources",
-        });
-      }
-
-      try {
-        cb?.({
-          response: format(Descriptions[modelPath]),
-          status: 200,
-          code: "OPERATION_SUCCESS",
-          message: "OPERATION_SUCCESS",
-        });
-      } catch (error) {
-        return cb?.({
-          error: "NOT_FOUND",
-          status: 404,
-          code: "NOT_FOUND",
-          message: modelPath + " is not found in Model Resources",
-        });
-      }
-    });
-  });
   return io;
 };
 
-function format(description: object): object {
-  return description;
+SQuery.Schema = (description:DescriptionSchema)=>{
+  return new Schema(description)
+}
+
+function getDescription(data, cb): object {
+ const d = {};
+  data.models.forEach(modelPath => {
+
+  });
+
+  for (const modelPath in Controllers) {
+    if (Object.prototype.hasOwnProperty.call(Controllers, modelPath)) {
+      // if Controllers[modelPath].option.access != ['secret']
+      d[modelPath] = Controllers[modelPath].option.schema.obj
+    }
+  }
+  Log('d', d['account']);
+  return d;
 }
 export { SQuery };

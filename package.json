@@ -1,13 +1,14 @@
 {
 	"dependencies": {
 		"@types/node": "*",
-		"auth0": "^3.2.0",
 		"bcrypt": "^5.1.0",
 		"cookie": "^0.5.0",
+		"ezcryption": "^1.0.4",
 		"finalhandler": "^1.2.0",
 		"flatted": "^3.2.7",
 		"json": "^11.0.0",
 		"jsonwebtoken": "^9.0.0",
+		"mime-types": "^2.1.35",
 		"mongoose": "^6.8.4",
 		"mongoose-unique-validation": "^0.1.0",
 		"mongoose-unique-validator": "^3.1.0",

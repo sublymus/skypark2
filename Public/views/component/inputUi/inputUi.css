@@ -1,0 +1,63 @@
+/*//////////////////////////////     InputUi    ////////////////////////////////*/
+
+.input-ui {
+    background: rgba(0, 0, 0, 0.048);
+    width: 80%;
+    height: 50px;
+    margin: 5px 0 5px 0;
+    display: flex;
+    align-items: center;
+    color: rgba(37, 37, 37, 0.72);
+    transition: 200ms;
+}
+
+.input-ui:hover {
+    background: rgba(0, 0, 0, 0.083);
+    transition: 200ms;
+}
+
+.input-ui .icon {
+    width: 25px;
+    height: 25px;
+    filter: invert(60%);
+    margin: 0px 7px 0px 10px;
+}
+
+.input-ui input {
+    all: unset;
+    padding: 5px 5px;
+    width: calc(100% - 25px);
+    overflow: hidden;
+    line-break: loose;
+}
+
+.input-ui input::placeholder {
+    color: rgba(51, 68, 85, 0.493);
+}
+
+.input-ui input::-webkit-file-upload-button {
+    display: none;
+}
+
+.input-ui input[type=file]:hover::before {
+    background: rgba(255, 255, 255, 0.22);
+    transition: 200ms;
+}
+
+.input-ui input[type=file]::before {
+    content: '';
+    display: inline-block;
+    background: rgba(51, 68, 85, 0.106);
+    border: 1px solid #999999ad;
+    border-radius: 3px;
+    padding: 5px 8px;
+    margin: 0 5px;
+    width: 60px;
+    text-align: center;
+    outline: none;
+    white-space: nowrap;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: .9em;
+    transition: 200ms;
+}

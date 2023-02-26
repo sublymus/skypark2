@@ -3,14 +3,16 @@ import mongoose, { Schema } from "mongoose";
 import mongoose_unique_validator from "mongoose-unique-validator";
 import Log from "sublymus_logger";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
 
-let accountSchema = new Schema({
+let accountSchema = SQuery.Schema({
   __key: {
+    
     type: Schema.Types.ObjectId,
-    require: true,
+    required: true,
     access: "secret",
   },
   __permission: {
@@ -39,6 +41,7 @@ let accountSchema = new Schema({
     set: (v: string) => v, // crypter
   },
   telephone: {
+
     type: String,
     required: true,
   },
@@ -60,8 +63,12 @@ let accountSchema = new Schema({
     required: true,
     populate: true,
   },
-  createdDate: Number,
-  updatedDate: Number,
+  createdDate:{
+    type:Number
+  },
+  updatedDate:{
+    type:Number
+  },
 });
 
 accountSchema.plugin(mongoose_unique_validator);

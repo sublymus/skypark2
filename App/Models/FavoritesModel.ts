@@ -1,11 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { SQuery } from "../../lib/squery/SQuery";
 import FolderModel from "./FolderModel";
 
-let favoritesSchema = new Schema({
+let favoritesSchema =SQuery.Schema({
   __key: {
     type: Schema.Types.ObjectId,
-    require: true,
+    required: true,
     access: 'secret'
   },
   folders: [{

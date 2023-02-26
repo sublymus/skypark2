@@ -1,0 +1,27 @@
+ /*//////////////    //////     PageAgenda   //////////////////////*/
+ .page-agenda {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .page404 .text404 {
+    background: no-repeat center/contain url(/img/cropped-1920-1080-1046606.jpg);
+    font-weight: bold;
+    font-size: 300px;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .page404 .message {
+    text-align: center;
+  }
+
+  .page404 .title {
+    padding: 40px;
+    text-align: center;
+  }

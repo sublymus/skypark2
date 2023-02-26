@@ -1,0 +1,73 @@
+* {
+    margin: 0;
+    padding: 0;
+  }
+
+  .app {
+    display: flex;
+    height: 100vh;
+    background-color: #123;
+  }
+
+  li {
+    all: unset;
+    padding: 20px;
+  }
+
+  ul {
+    all: unset;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  .page {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+  }
+
+  .top-bar {
+    background: #823;
+  }
+
+  textarea {
+    width: 80%;
+    max-width: 400px;
+    height: 300px;
+    background: #345;
+    margin: 10px;
+    padding: 10px;
+    color: white;
+  }
+
+  .l1,
+  .l2 {
+    width: 100%;
+    min-width: 300px;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .carte-ctn {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .name {
+    font-size: 70px;
+    margin: 0;
+  }
+
+  .title {
+    display: inline;
+  }
+
+  .carte {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }

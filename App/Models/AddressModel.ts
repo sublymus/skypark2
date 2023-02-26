@@ -1,10 +1,12 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { SQuery } from "../../lib/squery/SQuery";
+import BuildingModel from "./BuildingModel";
 
-let addressSchema = new Schema({
+let addressSchema = SQuery.Schema({
   __key: {
     type: Schema.Types.ObjectId,
-    require: true,
+    required: true,
     access: 'secret'
   },
   location: {
@@ -12,14 +14,36 @@ let addressSchema = new Schema({
     trim: true,
     required: true,
   },
-  home: {
-    type: String,
+  building: {
+    type: Schema.Types.ObjectId,
+    ref: BuildingModel.modelName, 
     required: true,
   },
-  description: String,
-  updatedDate: Number
+  room: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  door: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  etage: {
+    type: String,
+    trim: true,
+    required: true,
+  },
+  description:{
+    type: String,
+    trim: true,
+    required: true,
+  },
+  updatedDate: {
+    type: Number,
+    required: true,
+  },
 });
-
 
 const AddressModel = mongoose.model("address", addressSchema);
 
@@ -29,4 +53,5 @@ MakeCtlForm({
   modelPath: 'address',
   volatile:false,
 });
+
 export default AddressModel;

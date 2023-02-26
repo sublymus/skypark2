@@ -2,7 +2,8 @@ import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { Config } from "../../squeryconfig";
 
-let profileSchema = new Schema({
+let profileSchema = new SQuery.Schema({
+
   __key: {
     type: Schema.Types.ObjectId,
     require: true,
@@ -15,7 +16,7 @@ let profileSchema = new Schema({
       size: [1, 1_000_000],
       length: [0, 4],
       type: [],
-      dir: Config.__dirname + '/tamp',
+      dir: Config.rootDir + '/tamp',
     }
   }],
   banner: [{

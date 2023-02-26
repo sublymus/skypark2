@@ -1,4 +1,3 @@
-import bcrypt from "bcrypt";
 import { serialize } from "cookie";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -17,7 +16,7 @@ const generateToken = (payload) => {
   return jwt.sign(payload, secret, { expiresIn: "19h" });
 };
 export default class AuthController {
-  constructor() {}
+  constructor() { }
 
   async login(ctx: ContextSchema): ResponseSchema {
     const { data, socket } = ctx;
@@ -46,30 +45,18 @@ export default class AuthController {
         })),
       };
     }
-    Log("auth-account",  account );
+    Log("auth-account", account);
     const info = {
       email: account.email,
       name: account.name,
       __key: account.__key,
       __permission: account.__permission,
     };
-    let cookies = {};
-    let token = generateToken(info);
 
-    let setCookies = (key: string, value: any) => {
-      cookies[key] = value;
-    };
-
-    setCookies("token", token);
-
-    socket.request.headers["set-cookie"] = serialize(
-      "cookies",
-      JSON.stringify(cookies));
-
-    socket.emit("storeCookie", socket.request.headers["set-cookie"]);
+    this.#cookiesInSocket(info, socket);
 
     return {
-      response: { userId: account.id },
+      response: { accountId: account.id },
       ...(await STATUS.OPERATION_SUCCESS(ctx, {
         target: "ACCOUNT",
       })),
@@ -77,9 +64,11 @@ export default class AuthController {
   }
 
   async signup(ctx: ContextSchema): ResponseSchema {
-    let { data } = ctx;
-    const result = await Controllers['user']()['create'](ctx)
-    if (result.status) {
+    let { data, socket } = ctx;
+Log('djor', 'ici')
+    const result = await Controllers[ ctx.modelPath]()["create"](ctx);
+    Log("result", { result })
+    if (result.error) {
       return {
         error: "OPERATION_FAILED",
         ...(await STATUS.OPERATION_FAILED(ctx, {
@@ -91,14 +80,34 @@ export default class AuthController {
     const info = {
       email: data.email,
       name: data.name,
-      id: result.response._id,
+      __key: result.__key,
+      __permission: 'user',
     };
- let token = ""
+    this.#cookiesInSocket(info, socket);
+
     return {
-      response: { token },
+      response: result,
       ...(await STATUS.OPERATION_SUCCESS(ctx, {
         target: "ACCOUNT",
       })),
     };
+  }
+
+  #cookiesInSocket(info: any, socket) {
+    let cookies = {};
+    let token = generateToken(info);
+
+    let setCookies = (key: string, value: any) => {
+      cookies[key] = value;
+    };
+
+    setCookies("token", token);
+
+    socket.request.headers["set-cookie"] = serialize(
+      "cookies",
+      JSON.stringify(cookies)
+    );
+
+    socket.emit("storeCookie", socket.request.headers["set-cookie"]);
   }
 }

@@ -1,44 +1,46 @@
 import mongoose, { Schema } from "mongoose";
 import Log from "sublymus_logger";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
-import AccountModel from "./AccountModel";
+import ManagerAccountModel from "./ManagerAccountModel";
 
 const managerSchema = new Schema({
   __key: {
     type: Schema.Types.ObjectId,
     require: true,
-    access: 'secret'
+    access: "secret",
   },
-  account: {
+  manageraccount: {
     type: Schema.Types.ObjectId,
-    ref: AccountModel.modelName,
+    ref: ManagerAccountModel.modelName,
     require: true,
     //populate: true,
   },
+  expires_at: {
+    type: Date,
+    expires: 30, // exprime en secondes, ici 300s = 5min
+    default: Date.now
+  },
 });
 
-
-const ManagerModel = mongoose.model("manager", managerSchema);
+export const ManagerModel = mongoose.model("manager", managerSchema);
 
 const maker = MakeCtlForm({
   model: ManagerModel,
-  modelPath: 'manager',
+  modelPath: "manager",
   schema: managerSchema,
   volatile: true,
-})
+});
 
+maker.pre("create", async ({ ctx }) => {
+  ctx.data = {
+    manageraccount: { ...ctx.data },
+  };
+});
 
-maker.pre('create', ({ ctx }) => {
-  ctx.__key = 'random Key+mager'
-})
-
-maker.post('create',
-  //  listener //  listener
-  ({ ctx, more, event }) => {
-    Log('post', 'manager pre', event, ctx.modelPath)
-  }
-)
+// maker.post('create',
+//   //  listener //  listener
+//   ({ ctx, more, event }) => {
+//     Log('post', 'manager pre', event, ctx.modelPath)
+//   }
+// )
 export default ManagerModel;
-
-
-

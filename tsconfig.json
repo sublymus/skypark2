@@ -1,5 +1,11 @@
 {
-  "include": ["./**/*.ts", "*.ts", "Public/js/p.js", "Start/Controllers.ts", "Public/js/lib/squery/SQueryClient.js"],
+  "include": [
+    "./**/*.ts",
+    "*.ts",
+    "Public/views/p.js",
+    "Start/Controllers.ts",
+    "Public/views/ts_lib/SQueryClient.js"
+  ],
   "compilerOptions": {
     "module": "CommonJS",
     "esModuleInterop": true,
@@ -7,7 +13,8 @@
     "moduleResolution": "node",
     "outDir": "dist",
     "rootDir": "./",
-    "sourceMap": true
+    "sourceMap": true,
+    "jsx": "preserve"
   },
   "ts-node": {
     "esm": true

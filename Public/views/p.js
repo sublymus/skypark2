@@ -19,27 +19,28 @@ export const load = {
   user: {
     create: {
       account: {
-        name: "baron",
+        name: 'baron',
         email: "azert@gmail.com",
         password: "azert",
         telephone: "12345678",
+        status: 'property',
         address: {
           location: "l:567455;h45678654",
-          home: "ville",
+          building: {
+            name: 'Sublymus E45',
+            city: 'Rostov-On-Don',
+          },
+          room: 45,
+          door: 296,
+          etage: 4,
           description: "je suis ici",
         },
-        favorites: {
-          folders: [
-            {
-              folderName: "wena",
-            },
-          ],
-        },
         profile: {
-          imgProfile: "http://www.ert.fr/fgiurr85o28t5.img",
-          banner: "http://www.ert.fr/fgiurr85o28t5.img",
+          imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
+          banner: 'http://www.ert.fr/fgiurr85o28t5.img',
           message: "*** BEST ****",
         },
+        createdDate: Date.now() - 1_000_000_000 + parseInt(Math.random() * 1_000_000_000),
       },
     },
     read: {

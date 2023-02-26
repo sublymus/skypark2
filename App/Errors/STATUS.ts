@@ -41,6 +41,7 @@ const STATUS = {
 };
 export type StatusSchema = {
   code: string,
+  __key ?: string,
   message: string,
   status: number,
 }

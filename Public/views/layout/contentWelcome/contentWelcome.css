@@ -1,0 +1,77 @@
+.content-welcome {
+  width: 100%;
+  height: 100%;
+  margin: 0 200px;
+  display: grid;
+  gap : 30px;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 100px 1fr 120px;
+}
+
+.message span:nth-child(1) {
+  font-size: 5rem;
+  color: rgb(0, 81, 135);
+}
+
+.message span:nth-child(2) {
+  font-size: 4rem;
+  display: block;
+  margin-bottom:30px;
+}
+
+.message span:nth-child(3) {
+  font-size: 1.7rem;
+  display: block;
+}
+.info {
+  grid-column: 1/ 2;
+  grid-row: 2 / span 1;
+  align-self: center;
+}
+
+.image {
+  grid-column: 2/ 4;
+  grid-row: 2 / span 1;
+  justify-self: end;
+  align-self: center;
+  width: 800px;
+  height: 600px;
+  background: center/contain url("../../images/illus.png") no-repeat;
+  filter: drop-shadow(30px 10px 4px #5396e7de);
+}
+
+.interact {
+  margin-top: 50px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  color: #fff;
+  font-weight: 800;
+  /* gap: 10px; */
+}
+
+.interact .btn-insc {
+  background-color: #5396e7de ;
+  padding: 15px;
+  cursor: pointer;
+  border-radius: 5px;
+
+}
+
+.interact .btn-explore {
+  padding: 15px;
+  border: 1px solid #5396E7;
+  cursor: pointer;
+  color: #0e058a;
+  transition: all 900ms;
+  border-radius: 5px;
+}
+
+.btn-explore:hover{
+  background-color: #5396E7 ;
+  color: #ffffff;;
+}
+
+.btn-insc:hover {
+  background-color: #5396E7 ;
+}

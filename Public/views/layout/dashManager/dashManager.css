@@ -1,0 +1,131 @@
+* {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.dash-manager {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    background-color: #fcfcfc;
+}
+
+.dash-manager .top-bar {
+    width: 100%;
+      height: 65px;
+      display: flex;
+      padding: 0 30px;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid rgba(93, 93, 93, 0.06);
+}
+
+.dash-manager .home-logo {
+
+    display: flex;
+    align-items: center;
+}
+
+.dash-manager .home-logo .icon {
+    width: 40px;
+    height: 40px;
+    background: no-repeat center/contain url(/img/different-currencies.png);
+    filter: invert(57%) sepia(961%) saturate(1030%) hue-rotate(519deg) brightness(72%) contrast(109%)
+}
+
+
+.dash-manager .home-logo .label {
+    padding: 0 10px;
+    color: #345;
+    font-weight: bold;
+    font-size: 1.5em;
+    letter-spacing: 2px;
+}
+
+.dash-manager .home-onglet {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.dash-manager .home-onglet>div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 10px;
+    height: 35px;
+    padding: 5px 5px;
+    border-radius: 10px;
+    transition: 100ms;
+}
+
+.dash-manager .home-onglet>div.active {
+    background: rgba(163, 51, 107, 0.261);
+    transition: 100ms;
+}
+.dash-manager .home-onglet>div:hover {
+    background: rgba(163, 51, 107, 0.212);
+    transition: 100ms;
+}
+
+.dash-manager .home-onglet .icon {
+    width: 20px;
+    height: 20px;
+    margin: 0 5px;
+    transition: 100ms;
+}
+
+.dash-manager .home-onglet .label {
+    margin: 0 5px;
+}
+
+.dash-manager .home-onglet>div:hover .icon {
+    transition: 100ms;
+    filter: invert(75%) sepia(1000%) saturate(1000%) hue-rotate(254deg) brightness(90%) contrast(102%)
+  }
+.dash-manager .home-onglet .agenda .icon {
+    background: no-repeat center/contain url(/img/calendar.png);
+}
+
+.dash-manager  .home-onglet .trafic .icon {
+    background: no-repeat center/contain url(/img/money.png);
+}
+
+.dash-manager .home-onglet .statistic .icon {
+    background: no-repeat center/contain url(/img/bar-chart.png);
+}
+
+
+.dash-manager .home-profile .icon {
+    width: 55px;
+    height: 55px;
+    background: no-repeat center/contain url(/img/user.png);
+    transition: 100ms;
+  }
+
+  .home-profile .icon:hover {
+    transition: 100ms;
+    opacity: .8;
+  }
+
+li {
+    all: unset;
+    padding: 20px;
+}
+
+ul {
+    all: unset;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+.dash-manager >.page-container {
+
+  width: 100%;
+  height: calc(100% - 65px);
+}

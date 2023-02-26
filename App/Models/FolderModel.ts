@@ -1,22 +1,24 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { SQuery } from "../../lib/squery/SQuery";
 //@ts-ignore
 
-
-let folderSchema = new Schema({
+let folderSchema = SQuery.Schema({
   __key: {
     type: Schema.Types.ObjectId,
-    require: true,
+    required: true,
     access: 'secret'
   },
-  refIds: {
-    type: Object,
-  },
+  refIds: [{
+      type: Schema.Types.ObjectId,
+    }],
   folderName: {
     type: String,
     required: true
   },
-  createdDate: Number
+  createdDate:{
+    type:Number,
+  }
 });
 
 const FolderModel = mongoose.model("folder", folderSchema);

@@ -1,10 +1,11 @@
 import mongoose ,{ Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { SQuery } from "../../lib/squery/SQuery";
 
-let ArticleShema = new Schema({
+let ArticleShema = SQuery.Schema({
   __key: {
     type: Schema.Types.ObjectId,
-    require: true,
+    required: true,
     access: "secret",
   },
   name: {
@@ -25,7 +26,7 @@ let ArticleShema = new Schema({
   },
   description  : {
     type: String,
-    require: true,
+    required: true,
     trim: true,
     minlength: [10, "trop court"],
     maxlength: [255, "trop long"],
@@ -43,7 +44,7 @@ let ArticleShema = new Schema({
 
   price : {
     type : Number,
-    require : true
+    required: true
   }
 });
 

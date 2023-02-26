@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/views/lib/anim/animExample.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="btnContainer">
+            <div class="start btn">
+                start
+            </div>
+            <div class="startReverse btn">
+                startReverse
+            </div>
+            <div class="toogle btn">
+                toogle
+            </div>
+            <div class="input-group" style="width: 60px;">
+                <label for="duration">duration</label>
+                <input type="number" name="duration" class="duration" placeholder="duration">
+            </div>
+            <input type="checkbox" name="endRequire" class="endRequire checkbox" >
+            endRequire
+            </input>
+            <textarea name="cursor" id="cursor" cols="30" rows="5" placeholder="cursor's code"></textarea>
+            <div class="sendCursor btn">
+                send cursor
+            </div>
+        </div>
+        <div class="loopContainer">
+
+        </div>
+    </div>
+    <div class="object"></div>
+    <div id="backgroundVoile"></div>
+
+    <canvas id="myCanvas" width="600" height="400" style="border:1px solid #000000;"></canvas>
+
+    <script type="module">
+
+        import Anim from "/views/lib/anim/Anim.js";
+        let a = "#333";
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+
+        const draw = function draw(x, y) {
+            
+            ctx.beginPath();
+            ctx.arc(x,  400-y,7, 0, Math.PI * 2, true);
+            ctx.strokeStyle = a;
+            ctx.fillStyle =a;
+            ctx.fill();
+            ctx.stroke();
+        }
+        draw(0 ,0)
+
+        const obj = document.querySelector(".object");
+        let progress ;
+        let status;
+
+        const anim = new Anim({
+            duration: 5000,
+            endRequire: false
+        });
+
+        anim.when("progress", (p) => {
+            console.log('progress');
+            const a = p*Math.PI*2
+            const f =  (Math.cos(a)*0.5 + 0.5)*400;
+            const f2 =  (Math.sin(a)*0.5 + 0.5)*400;
+            progress = p.toFixed(4);
+            draw(f2,f);
+            obj.textContent = ` status = ${status} --- progress = ${progress}`
+        });
+        anim.when("change", () => {
+            status = anim.status;
+            obj.textContent = ` status = ${status} --- progress = ${progress}`
+            if(anim.status =="onEnd" || anim.status =="onStart") return
+            a =  Number(Math.trunc(Math.random() * 9e9 + 1e9)).toString(16);;
+            a =  "#"+a.substring(a.length -6 , a.length);
+            //if(anim.status !="normal" && anim.status !="reverse")
+            ctx.clearRect(0,0,600,400);
+        });
+
+        const start = document.querySelector(".start");
+        start.addEventListener("click", () => {
+            anim.start();
+        });
+
+        const startReverse = document.querySelector(".startReverse");
+        startReverse.addEventListener("click", () => {
+            anim.startReverse();
+        });
+
+        const toogle = document.querySelector(".toogle");
+        toogle.addEventListener("click", () => {
+            anim.toggle();
+        });
+
+        const endRequire = document.querySelector(".endRequire");
+        endRequire.addEventListener("change", () => {
+            anim.endRequire = endRequire.checked;
+        });
+
+        const duration = document.querySelector(".duration");
+        duration.value = anim.duration;
+        duration.addEventListener("change", () => {
+            anim.duration = duration.value;
+        });
+        //const cursor = document.querySelector(".cursor");
+        //const sendCursor = document.querySelector(".sendCursor");
+
+
+    </script>
+</body>
+
+</html>

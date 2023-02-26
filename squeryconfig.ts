@@ -1,6 +1,8 @@
 
 
 export const Config = {
-    autoExecute: './Start',
-    __dirname,
+    execDir: ['/Start', '/App/Models'],
+    afterExec:[],
+    beforeExec:[],
+    rootDir: __dirname,
 }

@@ -1,0 +1,54 @@
+   /*//////////////////////////////     PageSignup    ////////////////////////////////*/
+   .page-singup-user {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .page-singup-user [class^=page] {
+    display: none;
+    position: absolute;
+  }
+
+  .page-singup-user [class^=page].active {
+    display: flex;
+  }
+
+  .page-singup-user .page-ctn {
+    position: relative;
+    height: 70%;
+    display: inline-flex;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom: 50px;
+  }
+
+  .page-singup-user .btn-ctn>* {
+    background: rgb(27, 105, 173);
+    color: #fff;
+    width: 150px;
+    text-align: center;
+    padding: 15px 0;
+    border-radius: 100px;
+    transition: 200ms;
+  }
+
+  .page-singup-user .btn-ctn {
+    display: flex;
+    justify-content: space-around;
+    cursor: pointer;
+  }
+
+  .page-singup-user .btn-ctn>*:hover {
+    transition: 200ms;
+    background: rgba(27, 105, 173, 0.849);
+  }
+  .page-singup-user .input-ui input[name=img-profile]::before {
+    content: 'Photo';
+  }
+
+  .page-singup-user .input-ui input[name=banner]::before {
+    content: 'Banner';
+  }

@@ -1,0 +1,94 @@
+   /*//////////////    //////     Item     //////////////////////*/
+
+   .item-list .item {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: calc(100%);
+    max-width: 1700px;
+    min-width: 300px;
+
+    height: 70px;
+    border-bottom: 1px solid rgba(51, 68, 85, 0.144);
+    transition: 200ms;
+  }
+
+  .item-list .item.active {
+    background: rgba(82, 109, 135, 0.065);
+    border-left: 3px solid rgba(0, 18, 179, 0.669);
+    transition: 200ms;
+  }
+
+  .item-list .item.over {
+    background: rgba(82, 109, 135, 0.030);
+    transition: 200ms;
+  }
+
+  .item-list .date,
+  .item-list .profile,
+  .item-list .status,
+  .item-list .phone {
+    color: rgba(1, 48, 95, 0.874);
+    width: 250px;
+  }
+
+  .item-list .profile {
+    padding: 10px;
+    width: 600px;
+  }
+
+  .title.profile {
+    padding: 0 60px;
+  }
+
+  .item-list .date {
+    padding: 10px;
+    width: 150px;
+  }
+
+  .item-list .name {
+    font-size: 1.2em;
+  }
+
+  .item-list .profile {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .item-list .location-info {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .item-list .info-ctn {
+
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+  }
+
+  .img-profile {
+    margin-right: 10px;
+    width: 55px;
+    height: 55px;
+  }
+
+  .building,
+  .city {
+    color: rgba(51, 68, 85, 0.645);
+  }
+
+  .time-label {
+    color: rgba(51, 68, 85, 0.76);
+  }
+
+  .item .status .label {
+    background: #c2b6114c;
+    padding: 7px;
+    border-radius: 5px;
+    color: rgb(192, 147, 0);
+    font-weight: 600;
+  }
+ 
