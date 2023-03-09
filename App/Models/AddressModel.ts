@@ -14,7 +14,6 @@ let addressSchema = SQuery.Schema({
     type: Schema.Types.ObjectId,
     ref: BuildingModel.modelName, 
     required: true,
-   // populate:true,
   },
   room: {
     type: String,
@@ -36,9 +35,7 @@ let addressSchema = SQuery.Schema({
     trim: true,
     required: true,
   },
-  updatedDate: {
-    type: Number,
-  },
+
 });
 
 const AddressModel = mongoose.model("address", addressSchema);

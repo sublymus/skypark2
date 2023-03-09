@@ -57,23 +57,6 @@ let managerAccountSchema = new Schema<
     required: true,
   },
 
-  codes: {
-    type: String,
-  },
-
-  expires_at: {
-    type: Date,
-    expires: 30,
-    default: Date.now,
-  },
-  createdDate: {
-    type: Date,
-    default: Date.now,
-  },
-  updatedDate: {
-    type: Date,
-    default: Date.now,
-  },
 },
   {
     methods: {

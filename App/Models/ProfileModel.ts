@@ -24,9 +24,6 @@ let profileSchema = SQuery.Schema({
   message: {
     type: String
   },
-  updatedDate: {
-    type: String
-  },
 
 });
 

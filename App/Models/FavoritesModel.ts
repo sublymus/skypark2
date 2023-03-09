@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FolderModel from "./FolderModel";
+import RefIdModel from "./RefId";
 
 let favoritesSchema = SQuery.Schema({
 
@@ -12,9 +13,11 @@ let favoritesSchema = SQuery.Schema({
     //watch: true,
     impact: true,
   }],
-  updatedDate: {
-    type: Number,
-  },
+  likeList: {
+    type: Schema.Types.ObjectId,
+    ref: RefIdModel.modelName,
+  }
+
 });
 const FavoritesModel = mongoose.model("favorites", favoritesSchema);
 //console.log(favoritesSchema);

@@ -43,24 +43,18 @@ let accountSchema = SQuery.Schema({
     type: Schema.Types.ObjectId,
     ref: AddressModel.modelName,
     required: true,
-    // populate: true,
   },
   favorites: {
     type: Schema.Types.ObjectId,
     ref: FavoritesModel.modelName,
-    //access: "private",
-    //populate: true,
+    access: "private",
   },
   profile: {
     type: Schema.Types.ObjectId,
     ref: ProfileModel.modelName,
     required: true,
-    // populate: true,
   },
   createdDate: {
-    type: Number
-  },
-  updatedDate: {
     type: Number
   },
 });
@@ -73,8 +67,5 @@ const makerCtrl = MakeCtlForm({
   volatile: false,
 });
 
-makerCtrl.post("update", (e) => {
-  Log("update", e.res);
-});
 
 export default AccountModel;

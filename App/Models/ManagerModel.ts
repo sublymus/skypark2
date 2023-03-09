@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-import Log from "sublymus_logger";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import ManagerAccountModel from "./ManagerAccountModel";
 
@@ -10,11 +9,6 @@ const managerSchema = new Schema({
     ref: ManagerAccountModel.modelName,
     require: true,
     //populate: true,
-  },
-  expires_at: {
-    type: Date,
-    expires: 30, // exprime en secondes, ici 300s = 5min
-    default: Date.now
   },
 });
 
@@ -32,10 +26,5 @@ maker.pre("create", async ({ ctx }) => {
   };
 });
 
-// maker.post('create',
-//   //  listener //  listener
-//   ({ ctx, more, event }) => {
-//     Log('post', 'manager pre', event, ctx.modelPath)
-//   }
-// )
+
 export default ManagerModel;

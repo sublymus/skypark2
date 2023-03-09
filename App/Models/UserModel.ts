@@ -3,6 +3,7 @@ import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AccountModel from "./AccountModel";
 import ArticlModel from "./ArticleModel";
+import BuildingModel from "./BuildingModel";
 
 let userSchema = SQuery.Schema({
 
@@ -17,6 +18,14 @@ let userSchema = SQuery.Schema({
     ref: ArticlModel.modelName,
     //populate: true,
   },
+  building: {
+    type: Schema.Types.ObjectId,
+    ref: BuildingModel.modelName
+  },
+  quarter: {
+    type: Schema.Types.ObjectId,
+    ref: BuildingModel.modelName
+  }
 });
 
 const UserModel = mongoose.model("user", userSchema);
@@ -25,9 +34,6 @@ const makerCtrl = MakeCtlForm({
   model: UserModel,
   schema: userSchema,
   volatile: true,
-  access: 'public'
 })
-makerCtrl.post('read', (e) => {
-  // Log('post', e.res.response?.account)
-})
+
 export default UserModel;

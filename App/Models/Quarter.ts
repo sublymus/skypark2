@@ -3,7 +3,7 @@ import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import ComunytyModel from "./ComunytyModel";
 
-let buildingSchema = SQuery.Schema({
+let QuarterSchema = SQuery.Schema({
 
     name: {
         type: String,
@@ -17,15 +17,15 @@ let buildingSchema = SQuery.Schema({
         type:Schema.Types.ObjectId,
         ref:ComunytyModel.modelName,
     },
-
+    
 });
 
 
-const BuildingModel = mongoose.model("building", buildingSchema);
+const QuarterModel = mongoose.model("quarter", QuarterSchema);
 
 MakeCtlForm({
-    schema: buildingSchema,
-    model: BuildingModel,
+    schema: QuarterSchema,
+    model: QuarterModel,
     volatile: false,
 });
-export default BuildingModel;
+export default QuarterModel;
