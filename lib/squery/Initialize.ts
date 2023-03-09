@@ -44,10 +44,10 @@ export type MoreSchema = {
   savedlist?: savedSchema[];
   modelPath?: string;
   modelInstance?: any,
-  __parentModel?:string,
+  __parentModel?: string,
 };
 export type ControlSchema = (
-  context: ContextSchema, 
+  context: ContextSchema,
   more?: MoreSchema
 ) => ResponseSchema;
 export type ControllerSchema = {
@@ -149,14 +149,23 @@ export const Controllers: ControllersConfig = {};
 type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
 export type TypeRuleSchema = {
+  //valuePath // ./_id  ; ../../fileType;
+  //(NB:non implementer )duplicable?:boolean;//default:false ; true =>  on peut ajouter plusieurs fois un meme id a une list de ref
+  //checkout?:true,
   type: TypeSchema//TypeSchema;
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
-  //(NB:non implementer )duplicable?:boolean;//default:false ; true =>  on peut ajouter plusieurs fois un meme id a une list de ref
   watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
-  required?: boolean;
   access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//
+  populate?: boolean;// 
+  file?: {//
+    size?: number | [number, number];
+    length?: number | [number, number];
+    type?: string[]
+    dir?: string;
+  },
+
+  required?: boolean;
   ref?: string;
-  populate?: boolean;//
   match?: RegExp;
   default?: valueSchema;
   unique?: boolean;
@@ -172,12 +181,6 @@ export type TypeRuleSchema = {
   max?: number;
   get?: (value: valueSchema) => valueSchema;
   set?: (value: valueSchema) => valueSchema;
-  file?: {//
-    size?: number | [number, number];
-    length?: number | [number, number];
-    type?: string[]
-    dir?: string;
-  },
   validate?: [{
     validator: (value: valueSchema) => boolean,
     msg: string

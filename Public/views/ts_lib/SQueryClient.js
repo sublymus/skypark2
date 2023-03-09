@@ -17,19 +17,19 @@ SQuery.Model = async (modelPath) => {
 }
 SQuery.getDesription = getDesription;
 
-const ActionsMap = {
-    String: {
-        lowerCase: (value, requirement) => {
-            return requirement ? value.toLowerCase() : value;
-        },
-        upperCase: (value, requirement) => {
-            return requirement ? value.toUpperCase() : value;
-        },
-        trim: (value, requirement) => {
-            return requirement ? value.trim() : value;
-        },
-    }
-}
+// const ActionsMap = {
+//     String: {
+//         lowerCase: (value, requirement) => {
+//             return requirement ? value.toLowerCase() : value;
+//         },
+//         upperCase: (value, requirement) => {
+//             return requirement ? value.toUpperCase() : value;
+//         },
+//         trim: (value, requirement) => {
+//             return requirement ? value.trim() : value;
+//         },
+//     }
+// }
 const ValidationMap = {
     String: ['minlength', 'maxlength', 'match', 'enum', 'required'],
     Number: ['min', 'max', 'enum', 'required'],
@@ -209,21 +209,22 @@ SQuery.Validatior = (rule, value) => {
         };
     }
 
-    if (ActionsMap[rule.type]) {
-        const actions = ActionsMap[rule.type];
-        console.log(ActionsMap[rule.type]);
-        for (const p in actions) {
-            if (rule[p] && actions[p]) {
-                value = actions[p](value, rule[p]);
-            }
-        }
-    }
+    // if (ActionsMap[rule.type]) {
+    //     const actions = ActionsMap[rule.type];
+    //     console.log(ActionsMap[rule.type]);
+    //     for (const p in actions) {
+    //         if (rule[p] && actions[p]) {
+    //             value = actions[p](value, rule[p]);
+    //         }
+    //     }
+    // }
 
     return {
         value
     };
 }
 export default SQuery;
+
 // function getIP(callback){
 //     fetch('https://api.ipregistry.co/?key=tryout')
 //       .then(response => response.json())

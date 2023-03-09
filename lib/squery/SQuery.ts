@@ -136,14 +136,14 @@ SQuery.Schema = (description: DescriptionSchema) => {
     access: "secret",
   };
   description.createdAt = {
-    type:Date,
-    default:Date.now(),
+    type: Date,
+    default: Date.now(),
   }
   description.updatedAt = {
-    type:Date,
-    default:Date.now(),
+    type: Date,
+    default: Date.now(),
   }
-  
+
   const schema = new Schema(description as any);
   (schema as any).description = description;
   schema.plugin(mongoosePaginate);

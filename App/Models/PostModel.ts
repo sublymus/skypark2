@@ -7,9 +7,11 @@ let PostSchema = SQuery.Schema({
     message:{
         type:Schema.Types.ObjectId,
         ref:MessageModel.modelName,
+        required:true,
     },
     likeCount:{
         type:Number,
+        default:0,
     },
 });
 

@@ -8,7 +8,6 @@ const managerSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: ManagerAccountModel.modelName,
     require: true,
-    //populate: true,
   },
 });
 

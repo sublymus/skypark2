@@ -2,18 +2,18 @@ import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
-let favoritesSchema = SQuery.Schema({
+let refIdSchema = SQuery.Schema({
     refId: [{
         type: Schema.Types.ObjectId
     }],
-    model: {
+    modelPath: {
         type: String,
     }
 });
-const RefIdModel = mongoose.model("refid", favoritesSchema);
+const RefIdModel = mongoose.model("refid", refIdSchema);
 
 MakeCtlForm({
-    schema: favoritesSchema,
+    schema: refIdSchema,
     model: RefIdModel,
     volatile: false,
 });

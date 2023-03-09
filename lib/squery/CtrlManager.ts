@@ -8,6 +8,7 @@ import { AloFiles, Controllers, ControllerSchema, CtrlMakerSchema, DescriptionSc
 
 // les tableau 2D sont pas tolere
 const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: From_optionSchema): CtrlMakerSchema => {
+    console.log(options?.model?.modelName);
     const option: From_optionSchema & { modelPath: string } = {
         ...options,
         modelPath: options.model.modelName,
@@ -60,7 +61,6 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                 event,
             });
             const modelId = new mongoose.Types.ObjectId().toString();
-
             const description = option.schema.obj;
             if (!more) {
                 more = {};
@@ -70,13 +70,14 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
             const accu = {};
             let modelInstance: ModelInstanceSchema;
             if (!ctx.__key) ctx.__key = new mongoose.Types.ObjectId().toString(); ///// cle d'auth
-
+            Log('**************', ctx.description)
             for (const property in description) {
-                if (Object.prototype.hasOwnProperty.call(description, property)) {
+                if (Object.prototype.hasOwnProperty.call(description, property) && ctx.data[property] != undefined) {
                     const rule = description[property];
+                    Log('log2', { property, value: ctx.data[property], modelPath: option.modelPath })
                     if (rule.ref) {
                         const ctrl = Controllers[rule.ref]();
-                        // Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
+                        Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
                         const res = await (ctrl.create || ctrl.store)(
                             {
                                 ...ctx,
@@ -89,7 +90,7 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                                 __parentModel: option.modelPath + '_' + modelId + '_' + property,
                             }
                         );
-                        // Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
+                        Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
                         if (!res) {
                             more.modelPath = option.modelPath;
                             await backDestroy(ctx, more);
@@ -483,12 +484,12 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                 if (remove) {
                     parentModelInstance[parentProperty] = parentModelInstance[parentProperty].filter((id) => {
                         return !remove.includes(id.toString());
-                    }) 
+                    })
                 }
 
                 try {
                     parentModelInstance.save();
-                   // remove.
+                    // remove.
                 } catch (error) {
                     await backDestroy(ctx, more);
                     return callPost({
@@ -504,8 +505,8 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                         },
                     });
                 }
-            }else{
-                Log('wertyuiop','wer54t67u8io9')
+            } else {
+                Log('wertyuiop', 'wer54t67u8io9')
             }
             Log('parent', parentModelInstance);
             const defaultPaging = {

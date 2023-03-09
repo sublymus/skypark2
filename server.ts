@@ -13,45 +13,6 @@ import ManagerModel from "./App/Models/ManagerModel";
 import { AloFiles } from "./lib/squery/Initialize";
 import { SQuery } from "./lib/squery/SQuery";
 
-//public // css - js - html     auth
-
-
-
-//resources // css - js - html  auth 
-
-
-//dir  // diskUrl               auth
-
-/**
- *  authentifier 
- 
-   DB  File 
-        - [url]
-
-un user peut cree un ficher...       //
-un user peut recuperer le fichier    //
-
-mettre son ficher en private
-mettre son fichier en shared [liste user abiliter]
-mettre son ficher en public 
-
-FileGroup{
-  members:[{
-    type : id
-  }]
-}
-
-File{
-
-}
-
--- priver
-//disk /tamp/1678032034539_6404bca0e61b9207308587d#23456789876543456.png /// key
-//disk /tamp/1678032034539_6404bca0e61b9207308587d.png
-//disk /tamp/1678032034539_6404bca0e61b9207308587d-34567890987654456789.png // groupe
-//http://127.0.0.1:3500/tamp/1678032034539_6404bca0e61b9207308587d.png
- */
-
 let cookieBrut: string;
 const serve = serveStatic(__dirname + "/Public");
 const server = http.createServer(function (req, res) {
@@ -209,7 +170,7 @@ io.on("connection", (socket: any) => {
 });
 
 const hostname = "127.0.0.1";
-const port = 3501;
+const port = 3500;
 server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
 });

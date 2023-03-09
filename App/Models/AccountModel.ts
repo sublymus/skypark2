@@ -1,6 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-//@ts-ignore
-import Log from "sublymus_logger";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";

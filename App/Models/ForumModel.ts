@@ -2,12 +2,12 @@ import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import PostModel from "./PostModel";
-import UserModel from "./UserModel";
+//import UserModel from "./UserModel";
 
 let ForumSchema = SQuery.Schema({
     members: [{
         type: Schema.Types.ObjectId,
-        ref: UserModel.modelName,
+        ref: 'user',
         required: true,
     }],
     post:[{
