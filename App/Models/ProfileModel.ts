@@ -5,11 +5,6 @@ import { Config } from "../../squeryconfig";
 
 let profileSchema = SQuery.Schema({
 
-  __key: {
-    type: Schema.Types.ObjectId,
-    required: true,
-    access: 'secret'
-  },
   imgProfile: [{
     type: String,
     //required: true,

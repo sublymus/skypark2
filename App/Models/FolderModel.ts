@@ -4,11 +4,7 @@ import { SQuery } from "../../lib/squery/SQuery";
 //@ts-ignore
 
 let folderSchema = SQuery.Schema({
-  __key: {
-    type: Schema.Types.ObjectId,
-    required: true,
-    access: 'secret'
-  },
+
   refIds: [{
     type: Schema.Types.ObjectId,
   }],

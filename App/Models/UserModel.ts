@@ -5,11 +5,7 @@ import AccountModel from "./AccountModel";
 import ArticlModel from "./ArticleModel";
 
 let userSchema = SQuery.Schema({
-  __key: {
-    type: Schema.Types.ObjectId,
-    required: true,
-    access: 'secret'
-  },
+
   account: {
     type: Schema.Types.ObjectId,
     ref: AccountModel.modelName,
@@ -29,7 +25,7 @@ const makerCtrl = MakeCtlForm({
   model: UserModel,
   schema: userSchema,
   volatile: true,
-  access : 'public'
+  access: 'public'
 })
 makerCtrl.post('read', (e) => {
   // Log('post', e.res.response?.account)

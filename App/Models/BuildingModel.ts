@@ -1,13 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
+import ComunytyModel from "./ComunytyModel";
 
 let buildingSchema = SQuery.Schema({
-    __key: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        access: 'secret'
-    },
+
     name: {
         type: String,
         required: true,
@@ -15,6 +12,10 @@ let buildingSchema = SQuery.Schema({
     city: {
         type: String,
         required: true,
+    },
+    community:{
+        type:Schema.Types.ObjectId,
+        ref:ComunytyModel.modelName,
     },
     updatedDate: {
         type: Number,

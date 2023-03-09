@@ -4,11 +4,7 @@ import { SQuery } from "../../lib/squery/SQuery";
 import BuildingModel from "./BuildingModel";
 
 let addressSchema = SQuery.Schema({
-  __key: {
-    type: Schema.Types.ObjectId,
-    required: true,
-    access: 'secret'
-  },
+
   location: {
     type: String,
     trim: true,

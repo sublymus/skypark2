@@ -4,11 +4,7 @@ import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import ManagerAccountModel from "./ManagerAccountModel";
 
 const managerSchema = new Schema({
-  __key: {
-    type: Schema.Types.ObjectId,
-    require: true,
-    access: "secret",
-  },
+
   manageraccount: {
     type: Schema.Types.ObjectId,
     ref: ManagerAccountModel.modelName,

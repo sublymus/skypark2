@@ -4,17 +4,13 @@ import { SQuery } from "../../lib/squery/SQuery";
 import FolderModel from "./FolderModel";
 
 let favoritesSchema = SQuery.Schema({
-  __key: {
-    type: Schema.Types.ObjectId,
-    required: true,
-    access: 'secret'
-  },
+
   folders: [{
     type: Schema.Types.ObjectId,
     ref: FolderModel.modelName,
     //populate: true,
     //watch: true,
-    //impact: true,
+    impact: true,
   }],
   updatedDate: {
     type: Number,

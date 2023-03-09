@@ -5,11 +5,7 @@ import FolderModel from "./FolderModel";
 import MagasinModel from "./Magasin";
 
 let ArticleShema = SQuery.Schema({
-  __key: {
-    type: Schema.Types.ObjectId,
-    required: true,
-    access: "secret",
-  },
+
   name: {
     type: String,
     required: true,

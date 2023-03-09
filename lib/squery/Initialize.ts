@@ -151,12 +151,12 @@ export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof
 export type TypeRuleSchema = {
   type: TypeSchema//TypeSchema;
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
-  duplicable?:boolean;//default:false ; true =>  on peut ajouter plusieurs fois un meme id a une list de ref
+  //(NB:non implementer )duplicable?:boolean;//default:false ; true =>  on peut ajouter plusieurs fois un meme id a une list de ref
   watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
   required?: boolean;
-  access?: 'private' | 'public' | 'secret' | 'admin' | 'default';
+  access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//
   ref?: string;
-  populate?: boolean;
+  populate?: boolean;//
   match?: RegExp;
   default?: valueSchema;
   unique?: boolean;
@@ -172,7 +172,7 @@ export type TypeRuleSchema = {
   max?: number;
   get?: (value: valueSchema) => valueSchema;
   set?: (value: valueSchema) => valueSchema;
-  file?: {
+  file?: {//
     size?: number | [number, number];
     length?: number | [number, number];
     type?: string[]

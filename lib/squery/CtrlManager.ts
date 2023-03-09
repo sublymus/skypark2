@@ -400,7 +400,6 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                                     _id: id,
                                 });
                                 if (!modelInstance) {
-                                    Log('item', 'modelInstance = null')
                                     return rej(null);
                                 }
                                 const parts = modelInstance.__parentModel.split('_');
@@ -409,18 +408,20 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                                 const parentProperty = parts[2];
                                 const description = Controllers[parentPath]?.option.schema.obj;
                                 if (!description) {
-                                    Log('item', 'description = null')
                                     return rej(null);
                                 }
-                                const rule = description[parentProperty];
+                                let rule = description[parentProperty];
+                                rule = Array.isArray(rule) ? rule[0] : rule;
+                                if (parentModelInstance[parentProperty].includes(modelInstance._id.toString())) {
+                                    Log('duplication', 'not provide')
+                                    return rej(null);
+                                }
                                 const isItemUser = modelInstance.__key._id.toString() == ctx.__key
                                 if (!accessValidator(ctx, 'update', rule.access, "property", isItemUser)) {
-                                    Log('item', 'accessValidator = false')
                                     return rej(null);
                                 }
                                 rev(id);
                             } catch (error) {
-                                Log('item', { error });
                                 rej(null);
                             }
                         });
@@ -482,11 +483,12 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                 if (remove) {
                     parentModelInstance[parentProperty] = parentModelInstance[parentProperty].filter((id) => {
                         return !remove.includes(id.toString());
-                    })
+                    }) 
                 }
 
                 try {
                     parentModelInstance.save();
+                   // remove.
                 } catch (error) {
                     await backDestroy(ctx, more);
                     return callPost({
@@ -502,6 +504,8 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                         },
                     });
                 }
+            }else{
+                Log('wertyuiop','wer54t67u8io9')
             }
             Log('parent', parentModelInstance);
             const defaultPaging = {
@@ -530,13 +534,12 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
             try {
                 result = await Controllers[option.modelPath].option.model.paginate(paging.query, options);
                 if (!result) {
-                    
-                } 
-                const promise = result.items.map((item)=>{
+
+                }
+                const promise = result.items.map((item) => {
                     return formatModelInstance(ctx, event, option, item);
                 });
                 await Promise.allSettled(promise)
-                Log('result',result)
             } catch (error) {
                 return {
                     error: "OPERATION_FAILED",
@@ -545,7 +548,6 @@ const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: F
                     message: error.message,
                 };
             }
-
             return callPost({
                 ctx,
                 more: { ...more, },
@@ -884,7 +886,7 @@ async function formatModelInstance(ctx: ContextSchema, event: EventSting, option
         event,
         option.model.modelName,
         info,
-        modelInstance.__key._id.toString() == ctx.__key 
+        modelInstance.__key._id.toString() == ctx.__key
     );
     await modelInstance.populate(info.populate);
     const propertys = info.select.replaceAll(" ", "").split("-");

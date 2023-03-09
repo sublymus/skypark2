@@ -1,6 +1,5 @@
 import mongoose, { Schema } from "mongoose";
 //@ts-ignore
-import mongoose_unique_validator from "mongoose-unique-validator";
 import Log from "sublymus_logger";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
@@ -9,12 +8,7 @@ import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
 
 let accountSchema = SQuery.Schema({
-  __key: {
 
-    type: Schema.Types.ObjectId,
-    required: true,
-    access: "secret",
-  },
   __permission: {
     type: String,
     default: "user",

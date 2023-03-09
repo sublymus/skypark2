@@ -130,6 +130,12 @@ SQuery.Schema = (description: DescriptionSchema) => {
   description.__parentModel = {
     type: String,
   }
+  description.__key = {
+    type: Schema.Types.ObjectId,
+    required: true,
+    access: "secret",
+  };
+  
   const schema = new Schema(description as any);
   (schema as any).description = description;
   schema.plugin(mongoosePaginate);
