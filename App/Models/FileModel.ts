@@ -4,12 +4,15 @@ import { SQuery } from "../../lib/squery/SQuery";
 
 let fileSchema = SQuery.Schema({
 
-  refIds: [{
-    type: Schema.Types.ObjectId,
-  }],
-  folderName: {
-    type: String,
-    required: true
+  url:{
+    type:String,
+    required:true,
+  },
+  typeMIME:{
+    type:String,
+  },
+  size:{
+    type:String,
   },
 
 });

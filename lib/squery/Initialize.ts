@@ -176,7 +176,6 @@ export type TypeRuleSchema = {
   enum?: String[] | Number[] | Boolean[] | Date[] | Array<TypeSchema>[] | mongoose.ObjectId[];
   minlength?: number | [number, string];
   maxlength?: number | [number, string];
-  confirmList?: boolean;
   min?: number;
   max?: number;
   get?: (value: valueSchema) => valueSchema;

@@ -9,9 +9,7 @@ let favoritesSchema = SQuery.Schema({
   folders: [{
     type: Schema.Types.ObjectId,
     ref: FolderModel.modelName,
-    //populate: true,
-    //watch: true,
-    impact: true,
+    //impact: true,
   }],
   likeList: {
     type: Schema.Types.ObjectId,
@@ -20,19 +18,11 @@ let favoritesSchema = SQuery.Schema({
 
 });
 const FavoritesModel = mongoose.model("favorites", favoritesSchema);
-//console.log(favoritesSchema);
 
-const fCtl = MakeCtlForm({
+MakeCtlForm({
   schema: favoritesSchema,
   model: FavoritesModel,
   volatile: false,
 });
 
-
-/*
-
-*/
-
-
-//Log('log', favoritesSchema.obj)
 export default FavoritesModel;

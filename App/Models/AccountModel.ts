@@ -52,14 +52,11 @@ let accountSchema = SQuery.Schema({
     ref: ProfileModel.modelName,
     required: true,
   },
-  createdDate: {
-    type: Number
-  },
 });
 
 const AccountModel = mongoose.model("account", accountSchema);
 
-const makerCtrl = MakeCtlForm({
+MakeCtlForm({
   schema: accountSchema,
   model: AccountModel,
   volatile: false,

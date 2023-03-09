@@ -11,9 +11,7 @@ GlobalMiddlewares.push(async (ctx: ContextSchema) => {
     )
   ) {
     try {
-      let cookies = ctx.socket.request.headers[
-        "set-cookie"
-      ] as unknown as string;
+      let cookies = ctx.socket.request.headers["set-cookie"] as unknown as string;
       //Log("oops", cookies)
       let cookie = JSON.parse(parse(cookies).cookies);
       let token = cookie?.token;

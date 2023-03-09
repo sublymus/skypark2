@@ -27,7 +27,6 @@ let managerAccountSchema = new Schema<
   IManagerAccountDocument,
   IManagerAccountModel
 >({
-
   __permission: {
     type: String,
     access: "secret",
@@ -49,26 +48,13 @@ let managerAccountSchema = new Schema<
     type: String,
     required: true,
     access: "private",
-    // get: (v: string) => v.length,
-    // set: (v: string) => v, // crypter
   },
   phone: {
     type: String,
     required: true,
   },
 
-},
-  {
-    methods: {
-      async decryptCode() {
-        // return await Aes.decrypt(this.codes, "password");
-      },
-    },
-  }
-
-
-
-);
+});
 
 export const ManagerAccountModel = mongoose.model(
   "manageraccount",
@@ -81,11 +67,4 @@ let mkctrl = MakeCtlForm({
   volatile: false,
 });
 
-mkctrl.post('update', async (ctx) => {
-  //   if(!ctx.more.modelInstance)  return {...ctx}
-
-  // ctx.more.modelInstance.updatedDate = Date.now();
-  // await ctx.more.modelInstance.save()
-  return { ...ctx }
-})
 export default ManagerAccountModel;

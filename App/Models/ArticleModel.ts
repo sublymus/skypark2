@@ -42,7 +42,6 @@ let ArticleShema = SQuery.Schema({
       length: [0, 5],
       type: ['image/png'],
     },
-    confirmList: true,
   }],
   magasins: [{
     type: Schema.Types.ObjectId,

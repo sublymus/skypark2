@@ -2,12 +2,12 @@ import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FileListModel from "./FileListModel";
+import UserModel from "./UserModel";
 //import UserModel from "./UserModel";
 
 let MessageSchema = SQuery.Schema({
     user: {
         type: Schema.Types.ObjectId,
-        //ref: UserModel.modelName,
     },
     text: {
         type: String
@@ -24,7 +24,7 @@ let MessageSchema = SQuery.Schema({
     },
     targets: {
         type: Schema.Types.ObjectId,
-       // ref: UserModel.modelName,
+        ref: 'user',/////
     }
 });
 

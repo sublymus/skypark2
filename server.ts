@@ -6,11 +6,6 @@ import mime from "mime-types";
 import path from "path";
 
 import serveStatic from "serve-static";
-import Log from "sublymus_logger";
-import AuthController from "./App/Controllers/AuthController";
-import ManagerAccountModel from "./App/Models/ManagerAccountModel";
-import ManagerModel from "./App/Models/ManagerModel";
-import { AloFiles } from "./lib/squery/Initialize";
 import { SQuery } from "./lib/squery/SQuery";
 
 let cookieBrut: string;
@@ -54,119 +49,7 @@ const server = http.createServer(function (req, res) {
 
 const io = SQuery.io(server);
 io.on("connection", (socket: any) => {
-  socket.on("login", async (data, cb) => {
-    const authCtrl = new AuthController();
-    const res = await authCtrl.login({
-      data,
-      __key: "",
-      __permission: "user",
-      action: "create",
-      modelPath: "",
-      socket,
-    });
-    cb(res);
-  });
-  socket.on("signup", async (data, cb) => {
-    const authCtrl = new AuthController();
-    const res = await authCtrl.signup({
-      data,
-      __key: "",
-      __permission: "user",
-      action: "create",
-      modelPath: data.__modelPath,
-      socket,
-    });
-    Log('resultat', res)
-    if (res.error) {
-      cb(res);
-    } else {
-      cb({ ...res.response.response })
-    }
-  });
 
-  socket.on("upload", (data, cb) => {
-    Log("reseved", data[0].fileName);
-    AloFiles.files = data;
-    cb(data.length);
-  });
-  socket.on("sendCode", async (data, cb) => {
-    // let code = genereCode();
-    // Aes.encrypt(code, "password").then(async (hash) => {
-    //   cb(hash);
-    // });
-  });
-
-  socket.on("sendEmail", async (data, cb) => {
-    // if (data.code) {
-    //   Aes.decrypt(data.code, "password").then((plainCode) => {
-    //     Log("keyCode", plainCode)
-    //     sendEmail(data.userEmail, data.userName, plainCode);
-    //   });
-    // }
-  });
-
-
-
-
-
-
-
-
-
-  SQuery.ctrl('draw', ['toCartoon'])
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  socket.on("verifyCode", async (data, cb) => {
-    let manageraccount = await ManagerAccountModel.findOne({
-      email: data.email,
-    });
-    cb(data.codeuser === await manageraccount.decryptCode());
-  });
-
-  socket.on("validcompt", async (data, cb) => {
-    console.log({ data });
-    await ManagerModel.updateOne(
-      {
-        _id: data.id,
-      },
-      { $unset: { expires_at: "" } }
-    );
-
-    await ManagerAccountModel.updateOne(
-      {
-        email: data.email,
-      },
-      { $unset: { expires_at: "", codes: "" } }
-    );
-  });
 });
 
 const hostname = "127.0.0.1";

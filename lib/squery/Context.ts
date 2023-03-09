@@ -6,11 +6,19 @@ type MoreProperty = {
   [p: string]: any;
 };
 
-export type tokenShema = {
-  id: string,
-  email?: string
+export type AuthExtensionSchema = {
+  new (): {
+    [str : string]  :  any;
+    confirm: (ctx: ContextSchema) => Promise<boolean>;
+    error: () => string;
+  };
 };
-
+export type authDataSchema = {
+  login: string;
+  match: string[];
+  signup: string;
+  extension?: AuthExtensionSchema[];
+};
 export type ContextSchema = {
   //token: tokenShema,
   data: DataSchema,

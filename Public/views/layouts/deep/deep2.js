@@ -62,7 +62,7 @@ export class Deep extends BaseComponent {
                         if (Object.hasOwnProperty.call(description, property)) {
                             const rule = description[property];
                             
-                            console.log(rule.type, (await this.instance[property]));
+                           // console.log(rule.type, (await this.instance[property]));
                             if (rule.ref) {
                                 this.emit('createBtn', {
                                     data: {

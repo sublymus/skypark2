@@ -32,11 +32,12 @@ export class Login extends BaseComponent {
                     data[input.className] = input.value;
                 })
                 if (SQuery.socket.connected) {
-                    SQuery.socket.emit("login", data, res => {
+                    SQuery.socket.emit("login:" + this.type, data, res => {
+                        console.log(res);
                         if (res.error) return this.emit('error', res.error);
                         this.emit('success', {
                             modelPath: 'account',//this.type,
-                            id: res.response.accountId,
+                            id: res.response.loginId,
                         })
                     });
                 }
