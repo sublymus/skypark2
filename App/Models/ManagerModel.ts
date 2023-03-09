@@ -26,7 +26,6 @@ export const ManagerModel = mongoose.model("manager", managerSchema);
 
 const maker = MakeCtlForm({
   model: ManagerModel,
-  modelPath: "manager",
   schema: managerSchema,
   volatile: true,
 });

@@ -1,0 +1,35 @@
+.login {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.login .title {
+    font-size: 3em;
+}
+
+.login>* {
+    margin: 20px 0;
+}
+
+.login .input-ctn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+}
+
+.login .input-ctn input {
+    margin: 20px 0;
+}
+
+.login .submit {
+    padding: 10px 25px;
+    color: aliceblue;
+    border-radius: 10px;
+    background: #41a05f;
+}

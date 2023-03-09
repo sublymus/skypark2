@@ -3,7 +3,7 @@ import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 //@ts-ignore
 
-let folderSchema = SQuery.Schema({
+let fileSchema = SQuery.Schema({
   __key: {
     type: Schema.Types.ObjectId,
     required: true,
@@ -24,11 +24,11 @@ let folderSchema = SQuery.Schema({
   },
 });
 
-const FolderModel = mongoose.model("folder", folderSchema);
+const FileModel = mongoose.model("file", fileSchema);
 
 MakeCtlForm({
-  schema: folderSchema,
-  model: FolderModel,
+  schema: fileSchema,
+  model: FileModel,
   volatile: true,
 });
-export default FolderModel;
+export default FileModel;

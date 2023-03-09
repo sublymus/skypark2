@@ -10,7 +10,7 @@ import ProfileModel from "./ProfileModel";
 
 let accountSchema = SQuery.Schema({
   __key: {
-    
+
     type: Schema.Types.ObjectId,
     required: true,
     access: "secret",
@@ -30,6 +30,7 @@ let accountSchema = SQuery.Schema({
   email: {
     type: String,
     trim: true,
+    match: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g,
     unique: true,
     required: true,
   },
@@ -41,7 +42,6 @@ let accountSchema = SQuery.Schema({
     set: (v: string) => v, // crypter
   },
   telephone: {
-
     type: String,
     required: true,
   },
@@ -49,36 +49,33 @@ let accountSchema = SQuery.Schema({
     type: Schema.Types.ObjectId,
     ref: AddressModel.modelName,
     required: true,
-    populate: true,
+    // populate: true,
   },
   favorites: {
     type: Schema.Types.ObjectId,
     ref: FavoritesModel.modelName,
-    access: "private",
-    populate: true,
+    //access: "private",
+    //populate: true,
   },
   profile: {
     type: Schema.Types.ObjectId,
     ref: ProfileModel.modelName,
     required: true,
-    populate: true,
+    // populate: true,
   },
-  createdDate:{
-    type:Number
+  createdDate: {
+    type: Number
   },
-  updatedDate:{
-    type:Number
+  updatedDate: {
+    type: Number
   },
 });
-
-accountSchema.plugin(mongoose_unique_validator);
 
 const AccountModel = mongoose.model("account", accountSchema);
 
 const makerCtrl = MakeCtlForm({
   schema: accountSchema,
   model: AccountModel,
-  modelPath: "account",
   volatile: false,
 });
 

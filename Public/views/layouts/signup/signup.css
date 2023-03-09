@@ -1,0 +1,35 @@
+.signup{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.signup .title{
+    font-size: 3em;
+}
+.signup > *{
+    margin: 20px 0;
+}
+.signup .input-ctn {
+    width: 80%;
+    max-width: 500px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+
+}
+.signup textarea {
+    height: 500px;
+}
+
+.signup .input-ctn input{
+    margin: 20px 0;
+}
+.signup .submit{
+    padding: 10px 25px;
+    color: aliceblue;
+    border-radius:10px;
+    background: #41a05f;
+}

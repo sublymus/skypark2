@@ -1,0 +1,49 @@
+.entry-point {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.entry-point .title {
+    font-size: 3em;
+}
+
+.entry-point>* {
+    margin: 20px 0;
+}
+
+.entry-point .input-ctn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.entry-point .input-ctn input {
+    margin: 20px 0;
+}
+
+.entry-point .next {
+    padding: 10px 25px;
+    color: aliceblue;
+    border-radius: 10px;
+    background: #41a05f;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

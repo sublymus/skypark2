@@ -1,6 +1,8 @@
-import mongoose ,{ Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
+import FolderModel from "./FolderModel";
+import MagasinModel from "./Magasin";
 
 let ArticleShema = SQuery.Schema({
   __key: {
@@ -12,7 +14,7 @@ let ArticleShema = SQuery.Schema({
     type: String,
     required: true,
     trim: true,
-    access:'public',
+    access: 'public',
     minlength: [3, "trop court"],
     maxlength: [20, "trop long"],
   },
@@ -20,11 +22,16 @@ let ArticleShema = SQuery.Schema({
   stock: {
     type: Number,
     required: true,
-    validate: [{ 
-        validator: (value) => value > 0, 
-        msg: "be great than Zero" }]
+    validate: [{
+      validator: (value) => value > 0,
+      msg: "be great than Zero"
+    }]
   },
-  description  : {
+  folders:[ {
+    type: Schema.Types.ObjectId,
+    ref: FolderModel.modelName,
+  }],
+  description: {
     type: String,
     required: true,
     trim: true,
@@ -32,29 +39,33 @@ let ArticleShema = SQuery.Schema({
     maxlength: [255, "trop long"],
   }
   ,
-
-  views : [{
-    type : String,
+  views: [{
+    type: String,
     file: {
-        size: [1, 1_000_000],
-        length: [0, 5],
-        type: ['image/png'],
-      }
-  }] ,
+      size: [1, 1_000_000],
+      length: [0, 5],
+      type: ['image/png'],
+    },
+    confirmList: true,
+  }],
+  magasins: [{
+    type: Schema.Types.ObjectId,
+    ref: MagasinModel.modelName,
+    default: [],
+  }],
 
-  price : {
-    type : Number,
+  price: {
+    type: Number,
     required: true
   }
 });
 
-const ArticlModel =  mongoose.model('article',ArticleShema)
+const ArticlModel = mongoose.model('article', ArticleShema)
 
- MakeCtlForm({
-    schema : ArticleShema ,
-    model : ArticlModel ,
-    modelPath : 'article',
-    volatile : true
+MakeCtlForm({
+  schema: ArticleShema,
+  model: ArticlModel,
+  volatile: true
 
 })
 

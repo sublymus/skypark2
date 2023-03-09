@@ -1,4 +1,16 @@
 export const load = {
+  list: {
+    addId: [],
+    addNew: [],
+    remove: [],
+    paging: {
+      page: 1,
+      limit: 3,
+      select: '',
+      sort: {},
+      query: {},
+    }
+  },
   article: {
     create: {
       name: "IPHONE 14",
@@ -18,6 +30,25 @@ export const load = {
   },
   user: {
     create: {
+
+      my_article: {
+        name: 'Salade',
+        stock: 2,
+        description: 'Plante cultivée dont on fait la salade (surtout laitues; batavias; scaroles; chicorées). Repiquer des salades.',
+        views: [],
+        price: 5,
+        folders: [
+          {
+            folderName: "wena0",
+          },
+          {
+            folderName: "wena1",
+          },
+          {
+            folderName: "wena2",
+          },
+        ]
+      },
       account: {
         name: 'baron',
         email: "azert@gmail.com",
@@ -34,6 +65,28 @@ export const load = {
           door: 296,
           etage: 4,
           description: "je suis ici",
+        },
+        favorites: {
+          folders: [
+            {
+              folderName: "wena0",
+            },
+            {
+              folderName: "wena1",
+            },
+            {
+              folderName: "wena2",
+            },
+            {
+              folderName: "wena3",
+            },
+            {
+              folderName: "wena4",
+            },
+            {
+              folderName: "wena5",
+            },
+          ],
         },
         profile: {
           imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',

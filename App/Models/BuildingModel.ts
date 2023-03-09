@@ -27,7 +27,6 @@ const BuildingModel = mongoose.model("building", buildingSchema);
 MakeCtlForm({
     schema: buildingSchema,
     model: BuildingModel,
-    modelPath: 'building',
     volatile: false,
 });
 export default BuildingModel;

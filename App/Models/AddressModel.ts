@@ -18,6 +18,7 @@ let addressSchema = SQuery.Schema({
     type: Schema.Types.ObjectId,
     ref: BuildingModel.modelName, 
     required: true,
+   // populate:true,
   },
   room: {
     type: String,
@@ -41,7 +42,6 @@ let addressSchema = SQuery.Schema({
   },
   updatedDate: {
     type: Number,
-    required: true,
   },
 });
 
@@ -50,7 +50,6 @@ const AddressModel = mongoose.model("address", addressSchema);
 MakeCtlForm({
   schema: addressSchema,
   model: AddressModel,
-  modelPath: 'address',
   volatile:false,
 });
 

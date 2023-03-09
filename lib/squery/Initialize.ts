@@ -7,7 +7,12 @@ import './execAuto';
 export const AloFiles = {
   files: null,
 };
-
+export type FileSchema = {
+  type: string;
+  size: number;
+  fileName: string;
+  buffer: NodeJS.ArrayBufferView;
+};
 export type ErrorCaseSchema = {
   response?: any;
   error: any;
@@ -38,23 +43,25 @@ export type MoreSchema = {
   [p: string]: any;
   savedlist?: savedSchema[];
   modelPath?: string;
-  modelInstance?: any
+  modelInstance?: any,
+  __parentModel?:string,
 };
 export type ControlSchema = (
-  context: ContextSchema,
+  context: ContextSchema, 
   more?: MoreSchema
 ) => ResponseSchema;
 export type ControllerSchema = {
   create?: ControlSchema;
-  read?: ControlSchema;
-  update?: ControlSchema;
-  delete?: ControlSchema;
   store?: ControlSchema;
+  read?: ControlSchema;
   show?: ControlSchema;
+  list?: ControlSchema;
+  update?: ControlSchema;
   write?: ControlSchema;
+  delete?: ControlSchema;
   destroy?: ControlSchema;
 };
-export type EventSting = "create" | "store" | "read" | "update" | "delete" | "destroy";
+export type EventSting = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
 
 export type EventPreSchema = { ctx: ContextSchema; more?: MoreSchema; event?: string };
 
@@ -70,7 +77,7 @@ export type ListenerPreSchema = (e: EventPreSchema) => void;
 export type ListenerPostSchema = (e: EventPostSchema) => void;
 
 export type CtrlMakerSchema = (() => ControllerSchema) & {
-  option?: From_optionSchema;
+  option?: From_optionSchema & { modelPath: string };
   pre?: (event: EventSting, listener: ListenerPreSchema) => void;
   post?: (event: EventSting, listener: ListenerPostSchema) => void;
 };
@@ -80,7 +87,7 @@ export type ControllersConfig = {
 };
 
 export type From_optionSchema = {
-  schema: unknown & {
+  schema: {
     paths: {
       [p: string]: {
         instance: string;
@@ -89,12 +96,11 @@ export type From_optionSchema = {
         };
       };
     };
-   obj:{
-    [p:string]:any
-   }
+    obj: {
+      [p: string]: any
+    }
   };
   model: any;
-  modelPath: string;
   volatile: boolean;
   access?: "public" | "share" | "admin" | "secret";
 };
@@ -144,14 +150,15 @@ type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoo
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
 export type TypeRuleSchema = {
   type: TypeSchema//TypeSchema;
+  impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
+  duplicable?:boolean;//default:false ; true =>  on peut ajouter plusieurs fois un meme id a une list de ref
+  watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
   required?: boolean;
   access?: 'private' | 'public' | 'secret' | 'admin' | 'default';
   ref?: string;
   populate?: boolean;
   match?: RegExp;
   default?: valueSchema;
-  impact?: boolean;
-  watch?: boolean;
   unique?: boolean;
   uniqueCaseInsitive?: boolean;
   lowerCase?: boolean;
@@ -160,6 +167,7 @@ export type TypeRuleSchema = {
   enum?: String[] | Number[] | Boolean[] | Date[] | Array<TypeSchema>[] | mongoose.ObjectId[];
   minlength?: number | [number, string];
   maxlength?: number | [number, string];
+  confirmList?: boolean;
   min?: number;
   max?: number;
   get?: (value: valueSchema) => valueSchema;
@@ -169,7 +177,7 @@ export type TypeRuleSchema = {
     length?: number | [number, number];
     type?: string[]
     dir?: string;
-  }
+  },
   validate?: [{
     validator: (value: valueSchema) => boolean,
     msg: string

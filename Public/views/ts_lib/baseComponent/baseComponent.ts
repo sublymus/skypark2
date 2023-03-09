@@ -78,7 +78,6 @@ class BaseComponent extends EventEmiter {
     }
     for (const key in model) {
       if (Object.hasOwnProperty.call(model, key)) {
-        //
 
         Object.defineProperties(this, {
           [key]: {
@@ -103,7 +102,6 @@ class BaseComponent extends EventEmiter {
         }
       }
     }
-
 
     ///////////// call all actions  when Component charged/////////////////////////
 

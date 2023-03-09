@@ -2,7 +2,7 @@ import mongoose, { Model, Schema } from "mongoose";
 //@ts-ignore
 import mongoose_unique_validator from "mongoose-unique-validator";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
-import Aes from "ezcryption/dist/aes";
+//import Aes from "ezcryption/dist/aes";
 
 export interface IManagerAccount {
   // Propriétés de l'objet ManagerAccount
@@ -84,7 +84,7 @@ let managerAccountSchema = new Schema<
   {
     methods: {
       async decryptCode() {
-        return await Aes.decrypt(this.codes, "password");
+       // return await Aes.decrypt(this.codes, "password");
       },
     },
   }
@@ -92,8 +92,6 @@ let managerAccountSchema = new Schema<
 
 
 );
-
-managerAccountSchema.plugin(mongoose_unique_validator);
 
 export const ManagerAccountModel = mongoose.model(
   "manageraccount",
@@ -103,7 +101,6 @@ export const ManagerAccountModel = mongoose.model(
 let mkctrl = MakeCtlForm({
   schema: managerAccountSchema,
   model: ManagerAccountModel,
-  modelPath: "manageraccount",
   volatile: false,
 });
 

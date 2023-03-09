@@ -10,6 +10,7 @@
 		"jsonwebtoken": "^9.0.0",
 		"mime-types": "^2.1.35",
 		"mongoose": "^6.8.4",
+		"mongoose-paginate-v2": "^1.7.1",
 		"mongoose-unique-validation": "^0.1.0",
 		"mongoose-unique-validator": "^3.1.0",
 		"nodemailer": "^6.9.0",

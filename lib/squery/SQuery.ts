@@ -1,14 +1,12 @@
-import mongoose, { mongo, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
+import mongoosePaginate from "mongoose-paginate-v2";
+import mongoose_unique_validator from "mongoose-unique-validator";
 import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
 import { ContextSchema } from "./Context";
 import { Controllers, DescriptionSchema, GlobalMiddlewares, Middlewares } from "./Initialize";
 
-setTimeout(() => {
-
-
-}, 1000);
 export type FirstDataSchema = {
   __action: "create" | "read" | "update" | "delete";
   [p: string]: any;
@@ -20,8 +18,8 @@ export type DataSchema = {
 type CallBack = (...arg: any) => any;
 
 type SQuerySchema = Function & {
-  io:(server:any)=>Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
-  Schema: (description:DescriptionSchema)=> any
+  io: (server: any) => Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
+  Schema: (description: DescriptionSchema) => any
 }
 const SQuery = function (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
@@ -29,7 +27,7 @@ const SQuery = function (
 
   return (modelPath: string) => {
     return async (data: FirstDataSchema, cb?: CallBack) => {
-      //Log("squery", { data, modelPath })
+      Log("squery:data", data, { modelPath })
 
       const ctx: ContextSchema = {
         action: data.__action,
@@ -72,12 +70,19 @@ const SQuery = function (
 };
 
 
+type GlobalSchema = {
+  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
+}
+export const Global: GlobalSchema = {
+  io: null,
+}
 
 SQuery.io = (server: any) => {
   /********************    Cookies   *********************** */
   const io = new Server(server, {
     cookie: true,
   });
+  Global.io = io;
 
   io.on("connection", async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
     /********************    Models  *********************** */
@@ -88,30 +93,81 @@ SQuery.io = (server: any) => {
         socket.on(modelPath, squery(modelPath));
       }
     }
+
     /********************   Description   *********************** */
     socket.on('server:description', getDescription);;
+    /********************   Description   *********************** */
+    socket.on('server:valideId', (data, cb) => {
+      try {
+        new mongoose.Schema.Types.ObjectId(data.id);
+        cb?.({
+          response: true,
+          status: 200,
+          code: 'All_OK',
+          message: 'it\'s a valide ID',
+        });
+      } catch (error) {
+        cb?.({
+          response: false,
+          status: 200,
+          code: 'All_OK',
+          message: 'it\'s not a valide ID',
+        });
+      }
+    });
+    /********************   Description   *********************** */
+    //socket.on('server:description', getDescription);;
+    /********************   Description   *********************** */
+    //socket.on('server:description', getDescription);;
+    /********************   Description   *********************** */
+    //socket.on('server:description', getDescription);;
   });
 
   return io;
 };
 
-SQuery.Schema = (description:DescriptionSchema)=>{
-  return new Schema(description)
+SQuery.Schema = (description: DescriptionSchema) => {
+  description.__parentModel = {
+    type: String,
+  }
+  const schema = new Schema(description as any);
+  (schema as any).description = description;
+  schema.plugin(mongoosePaginate);
+  schema.plugin(mongoose_unique_validator);
+  return schema;
 }
+SQuery.ctrl = (...ert: any) => {
 
-function getDescription(data, cb): object {
- const d = {};
-  data.models.forEach(modelPath => {
+}
+let i = 0
+function getDescription(data: DataSchema, cb: CallBack) {
+  console.log(data.modelPath);
 
-  });
+  const description: DescriptionSchema = { ...(Controllers[data.modelPath]?.option.schema as any).description };
+  for (const key in description) {
 
-  for (const modelPath in Controllers) {
-    if (Object.prototype.hasOwnProperty.call(Controllers, modelPath)) {
-      // if Controllers[modelPath].option.access != ['secret']
-      d[modelPath] = Controllers[modelPath].option.schema.obj
+    if (Object.prototype.hasOwnProperty.call(description, key)) {
+      const rule = description[key] = { ...description[key] };
+      if (Array.isArray(rule)) {
+        (rule[0] as any).type = rule[0].type?.name
+        if (rule[0].access == 'secret' || rule[0].access == 'private') {
+          delete description[key];
+        }
+        if (rule[0].match) {
+          (rule[0] as any).match = rule[0].match.toString()
+        }
+      } else if (!Array.isArray(rule)) {
+        (rule as any).type = rule.type?.name
+        if (rule.access == 'secret' || rule.access == 'private') {
+          delete description[key];
+        }
+        if (rule.match) {
+          const s = rule.match.toString();
+          (rule as any).match = s.substring(1, s.lastIndexOf('/'));
+        }
+      }
     }
   }
-  Log('d', d['account']);
-  return d;
+  cb(description);
 }
 export { SQuery };

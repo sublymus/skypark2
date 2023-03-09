@@ -1,21 +1,22 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { SQuery } from "../../lib/squery/SQuery";
 import { Config } from "../../squeryconfig";
 
-let profileSchema = new SQuery.Schema({
+let profileSchema = SQuery.Schema({
 
   __key: {
     type: Schema.Types.ObjectId,
-    require: true,
+    required: true,
     access: 'secret'
   },
   imgProfile: [{
     type: String,
     //required: true,
+    access:'private',
     file: {
       size: [1, 1_000_000],
       length: [0, 4],
-      type: [],
       dir: Config.rootDir + '/tamp',
     }
   }],
@@ -25,8 +26,12 @@ let profileSchema = new SQuery.Schema({
       length: [0, 4],
     }
   }],
-  message: String,
-  updatedDate: Number
+  message: {
+    type: String
+  },
+  updatedDate: {
+    type: String
+  },
 
 });
 
@@ -35,7 +40,6 @@ const ProfileModel = mongoose.model("profile", profileSchema);
 MakeCtlForm({
   schema: profileSchema,
   model: ProfileModel,
-  modelPath: 'profile',
   volatile: false,
 });
 export default ProfileModel;
