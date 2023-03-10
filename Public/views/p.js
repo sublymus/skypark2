@@ -51,7 +51,7 @@ export const load = {
       },
       account: {
         name: 'baron',
-        email: "azert@gmail.com",
+        email: "sublymus@gmail.com",
         password: "azert",
         telephone: "12345678",
         status: 'property',
@@ -112,7 +112,7 @@ export const load = {
       __key: "",
 
       name: "baron",
-      email: "azert@gmail.com",
+      email: "sublymus@gmail.com",
       password: "azert",
       telephone: "12345678",
       address: {
@@ -177,7 +177,7 @@ export const load = {
     delete: { id: "", __key: "" },
   },
   login: {
-    email: "azert@gmail.com",
+    email: "sublymus@gmail.com",
     password: "azert",
   },
   ["server-model"]: {

@@ -1,13 +1,13 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FileListModel from "./FileListModel";
 import UserModel from "./UserModel";
-//import UserModel from "./UserModel";
 
 let MessageSchema = SQuery.Schema({
     user: {
         type: Schema.Types.ObjectId,
+        ref:'user',
     },
     text: {
         type: String
@@ -30,7 +30,7 @@ let MessageSchema = SQuery.Schema({
 
 const MessageModel = mongoose.model("message", MessageSchema);
 
-MakeCtlForm({
+MakeModelCtlForm({
     schema: MessageSchema,
     model: MessageModel,
     volatile: true,

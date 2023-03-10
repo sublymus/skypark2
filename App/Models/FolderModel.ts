@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 
@@ -17,7 +17,7 @@ let folderSchema = SQuery.Schema({
 
 const FolderModel = mongoose.model("folder", folderSchema);
 
-MakeCtlForm({
+MakeModelCtlForm({
   schema: folderSchema,
   model: FolderModel,
   volatile: true,

@@ -35,9 +35,7 @@ export async function createModelFrom(modelPath) {
         return await new Promise((rev) => {
             try {
                 if (SQuery.socket.connected) {
-                    SQuery.socket.emit(
-                        modelPath,
-                        {
+                    SQuery.socket.emit("model:"+modelPath, {
                             __action: 'create',
                             ...data,
                         },
@@ -95,9 +93,7 @@ export async function createModelFrom(modelPath) {
         return await new Promise((rev, rej) => {
             try {
                 if (SQuery.socket.connected) {
-                    SQuery.socket.emit(
-                        modelPath,
-                        {
+                    SQuery.socket.emit( "model:"+modelPath, {
                             __action: 'update',
                             ...data,
                         },
@@ -140,7 +136,7 @@ export async function createInstanceFrom({ modelPath, id }) {
     };
     await new Promise((rev) => {
         if (SQuery.socket.connected) {
-            SQuery.socket.emit(modelPath, {
+            SQuery.socket.emit("model:"+modelPath, {
                 __action: 'read',
                 id: id,
             }, (res) => {
@@ -186,9 +182,9 @@ export async function createInstanceFrom({ modelPath, id }) {
                     set: async function (value) {
                         if (value == cache[property]) return;
                         if (rule.ref) {
-                            return
+                            return console.error('ReadOnly modelInstance["refProperty"], Exemple: const modelInstance =  await modelInstance["refProperty"] ');
                         } else if (rule[0] && rule[0].ref) {
-                            return /////////////////////////////////////////////////
+                            return  console.error('ReadOnly modelInstance["propertyOfRefArray"], Exemple: const arrayInstance =  await modelInstance["propertyOfRefArray"] ');
                         } else if (rule[0] && rule[0].file) {
                             const files = [];
                             for (const p in value) {
@@ -211,7 +207,7 @@ export async function createInstanceFrom({ modelPath, id }) {
                         }
 
                         if (SQuery.socket.connected) {
-                            SQuery.socket.emit(modelPath, {
+                            SQuery.socket.emit("model:"+modelPath, {
                                 __action: 'update',
                                 id,
                                 [property]: value,
@@ -277,7 +273,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
 
         return await new Promise((rev) => {
             if (SQuery.socket.connected) {
-                SQuery.socket.emit(itemModelPath, {
+                SQuery.socket.emit("model:"+itemModelPath, {
                     ...options,
                     __action: 'list',
                     property
@@ -286,9 +282,36 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                     currentData = res.response;
                     paging.page = currentData.page;
                     paging.limit = currentData.limit;
-                    console.log({ currentData });
                     emiter.emit('data', currentData);
                     emiter.emit('change', currentData);
+
+                    Object.defineProperties(currentData, {
+                        ['itemsInstance']: {
+                            get: async () => {
+                                if(currentData['#itemsInstance']){
+                                    return currentData['#itemsInstance'];
+                                }
+                                const promises = currentData.items.map((item) => {
+                                    return new Promise(async (rev) => {
+                                        const instance = await createInstanceFrom({ modelPath: itemModelPath, id: item._id });
+                                        rev(instance);
+                                    })
+                                });
+                                const itemsInstance = (await Promise.allSettled(promises)).map((p) => {
+                                    return p.value || null;
+                                }).filter(itemInstance => {
+                                    return !!itemInstance;
+                                });
+                                console.log(itemsInstance);
+                                return currentData['#itemsInstance'] =  itemsInstance;
+                            },
+                            set: async () => {
+                                console.error('ReadOnly ArrayData["itemsInstance"] ');
+                            }
+                        }
+                    })
+                    console.log('currentData',currentData);
+
                     rev(currentData);
                 });
             } else {

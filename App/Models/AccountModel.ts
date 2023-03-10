@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import FavoritesModel from "./FavoritesModel";
@@ -56,7 +56,7 @@ let accountSchema = SQuery.Schema({
 
 const AccountModel = mongoose.model("account", accountSchema);
 
-MakeCtlForm({
+MakeModelCtlForm({
   schema: accountSchema,
   model: AccountModel,
   volatile: false,

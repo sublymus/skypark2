@@ -68,7 +68,8 @@ export class EmailConfirmartion {
   async confirm(ctx: ContextSchema): Promise<boolean> {
     let { data, socket } = ctx;
     const code = genereCodeEmail();
-
+    console.log({code});
+    
     if (!(await sendEmail(data.account.email, data.account.name, code))) {
       this.#msgError = "email n'a pa pu etre envoye";
       return false;
@@ -97,7 +98,6 @@ export class EmailConfirmartion {
 
     });
   }
-
   error() {
     return this.#msgError;
   }

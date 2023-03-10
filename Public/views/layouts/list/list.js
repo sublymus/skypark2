@@ -39,7 +39,12 @@ export class List extends BaseComponent {
         );
         this.controller = {
             ['@refresh:click']: async () => {
-                await this.arrayInstance.page();
+                const arrayData = await this.arrayInstance.page();
+                console.log({ arrayData });
+                setTimeout(async () => {
+                    console.log('itemsInstance', await arrayData['itemsInstance']);
+                    console.log({ arrayData });
+                }, 5000);
             },
             ['@last:click']: async () => {
                 await this.arrayInstance.last();
@@ -89,19 +94,15 @@ export class List extends BaseComponent {
                     this.modelInstance = await this.model.instance({ id: this.id });
                     this.description = this.model.description;
                     this.arrayInstance = (await this.modelInstance[this.property])
+
+                    this.arrayInstance.when('data', (data) => {
+                        this.emit('createList', data)
+                    })
                     await this.arrayInstance.update({
                         paging: {
                             limit: 3
                         }
                     })
-                    this.arrayInstance.when('data', (data) => {
-                        this.emit('createList', data)
-                    })
-                    this.arrayInstance.when('data', (data) => {
-                        $('.index')
-                    })
-                    await this.arrayInstance.page();
-
                 });
                 this.when('createList', async (data) => {
                     $All('.container > *')?.forEach(elm => {
@@ -111,13 +112,13 @@ export class List extends BaseComponent {
                     const rule = this.description[this.property];
                     if (rule[0] && rule[0].ref) {
 
-                        
+
                         for (let i = 0; i < data.items.length; i++) {
                             const item = data.items[i];
                             this.emit('createBtn', {
                                 data: {
                                     modelPath: rule[0].ref,
-                                    id: item.id,
+                                    id: item._id,
                                 },
                                 cb: (elem) => $('.container').append(elem),
                             });

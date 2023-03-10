@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import ActivityModel from "./ActivityModel";
 let ComunytySchema = SQuery.Schema({
@@ -14,7 +14,7 @@ let ComunytySchema = SQuery.Schema({
 
 const ComunytyModel = mongoose.model('community', ComunytySchema)
 
-MakeCtlForm({
+MakeModelCtlForm({
     schema: ComunytySchema,
     model: ComunytyModel,
     volatile: true

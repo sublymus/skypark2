@@ -1,5 +1,5 @@
 import mongoose ,{ Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 let MagasinShema = SQuery.Schema({
@@ -14,7 +14,7 @@ let MagasinShema = SQuery.Schema({
 
 const MagasinModel =  mongoose.model('magasin',MagasinShema)
 
- MakeCtlForm({
+MakeModelCtlForm({
     schema : MagasinShema ,
     model : MagasinModel ,
     volatile : true

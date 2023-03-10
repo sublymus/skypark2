@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 let refIdSchema = SQuery.Schema({
@@ -12,7 +12,7 @@ let refIdSchema = SQuery.Schema({
 });
 const RefIdModel = mongoose.model("refid", refIdSchema);
 
-MakeCtlForm({
+MakeModelCtlForm({
     schema: refIdSchema,
     model: RefIdModel,
     volatile: false,

@@ -9,7 +9,7 @@ import { authDataSchema, ContextSchema } from "./Context";
 import { Controllers, DescriptionSchema, GlobalMiddlewares, Middlewares } from "./Initialize";
 
 export type FirstDataSchema = {
-  __action: "create" | "read" | "update" | "delete";
+  __action: "create" | "read" | "list" | "update" | "delete";
   [p: string]: any;
 };
 export type DataSchema = {
@@ -55,7 +55,6 @@ const SQuery: SQuerySchema = function (
         if (res !== undefined) return cb?.(res);
       }
 
-      //Log('log', { Controllers })
       const res = await Controllers[modelPath]?.()[data.__action]?.(ctx);
 
       if (res === undefined) {
@@ -92,7 +91,7 @@ SQuery.io = (server: any) => {
     for (const modelPath in Controllers) {
       if (Object.prototype.hasOwnProperty.call(Controllers, modelPath)) {
         const model = Controllers[modelPath];
-        socket.on(modelPath, squery(modelPath));
+        socket.on("model:"+modelPath, squery(modelPath));
       }
     }
     /********************   Description   *********************** */
@@ -103,7 +102,7 @@ SQuery.io = (server: any) => {
 
   return io;
 };
-
+ 
 SQuery.auth = (authData: authDataSchema) => {
   Global.io.on("connection", (socket: any) => {
     socket.on("login:" + authData.signup, async (data, cb) => {
@@ -121,7 +120,6 @@ SQuery.auth = (authData: authDataSchema) => {
     });
     socket.on("signup:" + authData.signup, async (data, cb) => {
       let __key = new mongoose.Types.ObjectId().toString();
-
       const authCtrl = new AuthManager();
       const res = await authCtrl.signup({
         data,
@@ -132,7 +130,6 @@ SQuery.auth = (authData: authDataSchema) => {
         socket,
         authData
       });
-      Log("resultat", res);
       cb(res);
     });
   });
@@ -170,7 +167,7 @@ function getDescription(data: DataSchema, cb: CallBack) {
 
   const description: DescriptionSchema = { ...(Controllers[data.modelPath]?.option.schema as any).description };
   for (const key in description) {
-    if(key=='__key') continue;
+    if (key == '__key') continue;
     if (Object.prototype.hasOwnProperty.call(description, key)) {
       const rule = description[key] = { ...description[key] };
       if (Array.isArray(rule)) {

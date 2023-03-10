@@ -1,32 +1,10 @@
 import mongoose, { Model, Schema } from "mongoose";
 //@ts-ignore
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { SQuery } from "../../lib/squery/SQuery";
 //import Aes from "ezcryption/dist/aes";
 
-export interface IManagerAccount {
-  // Propriétés de l'objet ManagerAccount
-  codes: string;
-  __key: any;
-  __permission: String;
-  name: String;
-  email: String;
-  password: String;
-  phone: String;
-  createdDate: Number;
-  updatedDate: Number;
-  expires_at: Date;
-}
-
-export interface IManagerAccountDocument extends IManagerAccount, Document {
-  decryptCode(): Promise<string>;
-}
-
-export interface IManagerAccountModel extends Model<IManagerAccountDocument> { }
-
-let managerAccountSchema = new Schema<
-  IManagerAccountDocument,
-  IManagerAccountModel
->({
+let managerAccountSchema = SQuery.Schema({
   __permission: {
     type: String,
     access: "secret",
@@ -61,7 +39,7 @@ export const ManagerAccountModel = mongoose.model(
   managerAccountSchema
 );
 
-let mkctrl = MakeCtlForm({
+MakeModelCtlForm({
   schema: managerAccountSchema,
   model: ManagerAccountModel,
   volatile: false,

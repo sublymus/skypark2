@@ -7,7 +7,7 @@ import { ContextSchema } from "./Context";
 import { AloFiles, Controllers, ControllerSchema, CtrlMakerSchema, DescriptionSchema, EventPostSchema, EventPreSchema, EventSting, FileSchema, From_optionSchema, ListenerPostSchema, ListenerPreSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, RestSchema, TypeRuleSchema } from "./Initialize";
 
 // les tableau 2D sont pas tolere
-const MakeCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: From_optionSchema): CtrlMakerSchema => {
+const MakeModelCtlForm: (options: From_optionSchema) => CtrlMakerSchema = (options: From_optionSchema): CtrlMakerSchema => {
     console.log(options?.model?.modelName);
     const option: From_optionSchema & { modelPath: string } = {
         ...options,
@@ -1235,7 +1235,7 @@ async function backDestroy(ctx: ContextSchema, more: MoreSchema) {
     return;
 }
 
-export { MakeCtlForm };
+export { MakeModelCtlForm };
 
 
 

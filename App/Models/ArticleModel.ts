@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FolderModel from "./FolderModel";
 import MagasinModel from "./Magasin";
@@ -57,7 +57,7 @@ let ArticleShema = SQuery.Schema({
 
 const ArticlModel = mongoose.model('article', ArticleShema)
 
-MakeCtlForm({
+MakeModelCtlForm({
   schema: ArticleShema,
   model: ArticlModel,
   volatile: true

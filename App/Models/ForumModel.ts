@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import PostModel from "./PostModel";
 //import UserModel from "./UserModel";
@@ -18,7 +18,7 @@ let ForumSchema = SQuery.Schema({
 
 const ForumModel = mongoose.model("forum", ForumSchema);
 
-MakeCtlForm({
+MakeModelCtlForm({
     schema: ForumSchema,
     model: ForumModel,
     volatile: true,

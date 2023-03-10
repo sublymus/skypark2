@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import MessageModel from "./MessageModel";
 
@@ -24,7 +24,7 @@ PostSchema.add(new Schema({
     }]
 }))
 
-MakeCtlForm({
+MakeModelCtlForm({
     schema: PostSchema,
     model: PostModel,
     volatile: true,
