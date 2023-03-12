@@ -1,18 +1,22 @@
 import EventEmiter from './event/eventEmiter.js';
 import SQuery from './SQueryClient.js';
-export const Descriptions = {
 
-}
+export const Descriptions = {}
 
 export async function getDesription(modelPath) {
+    if (typeof modelPath != 'string') throw new Error('getDesription(' + modelPath + ') is not permit, parameter must be string');
     if (Descriptions[modelPath]) {
         return Descriptions[modelPath]
     }
-    return await new Promise((rev, rej) => {
-        SQuery.socket.emit('server:description', {
+    return await new Promise((rev) => {
+        console.log('********************');
+        SQuery.emit('server:description', {
             modelPath,
-        }, (description) => {
-            Descriptions[modelPath] = description
+        }, (res) => {
+            console.log(res);
+            if (res.error) throw new Error(JSON.stringify(res));
+            Descriptions[modelPath] = res.response;
+            console.log('********************', res);
             rev(Descriptions[modelPath]);
         })
     })
@@ -24,8 +28,8 @@ export async function createModelFrom(modelPath) {
     Model.create = async (data, errorCb) => {    ///// verifier si chaque donner est bien rentrer
 
         if (!errorCb) errorCb = (e) => console.error(e);
-        const validation = dataValidator('create', description, data);
-        if (validation != true) {
+        const validation = SQuery.Validatior(description, data);
+        if (validation.message) {
             console.error(validation);
             errorCb({
                 properties: validation,
@@ -34,30 +38,22 @@ export async function createModelFrom(modelPath) {
         };
         return await new Promise((rev) => {
             try {
-                if (SQuery.socket.connected) {
-                    SQuery.socket.emit("model:"+modelPath, {
-                            __action: 'create',
-                            ...data,
-                        },
-                        async (res) => {
-                            try {
-                                if (res.error) {
-                                    errorCb({
-                                        server: res,
-                                    });
-                                    return rev(null);
-                                }
-                                rev(await createInstanceFrom({ modelPath, id: res.response }))
-                            } catch (e) {
-                                errorCb(e);
+                SQuery.emit("model_" + modelPath + ':create', data,
+                    async (res) => {
+                        try {
+                            if (res.error) {
+                                errorCb({
+                                    server: res,
+                                });
                                 return rev(null);
                             }
+                            rev(await createInstanceFrom({ modelPath, id: res.response }))
+                        } catch (e) {
+                            errorCb(e);
+                            return rev(null);
                         }
-                    );
-                } else {
-                    errorCb({ error: "DISCONNECT FROM SERVER", message: "DISCONNECT FROM SERVER" });
-                    return rev(null);
-                }
+                    }
+                );
             } catch (e) {
                 errorCb(e);
                 return rev(null);
@@ -69,15 +65,11 @@ export async function createModelFrom(modelPath) {
         if (!errorCb) errorCb = (e) => console.error(e);
         let instance = null
         try {
-            if (SQuery.socket.connected) {
-                try {
-                    console.log('*************', { modelPath, id: data.id, description });
-                    instance = await createInstanceFrom({ modelPath, id: data.id, description });
-                } catch (e) {
-                    errorCb(e);
-                }
-            } else {
-                errorCb({ error: "DISCONNECT FROM SERVER", message: "DISCONNECT FROM SERVER" });
+            try {
+                console.log('*************', { modelPath, id: data.id, description });
+                instance = await createInstanceFrom({ modelPath, id: data.id, description });
+            } catch (e) {
+                errorCb(e);
             }
         } catch (e) {
             errorCb(e);
@@ -92,32 +84,24 @@ export async function createModelFrom(modelPath) {
         };
         return await new Promise((rev, rej) => {
             try {
-                if (SQuery.socket.connected) {
-                    SQuery.socket.emit( "model:"+modelPath, {
-                            __action: 'update',
-                            ...data,
-                        },
-                        (res) => {
-                            try {
-                                if (res.error) {
-                                    console.error(res);
-                                    return rev(null);
-                                }
-                                console.log('*************', { modelPath, id: res.response, description });
-                                rev(createInstanceFrom({ modelPath, id: res.response, description }))
-                                //restCarte.text.value = JSON.stringify(res);
-                            } catch (e) {
+                SQuery.emit("model_" + modelPath + ':update', data,
+                    (res) => {
+                        try {
+                            if (res.error) {
                                 console.error(res);
-                                rev(null)
-                                //restCarte.text.value = JSON.stringify(e);
+                                return rev(null);
                             }
+                            console.log('*************', { modelPath, id: res.response, description });
+                            rev(createInstanceFrom({ modelPath, id: res.response, description }))
+                            //restCarte.text.value = JSON.stringify(res);
+                        } catch (e) {
+                            console.error(res);
+                            rev(null)
+                            //restCarte.text.value = JSON.stringify(e);
                         }
-                    );
-                } else {
-                    rev(null)
-                    console.error("DISCONNECT FROM SERVER");
-                    //restCarte.text.value = "DISCONNECT FROM SERVER";
-                }
+                    }
+                );
+
             } catch (e) {
                 rev(null)
                 console.error(e);
@@ -135,21 +119,16 @@ export async function createInstanceFrom({ modelPath, id }) {
         type: 'String'
     };
     await new Promise((rev) => {
-        if (SQuery.socket.connected) {
-            SQuery.socket.emit("model:"+modelPath, {
-                __action: 'read',
-                id: id,
-            }, (res) => {
-                if (res.error) throw new Error(JSON.stringify(res));
+        SQuery.emit("model_" + modelPath + ':read', {
+            id: id,
+        }, (res) => {
+            if (res.error) throw new Error(JSON.stringify(res));
+            console.log('cache : ', cache);
+            //console.log(res);
+            cache = res.response
+            rev(cache);
+        });
 
-                //console.log(res);
-                cache = res.response
-                console.log('cache : ', cache);
-                rev(cache);
-            });
-        } else {
-            throw new Error("DISCONNECT FROM SERVER")
-        }
     })
     for (const property in description) {
         if (Object.hasOwnProperty.call(description, property)) {
@@ -184,7 +163,7 @@ export async function createInstanceFrom({ modelPath, id }) {
                         if (rule.ref) {
                             return console.error('ReadOnly modelInstance["refProperty"], Exemple: const modelInstance =  await modelInstance["refProperty"] ');
                         } else if (rule[0] && rule[0].ref) {
-                            return  console.error('ReadOnly modelInstance["propertyOfRefArray"], Exemple: const arrayInstance =  await modelInstance["propertyOfRefArray"] ');
+                            return console.error('ReadOnly modelInstance["propertyOfRefArray"], Exemple: const arrayInstance =  await modelInstance["propertyOfRefArray"] ');
                         } else if (rule[0] && rule[0].file) {
                             const files = [];
                             for (const p in value) {
@@ -206,22 +185,18 @@ export async function createInstanceFrom({ modelPath, id }) {
                             throw new Error('Invalide Value :' + value + ' \n because : ' + result.message);
                         }
 
-                        if (SQuery.socket.connected) {
-                            SQuery.socket.emit("model:"+modelPath, {
-                                __action: 'update',
-                                id,
-                                [property]: value,
-                            }, (res) => {
-                                console.log('update', 'modelPath : ', modelPath, 'property : ', property);
-                                console.log(res);
-                                if (res.error) {
-                                    throw new Error(JSON.stringify(res));
-                                }
-                                cache[property] = res.response[property];
-                            })
-                        } else {
-                            throw new Error("DISCONNECT FROM SERVER")
-                        }
+                        SQuery.emit("model_" + modelPath + ':update', {
+                            id,
+                            [property]: value,
+                        }, (res) => {
+                            console.log('update', 'modelPath : ', modelPath, 'property : ', property);
+                            console.log(res);
+                            if (res.error) {
+                                throw new Error(JSON.stringify(res));
+                            }
+                            cache[property] = res.response[property];
+                        })
+
                     },
                 },
             });
@@ -273,9 +248,8 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
 
         return await new Promise((rev) => {
             if (SQuery.socket.connected) {
-                SQuery.socket.emit("model:"+itemModelPath, {
+                SQuery.emit("model_" + itemModelPath + ':list', {
                     ...options,
-                    __action: 'list',
                     property
                 }, async (res) => {
                     if (res.error) throw new Error("****=> " + JSON.stringify(res));
@@ -288,7 +262,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                     Object.defineProperties(currentData, {
                         ['itemsInstance']: {
                             get: async () => {
-                                if(currentData['#itemsInstance']){
+                                if (currentData['#itemsInstance']) {
                                     return currentData['#itemsInstance'];
                                 }
                                 const promises = currentData.items.map((item) => {
@@ -303,14 +277,14 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                                     return !!itemInstance;
                                 });
                                 console.log(itemsInstance);
-                                return currentData['#itemsInstance'] =  itemsInstance;
+                                return currentData['#itemsInstance'] = itemsInstance;
                             },
                             set: async () => {
                                 console.error('ReadOnly ArrayData["itemsInstance"] ');
                             }
                         }
                     })
-                    console.log('currentData',currentData);
+                    console.log('currentData', currentData);
 
                     rev(currentData);
                 });

@@ -26,21 +26,19 @@ export class Login extends BaseComponent {
             ['@type:change']: (select) => {
                 this.type = select.value;
             },
-            ['@submit:click']: () => {
+            ['@submit:click']: async () => {
                 const data = {};
                 $All('input').forEach((input) => {
                     data[input.className] = input.value;
                 })
-                if (SQuery.socket.connected) {
-                    SQuery.socket.emit("login:" + this.type, data, res => {
-                        console.log(res);
-                        if (res.error) return this.emit('error', res.error);
-                        this.emit('success', {
-                            modelPath: 'account',//this.type,
-                            id: res.response.loginId,
-                        })
-                    });
-                }
+                SQuery.emitLater("login:" + this.type, data, res => {
+                    if (res.error) return this.emit('error', JSON.stringify(res));
+                    this.emit('success', {
+                        modelPath: 'account',//this.type,
+                        id: res.response.loginId,
+                    })
+                });
+
             },
             [viewName]: () => {
                 this.when('error', (error) => {

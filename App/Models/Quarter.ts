@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import ComunytyModel from "./ComunytyModel";
 
@@ -13,11 +13,11 @@ let QuarterSchema = SQuery.Schema({
         type: String,
         required: true,
     },
-    community:{
-        type:Schema.Types.ObjectId,
-        ref:ComunytyModel.modelName,
+    community: {
+        type: Schema.Types.ObjectId,
+        ref: ComunytyModel.modelName,
     },
-    
+
 });
 
 

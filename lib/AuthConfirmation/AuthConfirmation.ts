@@ -1,7 +1,8 @@
-import { genereCodeEmail, sendEmail } from "./sendEmailCode";
-import { ContextSchema } from "../squery/Context";
-import { genereCodePhone, sendCodePhone } from "./SendPhoneCode";
+import { Socket } from "socket.io";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
+import { genereCodeEmail, sendEmail } from "./sendEmailCode";
+import { genereCodePhone } from "./SendPhoneCode";
 import { sendWithClickatail } from "./SendPhoneCode2";
 
 /* 
@@ -25,6 +26,40 @@ Squery.socket.on('signup/config:user', (config , cb)=>{
 })
 */
 
+type MoreProperty = {
+  [p: string]: any;
+};
+type DataSchema = {
+  [p: string]: any;
+};
+
+export type AuthExtensionSchema = {
+  new(): {
+    [str: string]: any;
+    confirm: (ctx: ContextSchema) => Promise<boolean>;
+    error: () => string;
+  };
+};
+export type authDataSchema = {
+  login: string;
+  match: string[];
+  signup: string;
+  extension?: AuthExtensionSchema[];
+};
+export type ContextSchema = {
+  ctrlName: string,
+  action: string,
+  data: DataSchema,
+  socket: Socket<
+    DefaultEventsMap,
+    DefaultEventsMap,
+    DefaultEventsMap,
+    any
+  >,
+  __key: string, /// pour le moment data.__key = cookies[__key]
+  __permission: 'user' | 'admin' | 'global'
+} & MoreProperty;
+
 export class PhoneConfirmartion {
   #msgError: string;
   async confirm(ctx: ContextSchema): Promise<boolean> {
@@ -33,20 +68,20 @@ export class PhoneConfirmartion {
     if (!(await sendWithClickatail(data.account.telephone, code))) {
       this.#msgError = "code n'a pa pu etre envoye";
       return false;
-    } 
-    const expireAt = Date.now() + 1000 * 60 ;
-Log("code", {code})
+    }
+    const expireAt = Date.now() + 1000 * 60;
+    Log("code", { code })
     return await new Promise<boolean>((res) => {
       socket.emit(
-        "signup/config:user",
+        "signup:user/config",
         { expireAt },
-         (codeuser: string) => {
+        (codeuser: string) => {
           if (Date.now() > expireAt) {
-            Log('time',expireAt , Date.now())
+            Log('time', expireAt, Date.now())
             this.#msgError = "expiration du code";
             res(false);
           }
-          if (!(codeuser === code)) { 
+          if (!(codeuser === code)) {
 
             this.#msgError = "code invalide";
             res(false);
@@ -68,8 +103,8 @@ export class EmailConfirmartion {
   async confirm(ctx: ContextSchema): Promise<boolean> {
     let { data, socket } = ctx;
     const code = genereCodeEmail();
-    console.log({code});
-    
+    console.log({ code });
+
     if (!(await sendEmail(data.account.email, data.account.name, code))) {
       this.#msgError = "email n'a pa pu etre envoye";
       return false;
@@ -79,15 +114,15 @@ export class EmailConfirmartion {
 
     return await new Promise<boolean>((res) => {
       socket.emit(
-        "signup/config:user",
+        "signup:user/config",
         { expireAt },
-         (codeuser: string) => {
+        (codeuser: string) => {
           if (Date.now() > expireAt) {
             this.#msgError = "expiration du code";
             res(false);
           }
-          console.log({code}, {codeuser});
-          if (!(codeuser === code)) { 
+          console.log({ code }, { codeuser });
+          if (!(codeuser === code)) {
             this.#msgError = "code invalide";
             res(false);
           } else {

@@ -1,13 +1,6 @@
 import BaseComponent, { Components } from '../../ts_lib/baseComponent/baseComponent.js';
 import SQuery from "../../ts_lib/SQueryClient.js";
 
-const S = () => {
-    return {
-        
-    }
-}
-
-
 
 export class Deep extends BaseComponent {
     constructor(data) {

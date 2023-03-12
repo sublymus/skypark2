@@ -1,9 +1,9 @@
+import { serialize } from "cookie";
+import jwt from "jsonwebtoken";
+import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { ContextSchema } from "./Context";
-import { Controllers, ResponseSchema } from "./Initialize";
-import jwt from "jsonwebtoken";
-import { serialize } from "cookie";
-import Log from "sublymus_logger";
+import { Controllers, ModelControllers, ResponseSchema } from "./Initialize";
 
 const secret = "a";
 const generateToken = (payload) => {
@@ -20,11 +20,12 @@ export class AuthManager {
       authData.match.forEach((property) => {
         filter[property] = data[property];
       });
-      //Log("oops", filter)
-      loginModelInstance = await Controllers[
-        authData.login
-      ].option.model.findOne(filter);
+      Log("oops", filter)
+      Log('model', ModelControllers[authData.login])
+      loginModelInstance = await ModelControllers[authData.login].option.model.findOne(filter);
+      Log('loginModelInstance', loginModelInstance)
     } catch (error) {
+      Log('loginModelInstance', error)
       return {
         error: `${authData.login.toLocaleUpperCase()} BAD_AUTH`,
         ...(await STATUS.BAD_AUTH(ctx, {
@@ -33,7 +34,7 @@ export class AuthManager {
         })),
       };
     }
-  
+
     if (!loginModelInstance) {
       return {
         error: `${authData.login} NOT FOUND`,
@@ -50,7 +51,7 @@ export class AuthManager {
 
     this.#cookiesInSocket(info, socket);
     return {
-      response: { loginId: loginModelInstance.id , modelPath : authData.login },
+      response: { loginId: loginModelInstance.id, modelPath: authData.login },
       ...(await STATUS.OPERATION_SUCCESS(ctx, {
         target: authData.login.toLocaleUpperCase(),
       })),
@@ -58,7 +59,7 @@ export class AuthManager {
   };
 
   signup = async (ctx: ContextSchema): ResponseSchema => {
-    let { socket ,authData } = ctx;
+    let { socket, authData } = ctx;
 
     for (let i = 0; i < authData.extension.length; i++) {
       const ext = authData.extension[i];
@@ -70,13 +71,13 @@ export class AuthManager {
           error: 'OPERATION FAILED',
           ...(await STATUS.OPERATION_FAILED(ctx, {
             target: authData.signup.toLocaleUpperCase(),
-            message :  Ext.error()
+            message: Ext.error()
           })),
         };
       }
     }
     const result = await Controllers[authData.signup]()["create"](ctx);
-   // Log("ici", result)
+    // Log("ici", result)
     if (result.error) {
       return {
         error: "OPERATION_FAILED",
@@ -86,7 +87,7 @@ export class AuthManager {
       };
     }
     const info = {
-      __key: ctx.__key ,
+      __key: ctx.__key,
       __permission: 'user',
     };
     this.#cookiesInSocket(info, socket);

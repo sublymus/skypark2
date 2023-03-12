@@ -1,6 +1,6 @@
-import mongoose, { Model, Schema } from "mongoose";
+import mongoose from "mongoose";
 //@ts-ignore
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 //import Aes from "ezcryption/dist/aes";
 

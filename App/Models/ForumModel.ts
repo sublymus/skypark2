@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import PostModel from "./PostModel";
 //import UserModel from "./UserModel";
@@ -10,7 +10,7 @@ let ForumSchema = SQuery.Schema({
         ref: 'user',
         required: true,
     }],
-    post:[{
+    post: [{
         type: Schema.Types.ObjectId,
         ref: PostModel.modelName,
     }]

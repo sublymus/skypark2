@@ -1,6 +1,5 @@
 import { Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import { DataSchema } from "./SQuery";
 
 type MoreProperty = {
   [p: string]: any;
@@ -19,11 +18,14 @@ export type authDataSchema = {
   signup: string;
   extension?: AuthExtensionSchema[];
 };
+export type DataSchema = {
+  [p: string]: any;
+};
+
 export type ContextSchema = {
-  //token: tokenShema,
+  ctrlName: string,
+  action: string,
   data: DataSchema,
-  modelPath: string,
-  action: 'create' | 'read' | 'list' | 'update' | 'delete',
   socket: Socket<
     DefaultEventsMap,
     DefaultEventsMap,

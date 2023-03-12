@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import BuildingModel from "./BuildingModel";
 
@@ -12,7 +12,7 @@ let addressSchema = SQuery.Schema({
   },
   building: {
     type: Schema.Types.ObjectId,
-    ref: BuildingModel.modelName, 
+    ref: BuildingModel.modelName,
     required: true,
   },
   room: {
@@ -30,12 +30,11 @@ let addressSchema = SQuery.Schema({
     trim: true,
     required: true,
   },
-  description:{
+  description: {
     type: String,
     trim: true,
     required: true,
   },
-
 });
 
 const AddressModel = mongoose.model("address", addressSchema);
@@ -43,7 +42,7 @@ const AddressModel = mongoose.model("address", addressSchema);
 MakeModelCtlForm({
   schema: addressSchema,
   model: AddressModel,
-  volatile:false,
+  volatile: false,
 });
 
 export default AddressModel;

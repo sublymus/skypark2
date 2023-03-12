@@ -4,9 +4,6 @@ import { StatusSchema } from "../../App/Errors/STATUS";
 import { ContextSchema } from "./Context";
 import './execAuto';
 
-export const AloFiles = {
-  files: null,
-};
 export type FileSchema = {
   type: string;
   size: number;
@@ -22,23 +19,13 @@ export type successCaseSchema = {
   response: any;
   error?: any;
 };
-export type RestSchema = (successCaseSchema | ErrorCaseSchema) & StatusSchema;
-export type ResponseSchema = Promise<RestSchema>;
+export type ResultSchema = (successCaseSchema | ErrorCaseSchema) & StatusSchema;
+export type ResponseSchema = Promise<ResultSchema>;
 
-export type MiddlewareSchema = (
-  context: ContextSchema
-) => ResponseSchema | Promise<void | undefined>;
+export type MiddlewareSchema = (context: ContextSchema) => ResponseSchema | Promise<void | undefined>;
 
 export type GlobalMiddlewareSchema = MiddlewareSchema[];
 
-export type MiddlewaresConfig = {
-  [p: string]: {
-    create?: MiddlewareSchema[];
-    read?: MiddlewareSchema[];
-    update?: MiddlewareSchema[];
-    delete?: MiddlewareSchema[];
-  };
-};
 export type MoreSchema = {
   [p: string]: any;
   savedlist?: savedSchema[];
@@ -50,7 +37,11 @@ export type ControlSchema = (
   context: ContextSchema,
   more?: MoreSchema
 ) => ResponseSchema;
+
 export type ControllerSchema = {
+  [p: string]: ControlSchema
+}
+export type ModelControllerSchema = {
   create?: ControlSchema;
   store?: ControlSchema;
   read?: ControlSchema;
@@ -61,32 +52,51 @@ export type ControllerSchema = {
   delete?: ControlSchema;
   destroy?: ControlSchema;
 };
-export type EventSting = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
-
-export type EventPreSchema = { ctx: ContextSchema; more?: MoreSchema; event?: string };
-
+export type ModelActionAllowed = "create" | "read" | "list" | "update" | "delete";
+export type ModelActionAvailable = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
+export type ControllerAccesSchema = "public" | "share" | "admin" | "secret";
+export type EventPreSchema = {
+  ctx: ContextSchema; more?:
+  MoreSchema;
+  action?: string
+};
 export type EventPostSchema = {
   ctx: ContextSchema;
   more?: MoreSchema;
-  res: RestSchema;
-  event: string;
+  res: ResultSchema;
+  action: string;
 };
 
-export type ListenerPreSchema = (e: EventPreSchema) => void;
+export type ListenerPreSchema = (e: EventPreSchema) => Promise<void>;
 
-export type ListenerPostSchema = (e: EventPostSchema) => void;
+export type ListenerPostSchema = (e: EventPostSchema) => Promise<void>;
 
-export type CtrlMakerSchema = (() => ControllerSchema) & {
-  option?: From_optionSchema & { modelPath: string };
-  pre?: (event: EventSting, listener: ListenerPreSchema) => void;
-  post?: (event: EventSting, listener: ListenerPostSchema) => void;
+export type ModelControllerConfigSchema = {
+  option?: ModelFrom_optionSchema;
+  pre: (action: ModelActionAvailable, listener: ListenerPreSchema) => void;
+  post: (action: ModelActionAvailable, listener: ListenerPostSchema) => void;
+}
+export type ControllerConfigSchema = {
+  option?: SaveCtrlOptionSchema;
+  pre: (action: string, listener: ListenerPreSchema) => void;
+  post: (action: string, listener: ListenerPostSchema) => void;
+}
+export type CtrlModelMakerSchema = (() => ModelControllerSchema) & ModelControllerConfigSchema;
+export type CtrlMakerSchema = (() => ControllerSchema) & ControllerConfigSchema
+export type SaveCtrlOptionSchema = {
+  ctrl: {
+    [p: string]: ControllerSchema
+  },
+  name?: string,
+  access?: ControllerAccesSchema,
 };
-
-export type ControllersConfig = {
+export type ModelControllersStorage = {
+  [p: string]: CtrlModelMakerSchema;
+};
+export type ControllersStorage = {
   [p: string]: CtrlMakerSchema;
 };
-
-export type From_optionSchema = {
+export type ModelFrom_optionSchema = {
   schema: {
     paths: {
       [p: string]: {
@@ -102,13 +112,13 @@ export type From_optionSchema = {
   };
   model: any;
   volatile: boolean;
-  access?: "public" | "share" | "admin" | "secret";
+  access?: ControllerAccesSchema;
 };
 export type savedSchema = {
   modelId: string;
   __key: string;
   volatile: boolean;
-  controller: ControllerSchema;
+  controller: ModelControllerSchema;
 };
 export type FilterSchema = {
   [p: string]: any;
@@ -141,20 +151,17 @@ export type ModelInstanceSchema = {
 };
 
 export const GlobalMiddlewares: GlobalMiddlewareSchema = [];
-
-export const Middlewares: MiddlewaresConfig = {};
-
-export const Controllers: ControllersConfig = {};
-
-type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId
+export const ModelControllers: ModelControllersStorage = {};
+export const Controllers: ControllersStorage = {};
+type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId;
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
 export type TypeRuleSchema = {
   //valuePath // ./_id  ; ../../fileType;
   //(NB:non implementer )duplicable?:boolean;//default:false ; true =>  on peut ajouter plusieurs fois un meme id a une list de ref
   //checkout?:true,
   type: TypeSchema//TypeSchema;
-  impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
-  watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
+  //impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
+  //watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
   access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//
   populate?: boolean;// 
   file?: {//

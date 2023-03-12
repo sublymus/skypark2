@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import ManagerAccountModel from "./ManagerAccountModel";
 
 const managerSchema = new Schema({
@@ -17,12 +17,6 @@ const maker = MakeModelCtlForm({
   model: ManagerModel,
   schema: managerSchema,
   volatile: true,
-});
-
-maker.pre("create", async ({ ctx }) => {
-  ctx.data = {
-    manageraccount: { ...ctx.data },
-  };
 });
 
 

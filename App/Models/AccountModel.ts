@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import FavoritesModel from "./FavoritesModel";
@@ -56,11 +56,38 @@ let accountSchema = SQuery.Schema({
 
 const AccountModel = mongoose.model("account", accountSchema);
 
-MakeModelCtlForm({
+const ctrlMeker = MakeModelCtlForm({
   schema: accountSchema,
   model: AccountModel,
   volatile: false,
 });
 
+// ctrlMeker.pre('read', async (e) => {
+//   await new Promise((rev => {
+//     const d = Date.now() + 1000
+//     const t = () => {
+//       console.log(Date.now());
+//       if (d < Date.now()) {
+//         return rev(d);
+//       }
+//       setTimeout(t, 10)
+//     }
+//     t()
+//   }))
+// })
+// ctrlMeker.post('read', async (e) => {
+//   await new Promise((rev => {
+//     const d = Date.now() + 1000
+//     const t = () => {
+//       console.log('_________________'+Date.now());
+//       if (d < Date.now()) {
+//         return rev(d);
+//       }
+//       setTimeout(t, 10)
+//     }
+//     t()
+
+//   }))
+// })
 
 export default AccountModel;

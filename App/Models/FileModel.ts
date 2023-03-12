@@ -1,18 +1,18 @@
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import mongoose from "mongoose";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 let fileSchema = SQuery.Schema({
 
-  url:{
-    type:String,
-    required:true,
+  url: {
+    type: String,
+    required: true,
   },
-  typeMIME:{
-    type:String,
+  typeMIME: {
+    type: String,
   },
-  size:{
-    type:String,
+  size: {
+    type: String,
   },
 
 });

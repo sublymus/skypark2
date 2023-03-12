@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FolderModel from "./FolderModel";
 import MagasinModel from "./Magasin";
@@ -23,7 +23,7 @@ let ArticleShema = SQuery.Schema({
       msg: "be great than Zero"
     }]
   },
-  folders:[ {
+  folders: [{
     type: Schema.Types.ObjectId,
     ref: FolderModel.modelName,
   }],

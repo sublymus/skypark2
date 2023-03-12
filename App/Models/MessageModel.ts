@@ -1,13 +1,12 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FileListModel from "./FileListModel";
-import UserModel from "./UserModel";
 
 let MessageSchema = SQuery.Schema({
     user: {
         type: Schema.Types.ObjectId,
-        ref:'user',
+        ref: 'user',
     },
     text: {
         type: String
@@ -17,10 +16,10 @@ let MessageSchema = SQuery.Schema({
         ref: FileListModel.modelName,
         //checkout:true,
     }],
-    __fileList:{
-        type:String,
-        maxlength:10,
-        minlength:10,
+    __fileList: {
+        type: String,
+        maxlength: 10,
+        minlength: 10,
     },
     targets: {
         type: Schema.Types.ObjectId,

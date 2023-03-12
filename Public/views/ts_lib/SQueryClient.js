@@ -15,6 +15,24 @@ SQuery.Model = async (modelPath) => {
 
     return await createModelFrom(modelPath)
 }
+SQuery.emit = (event, ...arg) => {
+    if (typeof event != 'string') throw new Error('cannot emit with following event : ' + event + '; event value must be string');
+    if (SQuery.socket.connected) {
+        socket.emit(event, ...arg);
+    } else {
+        throw new Error("DISCONNECT FROM SERVER");
+    }
+}
+SQuery.emitLater = (event, ...arg) => {
+    if (typeof event != 'string') throw new Error('cannot emit with following event : ' + event + '; event value must be string');
+    socket.emit(event, ...arg);
+
+}
+
+SQuery.on = (event, ...arg) => {
+    if (typeof event != 'string') throw new Error('cannot emit with following event : ' + event + '; event value must be string');
+    socket.on(event, ...arg);
+}
 SQuery.getDesription = getDesription;
 
 // const ActionsMap = {
@@ -35,6 +53,31 @@ const ValidationMap = {
     Number: ['min', 'max', 'enum', 'required'],
     Date: ['min', 'max', 'enum', 'required'],
     Array: ['length', 'required'],//////////
+}
+
+
+function isValideType(ruleTypes, type) {
+    const typeSide = type.split("/");
+
+    let valide = false;
+    Log("type!!", { ruleTypes }, { typeSide });
+    ruleTypes.forEach((ruleType) => {
+        const ruleSide = ruleType.split("/");
+        const match = (side) => {
+            Log("type", { ruleSide }, { typeSide });
+            if (ruleSide[side] == "*") return true;
+            else if (
+                ruleSide[side].toLocaleLowerCase() == typeSide[side].toLocaleLowerCase()
+            )
+                return true;
+            else return false;
+        };
+
+        if (match(0) && match(1)) {
+            valide = true;
+        }
+    });
+    return valide;
 }
 
 const validations = {
@@ -95,6 +138,13 @@ const validations = {
         };
     },
     file: (value, requirement) => {
+        console.log('value.type', value.type, 'isValide', isValideType(requirement.type || ['*/*'], value.type));
+        if (value.type && isValideType(requirement.type || ['*/*'], value.type)) {
+            return {
+                isValide: false,
+                message: isValide ? '' : 'the value must be included in : ' + requirement,
+            };
+        }
         return true;
     },
     type: (value, requirement) => {
@@ -152,20 +202,20 @@ const validations = {
                 };
             }
         }
-        else if (requirement == 'ObjectId') {
-            try {
-                new Promise(rev => {
-                    SQuery.socket.emit('server:valideId', { id: value }, (res) => {
-                        rev(!!res.response);
-                    })
-                })
-            } catch (error) {
-                return {
-                    isValide: false,
-                    message: 'the type of value bust be : ' + requirement,
-                };
-            }
-        }
+        // else if (requirement == 'ObjectId') {
+        //     try {
+        //         new Promise(rev => {
+        //             SQuery.socket.emit('server:valideId', { id: value }, (res) => {
+        //                 rev(!!res.response);
+        //             })
+        //         })
+        //     } catch (error) {
+        //         return {
+        //             isValide: false,
+        //             message: 'the type of value bust be : ' + requirement,
+        //         };
+        //     }
+        // }
         return {
             isValide: true,
         };
@@ -175,7 +225,7 @@ const validations = {
         if (requirement) {
             isValide = (value == undefined || value == null || value == '') ? false : true;
         }
-        return { 
+        return {
             isValide,
             message: 'the value is required',
         }
@@ -187,7 +237,7 @@ SQuery.Validatior = (rule, value) => {
     console.log('rule : ', rule, 'value : ', value, 'res: ', res);
     if (!res.isValide) return {
         message: res.message,
-        e: console.log('res: ', res)
+        e: console.log('res: ', { res })
     };
 
     if (ValidationMap[rule.type]) {
@@ -196,7 +246,7 @@ SQuery.Validatior = (rule, value) => {
                 console.log('rule[p] : ', rule[p], 'value : ', validations[p](value, rule[p]));
                 if (!(res = validations[p](value, rule[p])).isValide) return {
                     message: res.message,
-                    e: console.log('res: ', res)
+                    e: console.log('res: ', { res })
                 };
 
             }
@@ -205,7 +255,7 @@ SQuery.Validatior = (rule, value) => {
     if (rule.file) {
         if (!(res = validations.file(value, rule.file)).isValide) return {
             message: res.message,
-            e: console.log('res: ', res)
+            e: console.log('res: ', { res })
         };
     }
 

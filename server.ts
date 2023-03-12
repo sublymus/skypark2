@@ -47,6 +47,7 @@ const server = http.createServer(function (req, res) {
   }
 });
 
+
 const io = SQuery.io(server);
 io.on("connection", (socket: any) => {
 

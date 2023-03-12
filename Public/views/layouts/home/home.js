@@ -1,37 +1,17 @@
 import BaseComponent from '../../ts_lib/baseComponent/baseComponent.js';
-import SQuery from '../../ts_lib/SQueryClient.js';
+import '../creationPage/creationPage.js';
 import '../deep/deep2.js';
 import '../entryPoint/entryPoint.js';
+import '../list/list.js';
 import '../login/login.js';
 import '../signup/signup.js';
 import '../welcome/welcome.js';
-import '../list/list.js';
- 
+
 
 export class Home extends BaseComponent {
     constructor() {
         super();
 
-        setTimeout(async () => {
-
-            const Model = await SQuery.Model('magasin')
-
-            const instance = await Model.instance({
-                id: '64021e1b2cb9e424d6eece07'
-            })
-            console.log(instance);
-
-
-            setTimeout(() => {
-               // instance.name = 'sublymus'
-            }, 1000);
-            
-
-            setTimeout(() => {
-                console.log(instance);
-            }, 2000);
-
-        });
         const { _, $, $All, viewName } = this.mvc;
         this.view = _('div', viewName,
             _('div', 'top-bar',
@@ -44,6 +24,7 @@ export class Home extends BaseComponent {
                     _('div@btn=signup', 'btn', 'SIGNUP'),
                     _('div@btn=login', 'btn', 'LOGIN'),
                     _('div@btn=entry-point', 'btn', 'ENTRY POINT'),
+                    _('div@btn=creation-page', 'btn', 'Creation'),
                     _('div@btn=deep-ctn', 'btn', 'DEEP'),
                 )
             ),
@@ -52,6 +33,7 @@ export class Home extends BaseComponent {
                 _('Login@page', {}),
                 _('Signup@page', {}),
                 _('EntryPoint@page', {}),
+                _('CreationPage@page', {}),
                 _('div@page', 'deep-ctn'),
             )
         );
@@ -80,6 +62,10 @@ export class Home extends BaseComponent {
                     this.emit('@page:change', $('.deep-ctn'))
                 });
                 $('.entry-point').component.when('next', (data) => {
+                    this.emit('createDeep', data);
+                    this.emit('@page:change', $('.deep-ctn'))
+                });
+                $('.creation-page').component.when('next', (data) => {
                     this.emit('createDeep', data);
                     this.emit('@page:change', $('.deep-ctn'))
                 });

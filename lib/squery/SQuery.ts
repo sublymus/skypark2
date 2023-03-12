@@ -6,16 +6,13 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
 import { AuthManager } from "./AuthManager";
 import { authDataSchema, ContextSchema } from "./Context";
-import { Controllers, DescriptionSchema, GlobalMiddlewares, Middlewares } from "./Initialize";
+import { Controllers, DescriptionSchema, GlobalMiddlewares, ModelControllers, ResultSchema } from "./Initialize";
 
 export type FirstDataSchema = {
   __action: "create" | "read" | "list" | "update" | "delete";
   [p: string]: any;
 };
-export type DataSchema = {
-  [p: string]: any;
-};
-
+const avalaibleModelAction = ['create', 'read', 'list', 'update', 'delete']
 type CallBack = (...arg: any) => any;
 
 type SQuerySchema = Function & {
@@ -27,27 +24,31 @@ const SQuery: SQuerySchema = function (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) {
 
-  return (modelPath: string) => {
+  return (ctrlName: string, action: string) => {
     return async (data: FirstDataSchema, cb?: CallBack) => {
-      Log("squery:data", data, { modelPath })
-
+      Log("squery:data", data, { ctrlName }, { action })
+      let modelRequest = false;
+      if (ctrlName.startsWith('model_')) {
+        modelRequest = true;
+        if (avalaibleModelAction.includes(action) == false) {
+          return cb?.({
+            error: "NOT_FOUND",
+            status: 404,
+            code: "UNDEFINED",
+            message: "access not found for Controller: " + ctrlName + '.' + action + '; model action must be : [' + avalaibleModelAction.join(', ') + ']',
+          });
+        }
+      }
       const ctx: ContextSchema = {
-        action: data.__action,
+        ctrlName,
+        action,
         data,
-        modelPath,
         socket,
         __key: "", /// pour le moment data.__key = cookies[__key]
         __permission: "user", ///  data.__permission = undefined
       };
-      const modelPathMids = Middlewares[modelPath];
 
-      let actionMid: any = [];
-      if (modelPathMids)
-        actionMid = modelPathMids[data.action]
-          ? modelPathMids[data.action]
-          : [];
-
-      const midList = [...GlobalMiddlewares, ...actionMid];
+      const midList = [...GlobalMiddlewares];
 
       for (let i = 0; i < midList.length; i++) {
         const res = await midList[i](ctx);
@@ -55,14 +56,22 @@ const SQuery: SQuerySchema = function (
         if (res !== undefined) return cb?.(res);
       }
 
-      const res = await Controllers[modelPath]?.()[data.__action]?.(ctx);
+      let res: ResultSchema = null;
+      if (modelRequest) {
+        res = await ModelControllers[ctrlName.replace('model_', '')]?.()[action]?.(ctx);
+        Log('rest', { res })
+      } else {
+        res = await Controllers[ctrlName]?.()[action]?.(ctx);
+        Log('wepp', res, { ctrlName }, { ctrlName: Controllers[ctrlName]?.name }, res)
+      }
 
+      Log('finish', { modelRequest }, { ctrlName }, { action }, res)
       if (res === undefined) {
         return cb?.({
           error: "NOT_FOUND",
           status: 404,
           code: "UNDEFINED",
-          message: "access not found for Model: " + modelPath,
+          message: "access not found for Path: " + ctrlName + '.' + action,
         });
       }
       cb?.(res);
@@ -87,46 +96,68 @@ SQuery.io = (server: any) => {
 
   io.on("connection", async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
     /********************    Models  *********************** */
+    socket.onAny((event, ...args) => {
+      Log('any', { event }, ...args)
+    });
+    socket.onAnyOutgoing((event, ...args) => {
+      Log('any', { event }, ...args)
+    });
     const squery = SQuery(socket);
-    for (const modelPath in Controllers) {
-      if (Object.prototype.hasOwnProperty.call(Controllers, modelPath)) {
-        const model = Controllers[modelPath];
-        socket.on("model:"+modelPath, squery(modelPath));
+    for (const ctrlName in ModelControllers) {
+      if (Object.prototype.hasOwnProperty.call(ModelControllers, ctrlName)) {
+        for (const action of avalaibleModelAction) {
+          const b = "model_" + ctrlName
+          socket.on(b + ':' + action, squery(b, action));
+        }
+      }
+    } /********************    Controllers  *********************** */
+    for (const ctrlName in Controllers) {
+      if (Object.prototype.hasOwnProperty.call(Controllers, ctrlName)) {
+        const ctrlMaker = Controllers[ctrlName];
+        const ctrl = ctrlMaker();
+        for (const action in ctrl) {
+          if (Object.prototype.hasOwnProperty.call(ctrl, action)) {
+            socket.on(ctrlName + ":" + action, squery(ctrlName, action));
+          }
+        }
       }
     }
     /********************   Description   *********************** */
-    socket.on('server:description', getDescription);
-
   });
   Global.io = io;
-
   return io;
 };
- 
+
 SQuery.auth = (authData: authDataSchema) => {
   Global.io.on("connection", (socket: any) => {
+    Log('********************************************************')
     socket.on("login:" + authData.signup, async (data, cb) => {
+      Log('wertyuiopoiuytrtyuio', authData);
+
+      /// authData.login = 'model_' + authData.signup;
       const authCtrl = new AuthManager();
       const res = await authCtrl.login({
+        ctrlName: 'login',
         data,
         __key: "",
         __permission: "user",
-        action: "create",
-        modelPath: "",
+        action: "read",
         socket,
         authData
       });
       cb(res);
     });
     socket.on("signup:" + authData.signup, async (data, cb) => {
+      Log('wertyuiopoiuytrtyuio', authData);
+      // authData.signup = 'model_' + authData.signup;
       let __key = new mongoose.Types.ObjectId().toString();
       const authCtrl = new AuthManager();
       const res = await authCtrl.signup({
+        ctrlName: 'login',
+        action: "create",
         data,
         __key,
         __permission: "user",
-        action: "create",
-        modelPath: data.__modelPath,
         socket,
         authData
       });
@@ -160,30 +191,5 @@ SQuery.Schema = (description: DescriptionSchema) => {
   schema.plugin(mongoosePaginate);
   schema.plugin(mongoose_unique_validator);
   return schema;
-}
-
-let i = 0
-function getDescription(data: DataSchema, cb: CallBack) {
-
-  const description: DescriptionSchema = { ...(Controllers[data.modelPath]?.option.schema as any).description };
-  for (const key in description) {
-    if (key == '__key') continue;
-    if (Object.prototype.hasOwnProperty.call(description, key)) {
-      const rule = description[key] = { ...description[key] };
-      if (Array.isArray(rule)) {
-        (rule[0] as any).type = rule[0].type?.name
-        if (rule[0].match) {
-          (rule[0] as any).match = rule[0].match.toString()
-        }
-      } else if (!Array.isArray(rule)) {
-        (rule as any).type = rule.type?.name
-        if (rule.match) {
-          const s = rule.match.toString();
-          (rule as any).match = s.substring(1, s.lastIndexOf('/'));
-        }
-      }
-    }
-  }
-  cb(description);
 }
 export { SQuery };

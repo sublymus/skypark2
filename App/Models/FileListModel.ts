@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FileModel from "./FileModel";
 
@@ -7,14 +7,14 @@ let FileListSchema = SQuery.Schema({
     files: [{
         type: Schema.Types.ObjectId,
         ref: FileModel.modelName,
-        required:true,
+        required: true,
     }],
-    fileType : {
-        type:String,
-        required:true,
+    fileType: {
+        type: String,
+        required: true,
     },
-    description:{
-        type:String
+    description: {
+        type: String
     }
 });
 

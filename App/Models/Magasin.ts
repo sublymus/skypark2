@@ -1,5 +1,5 @@
-import mongoose ,{ Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import mongoose from "mongoose";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 let MagasinShema = SQuery.Schema({
@@ -12,12 +12,12 @@ let MagasinShema = SQuery.Schema({
 
 });
 
-const MagasinModel =  mongoose.model('magasin',MagasinShema)
+const MagasinModel = mongoose.model('magasin', MagasinShema)
 
 MakeModelCtlForm({
-    schema : MagasinShema ,
-    model : MagasinModel ,
-    volatile : true
+  schema: MagasinShema,
+  model: MagasinModel,
+  volatile: true
 })
 
 export default MagasinModel

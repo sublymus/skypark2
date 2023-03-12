@@ -89,8 +89,8 @@ export const load = {
           ],
         },
         profile: {
-          imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
-          banner: 'http://www.ert.fr/fgiurr85o28t5.img',
+          //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
+          //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
           message: "*** BEST ****",
         },
         createdDate: Date.now() - 1_000_000_000 + parseInt(Math.random() * 1_000_000_000),

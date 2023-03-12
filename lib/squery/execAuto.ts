@@ -7,7 +7,9 @@ async function exec(directory: string) {
   const dir = Config.rootDir + directory;
   let files = fs.readdirSync(dir);
 
-  let scripts: string[] = files.map((file) => {
+  let scripts: string[] = files.filter((file) => {
+    return file.endsWith(".ts");
+  }).map((file) => {
     file = file.replace(".ts", "");
     return `${dir}/${file}`;
   });

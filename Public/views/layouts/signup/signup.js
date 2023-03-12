@@ -25,7 +25,9 @@ export class Signup extends BaseComponent {
                 _("option", ["value:manager"], "Manager"),
                 _("option", ["value:compagny"], "Compagny")
             ),
-            _("div", "input-ctn", _("textarea", ["rows:100", "cols:450"])),
+            _("div", "input-ctn",
+                _("textarea", ["rows:100", "cols:450"])
+            ),
             _("input", [
                 "type:number",
                 "placeholder:enter your code",
@@ -42,21 +44,21 @@ export class Signup extends BaseComponent {
             ["@submit:click"]: () => {
                 try {
                     const data = JSON.parse($("textarea").value);
-                    if (SQuery.socket.connected) {
-                        SQuery.socket.emit("signup:" + this.type, data, (res) => {
-                            if (res.error) return this.emit("error", JSON.stringify(res));
-                            console.log(res);
-                            this.emit("success", {
-                                modelPath: this.type,
-                                id: res.response,
-                            });
+
+                    SQuery.emit("signup:" + this.type, data, (res) => {
+                        if (res.error) return this.emit("error", JSON.stringify(res));
+                        console.log(res);
+                        this.emit("success", {
+                            modelPath: this.type,
+                            id: res.response,
                         });
-                    }
+                    });
+
                 } catch (error) {
                     alert(error);
                 }
 
-                SQuery.socket.on("signup/config:user", (data, cb) => {
+                SQuery.on("signup:user/config", (data, cb) => {
                     alert("vous avez " + data.expireAt + " pour entrez le code");
                     let btnSend = document.querySelector(".btnSend");
                     btnSend.style.backgroundColor = "yellow";

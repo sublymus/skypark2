@@ -1,5 +1,5 @@
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import mongoose from "mongoose";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import { Config } from "../../squeryconfig";
 
@@ -7,7 +7,7 @@ let profileSchema = SQuery.Schema({
 
   imgProfile: [{
     type: String,
-    access:'private',
+    access: 'private',
     file: {
       size: [1, 1_000_000],
       length: [0, 4],

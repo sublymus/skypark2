@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/CtrlManager";
+import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import ForumModel from "./ForumModel";
 import ProfileModel from "./ProfileModel";
@@ -8,18 +8,18 @@ let ActivitySchema = SQuery.Schema({
   poster: {
     type: Schema.Types.ObjectId,
     ref: ProfileModel.modelName,
-    required:true,
+    required: true,
   },
-  forum:{
-    type:Schema.Types.ObjectId,
-    ref:ForumModel.modelName,
+  forum: {
+    type: Schema.Types.ObjectId,
+    ref: ForumModel.modelName,
   },
-  name:{
-    type:String,
-    required:true,
+  name: {
+    type: String,
+    required: true,
   },
-  description:{
-    type:String,
+  description: {
+    type: String,
   }
 });
 
