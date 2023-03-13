@@ -88,7 +88,9 @@ export type SaveCtrlOptionSchema = {
     [p: string]: ControllerSchema
   },
   name?: string,
-  access?: ControllerAccesSchema,
+  access?: {
+    [p:string]: 'any'|'user'|'admin'
+  },
 };
 export type ModelControllersStorage = {
   [p: string]: CtrlModelMakerSchema;

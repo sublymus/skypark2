@@ -46,19 +46,39 @@ const Server: ControllerSchema = {
 
 const ctrlMaker = SaveCtrl({
     ctrl: { Server },
+    access: {
+        description: "admin"
+    }
 })
 
-// ctrlMaker.pre("sendAfterValidation", async()=>{
-//     // davfdv
-// })
-// ctrlMaker.post("sendAfterValidation", async()=>{
-//     // davfdv
-// })
 
+ctrlMaker.pre('description', async (e) => {
+    await new Promise((rev => {
+        const d = Date.now() + 100
+        const t = () => {
+            console.log(Date.now());
+            if (d < Date.now()) {
+                return rev(d);
+            }
+            setTimeout(t, 10)
+        }
+        t()
+    }))
+})
+ctrlMaker.post('description', async (e) => {
+    await new Promise((rev => {
+        const d = Date.now() + 100
+        const t = () => {
+            console.log('_________________' + Date.now());
+            if (d < Date.now()) {
+                return rev(d);
+            }
+            setTimeout(t, 10)
+        }
+        t()
 
-//Socket.emit('crtlName:ImageForme',data , cb)
-
-
+    }))
+})
 
 
 

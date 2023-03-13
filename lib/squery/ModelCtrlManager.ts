@@ -4,7 +4,7 @@ import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { Config } from "../../squeryconfig";
 import { ContextSchema } from "./Context";
-import { CtrlModelMakerSchema, DescriptionSchema, EventPostSchema, EventPreSchema, FileSchema, ListenerPostSchema, ListenerPreSchema, ModelActionAvailable, ModelControllers, ModelControllerSchema, ModelFrom_optionSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, TypeRuleSchema } from "./Initialize";
+import { CtrlModelMakerSchema, DescriptionSchema, EventPostSchema, EventPreSchema, FileSchema, ListenerPostSchema, ListenerPreSchema, ModelActionAvailable, ModelControllers, ModelControllerSchema, ModelFrom_optionSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, ResultSchema, TypeRuleSchema } from "./Initialize";
 
 // les tableau 2D sont pas tolere
 const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchema = (options: ModelFrom_optionSchema): CtrlModelMakerSchema => {
@@ -26,17 +26,14 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
         for (const listener of EventManager[e.action].pre) {
 
             if (listener) await listener(e);
-            Log('8888888888888888888888888888888888888888888', listener);
         }
     };
-    async function callPost(e: EventPostSchema) {
+    const callPost: (e: EventPostSchema) => ResponseSchema = async (e: EventPostSchema) => {
         if (!(EventManager[e.action]?.post)) return e.res;
 
         for (const listener of EventManager[e.action].post) {
             if (listener) await listener(e);
-            Log('8888888888888888888888888888888888888888888', listener);
         }
-        Log('WERTYUIOIUYTR', e)
         return e.res;
     };
     const ctrlMaker = function () {
@@ -1243,4 +1240,4 @@ async function backDestroy(ctx: ContextSchema, more: MoreSchema) {
     return;
 }
 
-export { MakeModelCtlForm };
+export { MakeModelCtlForm , accessValidator , backDestroy , FileValidator , formatModelInstance };

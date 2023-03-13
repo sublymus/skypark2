@@ -56,13 +56,13 @@ let accountSchema = SQuery.Schema({
 
 const AccountModel = mongoose.model("account", accountSchema);
 
-const ctrlMeker = MakeModelCtlForm({
+const ctrlMaker = MakeModelCtlForm({
   schema: accountSchema,
   model: AccountModel,
   volatile: false,
 });
 
-// ctrlMeker.pre('read', async (e) => {
+// ctrlMaker.pre('read', async (e) => {
 //   await new Promise((rev => {
 //     const d = Date.now() + 1000
 //     const t = () => {
@@ -75,11 +75,11 @@ const ctrlMeker = MakeModelCtlForm({
 //     t()
 //   }))
 // })
-// ctrlMeker.post('read', async (e) => {
+// ctrlMaker.post('read', async (e) => {
 //   await new Promise((rev => {
 //     const d = Date.now() + 1000
 //     const t = () => {
-//       console.log('_________________'+Date.now());
+//       console.log('_________________' + Date.now());
 //       if (d < Date.now()) {
 //         return rev(d);
 //       }
