@@ -147,7 +147,7 @@ const validations = {
         }
         return true;
     },
-    type: (value, requirement) => {
+    type: async (value, requirement) => {
         if (requirement == 'Boolean') {
             if (value == 'true' || value == 'false' || value === true || value === false) return { isValide: true };
             return {
@@ -202,20 +202,23 @@ const validations = {
                 };
             }
         }
-        // else if (requirement == 'ObjectId') {
-        //     try {
-        //         new Promise(rev => {
-        //             SQuery.socket.emit('server:valideId', { id: value }, (res) => {
-        //                 rev(!!res.response);
-        //             })
-        //         })
-        //     } catch (error) {
-        //         return {
-        //             isValide: false,
-        //             message: 'the type of value bust be : ' + requirement,
-        //         };
-        //     }
-        // }
+        else if (requirement == 'ObjectId') {
+            try {
+                return {
+                    isValide: await new Promise(rev => {
+                        SQuery.socket.emit('server:valideId', { id: value }, (res) => {
+                            rev(!!res.response);
+                        })
+                    }),
+                    message: 'the type of value bust be : ' + requirement,
+                };
+            } catch (error) {
+                return {
+                    isValide: false,
+                    message: 'the type of value bust be : ' + requirement,
+                };
+            }
+        }
         return {
             isValide: true,
         };
@@ -232,8 +235,8 @@ const validations = {
     }
 }
 
-SQuery.Validatior = (rule, value) => {
-    let res = validations.type(value, rule.type);
+SQuery.Validatior = async (rule, value) => {
+    let res = await validations.type(value, rule.type);
     console.log('rule : ', rule, 'value : ', value, 'res: ', res);
     if (!res.isValide) return {
         message: res.message,

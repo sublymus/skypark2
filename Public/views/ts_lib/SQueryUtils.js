@@ -28,7 +28,7 @@ export async function createModelFrom(modelPath) {
     Model.create = async (data, errorCb) => {    ///// verifier si chaque donner est bien rentrer
 
         if (!errorCb) errorCb = (e) => console.error(e);
-        const validation = SQuery.Validatior(description, data);
+        const validation = await SQuery.Validatior(description, data);
         if (validation.message) {
             // console.error(validation);
             errorCb({
@@ -115,7 +115,10 @@ export async function createInstanceFrom({ modelPath, id }) {
     let cache = {};
     let propertyCache = {};
     const instance = {};
-
+    if (!id || !modelPath) {
+        console.error('id = ' + id, 'modelPath = ' + modelPath);
+        return null
+    }
     const description = await getDesription(modelPath);
     description._id = {
         type: 'String'
@@ -135,7 +138,6 @@ export async function createInstanceFrom({ modelPath, id }) {
                 emitRefresh(['name'])
                 rev(cache);
             });
-
         })
     };
     await refresh();
@@ -234,7 +236,7 @@ export async function createInstanceFrom({ modelPath, id }) {
                             }
                             value = files;
                         }
-                        const result = SQuery.Validatior(description[property], value);
+                        const result = await SQuery.Validatior(description[property], value);
                         if (result.value == undefined) {
                             throw new Error('Invalide Value :' + value + ' \n because : ' + result.message);
                         }

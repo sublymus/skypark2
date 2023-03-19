@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { ContextSchema } from "../../lib/squery/Context";
 import { SaveCtrl } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, DescriptionSchema, ModelControllers, ResponseSchema } from "../../lib/squery/Initialize";
@@ -45,6 +46,28 @@ const Server: ControllerSchema = {
                 error: "NOT_FOUND",
                 status: 404,
                 code: "UNDEFINED",
+                message: error.message,
+            };
+        }
+    },
+    valideId: async (ctx: ContextSchema): ResponseSchema => {
+        try {
+
+            if (new mongoose.Types.ObjectId(ctx.data.id)._id.toString()==ctx.data.id) {
+                return {
+                    response: true,
+                    status: 404,
+                    code: "OPERATION_SUCCESS",
+                    message: 'OPERATION_SUCCESS',
+                };
+            }
+            throw new Error("ID is not valid");
+            
+        } catch (error) {
+            return {
+                error: "BAD_ARGUMENT",
+                status: 404,
+                code: "BAD_ARGUMENT",
                 message: error.message,
             };
         }

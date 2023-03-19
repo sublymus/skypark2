@@ -281,6 +281,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             error: "NOT_FOUND",
                             ...(await STATUS.NOT_FOUND(ctx, {
                                 target: option.modelPath.toLocaleUpperCase(),
+                                message: 'modelInstance is null, ' + ctx.data.id
                             })),
                         },
                     });
@@ -387,51 +388,51 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             const isParentUser = parentModelInstance.__key._id.toString() == ctx.__key
             if (accessValidator(ctx, 'update', option.access, "property", isParentUser)) {
-                let validAddId = []
+                // let validAddId = []
                 let validAddNew = []
                 /***********************  AddId  ****************** */
-                if (Array.isArray(addId)) {
-                    const promises = addId.map((id) => {
-                        return new Promise<string>(async (rev, rej) => {
-                            try {                          ///////
-                                const local_modelInstance = await option.model.findOne({
-                                    _id: id,////////////////////////////////////////////
-                                });
-                                if (!local_modelInstance) {
-                                    return rej(null);
-                                }
-                                const parts = local_modelInstance.__parentModel.split('_');
-                                const local_parentPath = parts[0];
-                                const local_parentId = parts[1];
-                                const local_parentProperty = parts[2];
-                                const local_description = ModelControllers[local_parentPath]?.option.schema.obj;
-                                if (!local_description) {
-                                    return rej(null);
-                                }
-                                let rule = local_description[parentProperty];
-                                rule = Array.isArray(rule) ? rule[0] : rule;
-                                if (parentModelInstance[parentProperty].includes(local_modelInstance._id.toString())) {
-                                    Log('duplication', 'not provide')//////////duplicableId//////////////
-                                    return rej(null);
-                                }
-                                const isItemUser = local_modelInstance.__key._id.toString() == ctx.__key
-                                if (!accessValidator(ctx, 'update', rule.access, "property", isItemUser)) {
-                                    return rej(null);//////////////alienId//////////////////
-                                }
-                                rev(id);
-                            } catch (error) {
-                                rej(null);
-                            }
-                        });
-                    });
-                    const result = await Promise.allSettled(promises);
-                    const validResult = result.filter((data: any) => {
-                        return !!data.value;
-                    }).map((data: any) => {
-                        return data.value;
-                    })
-                    validAddId.push(...validResult);
-                }
+                // if (Array.isArray(addId)) {
+                //     const promises = addId.map((id) => {
+                //         return new Promise<string>(async (rev, rej) => {
+                //             try {                          ///////
+                //                 const local_modelInstance = await option.model.findOne({
+                //                     _id: id,////////////////////////////////////////////
+                //                 });
+                //                 if (!local_modelInstance) {
+                //                     return rej(null);
+                //                 }
+                //                 const parts = local_modelInstance.__parentModel.split('_');
+                //                 const local_parentPath = parts[0];
+                //                 const local_parentId = parts[1];
+                //                 const local_parentProperty = parts[2];
+                //                 const local_description = ModelControllers[local_parentPath]?.option.schema.obj;
+                //                 if (!local_description) {
+                //                     return rej(null);
+                //                 }
+                //                 let rule = local_description[parentProperty];
+                //                 rule = Array.isArray(rule) ? rule[0] : rule;
+                //                 if (parentModelInstance[parentProperty].includes(local_modelInstance._id.toString())) {
+                //                     Log('duplication', 'not provide')//////////duplicableId//////////////
+                //                     return rej(null);
+                //                 }
+                //                 const isItemUser = local_modelInstance.__key._id.toString() == ctx.__key
+                //                 if (!accessValidator(ctx, 'update', rule.access, "property", isItemUser)) {
+                //                     return rej(null);//////////////alienId//////////////////
+                //                 }
+                //                 rev(id);
+                //             } catch (error) {
+                //                 rej(null);
+                //             }
+                //         });
+                //     });
+                //     const result = await Promise.allSettled(promises);
+                //     const validResult = result.filter((data: any) => {
+                //         return !!data.value;
+                //     }).map((data: any) => {
+                //         return data.value;
+                //     })
+                //     validAddId.push(...validResult);
+                // }
                 /***********************  AddNew  ****************** */
                 if (Array.isArray(addNew)) {
                     const ctrl = ModelControllers[option.modelPath]();
@@ -457,9 +458,9 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     })
                     validAddNew.push(...validResult);
                 }
-                if (validAddId.length > 0 || validAddNew.length > 0) {
+                if (validAddNew.length > 0) {
                     try {
-                        parentModelInstance[property].push(...validAddId, ...validAddNew);
+                        parentModelInstance[property].push(...validAddNew);
                         await parentModelInstance.save();
                     } catch (error) {
                         await backDestroy(ctx, more);
@@ -478,14 +479,13 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     }
                 }
                 /***********************  remove  ****************** */
-                if (remove) {
-                    parentModelInstance[parentProperty] = parentModelInstance[parentProperty].filter((id) => {
-                        return !remove.includes(id.toString());
-                    })
-                }
-
                 try {
-                    await parentModelInstance.save();
+                    if (remove) {
+                        parentModelInstance[parentProperty] = parentModelInstance[parentProperty].filter((id) => {
+                            return !remove.includes(id.toString());
+                        })
+                        await parentModelInstance.save();
+                    }
                     // remove. /////////// impact ///////////////////////
                 } catch (error) {
                     await backDestroy(ctx, more);
@@ -531,11 +531,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             let result = null;
             try {
                 result = await ModelControllers[option.modelPath].option.model.paginate(
-                    //paging.query
-                    {
-                        'a': { '$in': parentModelInstance[parentProperty] }
-                    }
-                    , options);
+                    paging.query, options);
                 if (!result) {
 
                 }
