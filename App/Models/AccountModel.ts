@@ -62,32 +62,32 @@ const ctrlMaker = MakeModelCtlForm({
   volatile: false,
 });
 
-// ctrlMaker.pre('read', async (e) => {
-//   await new Promise((rev => {
-//     const d = Date.now() + 1000
-//     const t = () => {
-//       console.log(Date.now());
-//       if (d < Date.now()) {
-//         return rev(d);
-//       }
-//       setTimeout(t, 10)
-//     }
-//     t()
-//   }))
-// })
-// ctrlMaker.post('read', async (e) => {
-//   await new Promise((rev => {
-//     const d = Date.now() + 1000
-//     const t = () => {
-//       console.log('_________________' + Date.now());
-//       if (d < Date.now()) {
-//         return rev(d);
-//       }
-//       setTimeout(t, 10)
-//     }
-//     t()
+ctrlMaker.pre('read', async (e) => {
+  await new Promise((rev => {
+    const d = Date.now() + 1000
+    const t = () => {
+      console.log(Date.now());
+      if (d < Date.now()) {
+        return rev(d);
+      }
+      setTimeout(t, 10)
+    }
+    t()
+  }))
+})
+ctrlMaker.post('read', async (e) => {
+  await new Promise((rev => {
+    const d = Date.now() + 1000
+    const t = () => {
+      console.log('_________________' + Date.now());
+      if (d < Date.now()) {
+        return rev(d);
+      }
+      setTimeout(t, 10)
+    }
+    t()
 
-//   }))
-// })
+  }))
+})
 
 export default AccountModel;

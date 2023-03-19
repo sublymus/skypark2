@@ -10,7 +10,14 @@ const Server: ControllerSchema = {
             const description: DescriptionSchema = { ...(ModelControllers[ctx.data.modelPath]?.option.schema as any).description };
 
             for (const key in description) {
-                if (key == '__key') continue;
+                if (key == '__key') {
+                    delete description["__key"];
+                    continue
+                };
+                if (key == 'updatedProperty') {
+                    delete description["updatedProperty"];
+                    continue
+                };
                 if (Object.prototype.hasOwnProperty.call(description, key)) {
                     const rule = description[key] = { ...description[key] };
                     if (Array.isArray(rule)) {
@@ -47,7 +54,7 @@ const Server: ControllerSchema = {
 const ctrlMaker = SaveCtrl({
     ctrl: { Server },
     access: {
-        description: "admin"
+        description: "any"
     }
 })
 

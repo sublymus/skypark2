@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { ContextSchema } from "./Context";
-import { Controllers, ModelControllers, ResponseSchema } from "./Initialize";
+import { ModelControllers, ResponseSchema } from "./Initialize";
 
 const secret = "a";
 const generateToken = (payload) => {
@@ -76,13 +76,14 @@ export class AuthManager {
         };
       }
     }
-    const result = await Controllers[authData.signup]()["create"](ctx);
-    // Log("ici", result)
+    const result = await ModelControllers[authData.signup]()["create"](ctx);
+    Log("ici", result)
     if (result.error) {
       return {
         error: "OPERATION_FAILED",
         ...(await STATUS.OPERATION_FAILED(ctx, {
           target: authData.signup.toLocaleUpperCase(),
+          message:result.error
         })),
       };
     }

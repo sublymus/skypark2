@@ -59,13 +59,10 @@ const SQuery: SQuerySchema = function (
       let res: ResultSchema = null;
       if (modelRequest) {
         res = await ModelControllers[ctrlName.replace('model_', '')]?.()[action]?.(ctx);
-        Log('rest', { res })
       } else {
         res = await Controllers[ctrlName]?.()[action]?.(ctx);
-        Log('wepp', res, { ctrlName }, { ctrlName: Controllers[ctrlName]?.name }, res)
       }
 
-      Log('finish', { modelRequest }, { ctrlName }, { action }, res)
       if (res === undefined) {
         return cb?.({
           error: "NOT_FOUND",
@@ -97,10 +94,7 @@ SQuery.io = (server: any) => {
   io.on("connection", async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
     /********************    Models  *********************** */
     socket.onAny((event, ...args) => {
-      Log('any', { event }, ...args)
-    });
-    socket.onAnyOutgoing((event, ...args) => {
-      Log('any', { event }, ...args)
+      //Log('any', { event }, ...args)
     });
     const squery = SQuery(socket);
     for (const ctrlName in ModelControllers) {
@@ -185,11 +179,33 @@ SQuery.Schema = (description: DescriptionSchema) => {
     type: Date,
     default: Date.now(),
   }
+  description.updatedProperty = [{
+    type: String,
+    access: 'secret',
+  }];
 
   const schema = new Schema(description as any);
   (schema as any).description = description;
   schema.plugin(mongoosePaginate);
   schema.plugin(mongoose_unique_validator);
+
+  schema.pre('save', async function () {
+    this.updatedAt = Date.now();
+    this.modifiedPaths();
+    this.updatedProperty = this.modifiedPaths();
+  });
+
+  schema.post('save', async function (doc: any) {
+    //emettre dans  les room dedier
+    Log('cache', doc)
+    Global.io.emit('update:' + doc._id.toString(), {
+
+      id: doc._id.toString(),
+      doc,
+      properties: doc.updatedProperty,
+    })
+  });
+
   return schema;
 }
 export { SQuery };

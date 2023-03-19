@@ -4,7 +4,7 @@ import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { Config } from "../../squeryconfig";
 import { ContextSchema } from "./Context";
-import { CtrlModelMakerSchema, DescriptionSchema, EventPostSchema, EventPreSchema, FileSchema, ListenerPostSchema, ListenerPreSchema, ModelActionAvailable, ModelControllers, ModelControllerSchema, ModelFrom_optionSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, ResultSchema, TypeRuleSchema } from "./Initialize";
+import { CtrlModelMakerSchema, DescriptionSchema, EventPostSchema, EventPreSchema, FileSchema, ListenerPostSchema, ListenerPreSchema, ModelActionAvailable, ModelControllers, ModelControllerSchema, ModelFrom_optionSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, TypeRuleSchema } from "./Initialize";
 
 // les tableau 2D sont pas tolere
 const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchema = (options: ModelFrom_optionSchema): CtrlModelMakerSchema => {
@@ -369,17 +369,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     _id: parentId,
                 });
                 if (!parentModelInstance) {
-                    return await callPost({
-                        ctx,
-                        more: { ...more },
-                        action,
-                        res: {
-                            error: "NOT_FOUND",
-                            ...(await STATUS.NOT_FOUND(ctx, {
-                                target: parentPath.toLocaleUpperCase(),
-                            })),
-                        },
-                    });
+                    throw new Error('parentModelInstance is undefined, using {id:' + parentId + ", modelPath:" + parentPath + "}");
                 }
             } catch (error) {
                 return await callPost({
@@ -403,30 +393,30 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 if (Array.isArray(addId)) {
                     const promises = addId.map((id) => {
                         return new Promise<string>(async (rev, rej) => {
-                            try {
-                                const modelInstance = await option.model.findOne({
-                                    _id: id,
+                            try {                          ///////
+                                const local_modelInstance = await option.model.findOne({
+                                    _id: id,////////////////////////////////////////////
                                 });
-                                if (!modelInstance) {
+                                if (!local_modelInstance) {
                                     return rej(null);
                                 }
-                                const parts = modelInstance.__parentModel.split('_');
-                                const parentPath = parts[0];
-                                const parentId = parts[1];
-                                const parentProperty = parts[2];
-                                const description = ModelControllers[parentPath]?.option.schema.obj;
-                                if (!description) {
+                                const parts = local_modelInstance.__parentModel.split('_');
+                                const local_parentPath = parts[0];
+                                const local_parentId = parts[1];
+                                const local_parentProperty = parts[2];
+                                const local_description = ModelControllers[local_parentPath]?.option.schema.obj;
+                                if (!local_description) {
                                     return rej(null);
                                 }
-                                let rule = description[parentProperty];
+                                let rule = local_description[parentProperty];
                                 rule = Array.isArray(rule) ? rule[0] : rule;
-                                if (parentModelInstance[parentProperty].includes(modelInstance._id.toString())) {
-                                    Log('duplication', 'not provide')
+                                if (parentModelInstance[parentProperty].includes(local_modelInstance._id.toString())) {
+                                    Log('duplication', 'not provide')//////////duplicableId//////////////
                                     return rej(null);
                                 }
-                                const isItemUser = modelInstance.__key._id.toString() == ctx.__key
+                                const isItemUser = local_modelInstance.__key._id.toString() == ctx.__key
                                 if (!accessValidator(ctx, 'update', rule.access, "property", isItemUser)) {
-                                    return rej(null);
+                                    return rej(null);//////////////alienId//////////////////
                                 }
                                 rev(id);
                             } catch (error) {
@@ -495,8 +485,8 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 }
 
                 try {
-                    parentModelInstance.save();
-                    // remove.
+                    await parentModelInstance.save();
+                    // remove. /////////// impact ///////////////////////
                 } catch (error) {
                     await backDestroy(ctx, more);
                     return await callPost({
@@ -540,7 +530,12 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
 
             let result = null;
             try {
-                result = await ModelControllers[option.modelPath].option.model.paginate(paging.query, options);
+                result = await ModelControllers[option.modelPath].option.model.paginate(
+                    //paging.query
+                    {
+                        'a': { '$in': parentModelInstance[parentProperty] }
+                    }
+                    , options);
                 if (!result) {
 
                 }
@@ -616,34 +611,26 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 for (const p in description) {
                     if (Object.prototype.hasOwnProperty.call(description, p)) {
                         const rule = description[p];
+                        if (Array.isArray(rule)) {
+                            Log('fun', p)
+                            if (!accessValidator(ctx, action, rule[0].access, "property", modelInstance.__key._id.toString() == ctx.__key)) {
+                                continue;
+                            }
+                        } else {
+                            Log('fun', p)
+                            if (!accessValidator(ctx, action, rule.access, "property", modelInstance.__key._id.toString() == ctx.__key)) {
+                                continue;
+                            }
+                        }
+                        console.log(p);
+
                         if (!ctx.data[p]) continue;
                         if (!Array.isArray(rule) && rule.ref) {
                             continue
                         }
                         if (Array.isArray(rule)) {
                             if (rule[0].ref) {
-                                /***
-                             * 
-                             *   const folders =   await instance.folders
-                             *      const indexes = [];
-                             *      
-                             *       folders.forEach((value , index)=>{
-                    *                  if( value.expireAt < Date.now()){
-                    *                       indexes.push(index)
-                    *                  }
-                             *               
-                             *      })
-                             * 
-                             *  instance.folders = {
-                             *                  add:['idjkuhjd','idkjghjksac'],
-                             *                  remove: [34, 79, 98]
-                             *               }
-                             * 
-                             * 
-                             * 
-                             * 
-                             * 
-                             */
+                                continue//////////////////////
                             } else if (rule[0].file) {
                                 try {
                                     modelInstance[p] = await FileValidator(
@@ -712,7 +699,12 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 more: { ...more, modelInstance },
                 action,
                 res: {
-                    response: (await controller.read(ctx)).response,
+                    response: (await controller.read({
+                        ...ctx,
+                        data: {
+                            id: modelInstance._id.toString(),
+                        }
+                    })).response,
                     ...(await STATUS.OPERATION_SUCCESS(ctx, {
                         target: option.modelPath.toLocaleUpperCase(),
                     })),
@@ -940,6 +932,8 @@ function deepPopulate(
                 }
                 exec(rule[0]);
             }
+            console.log(info.select);
+
         }
     }
     return;
@@ -1143,6 +1137,7 @@ function accessValidator(
     type: "controller" | "property",
     isUser?: boolean
 ) {
+
     let valid = false;
     const accessMap = {
         controller: {
@@ -1217,7 +1212,7 @@ function accessValidator(
 
     valid = accessMap[type]?.[action]?.[access].includes(permission);
 
-    //Log('access', ctx.__permission, action, access, type, accessMap[type]?.[action]?.[access], valid)
+    // Log('access', { permission }, { action }, { access }, { type }, { valid })
 
     return valid;
 }
@@ -1240,4 +1235,5 @@ async function backDestroy(ctx: ContextSchema, more: MoreSchema) {
     return;
 }
 
-export { MakeModelCtlForm , accessValidator , backDestroy , FileValidator , formatModelInstance };
+export { MakeModelCtlForm, accessValidator, backDestroy, FileValidator, formatModelInstance };
+

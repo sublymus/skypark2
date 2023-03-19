@@ -102,7 +102,7 @@ const SaveCtrl = (option: SaveCtrlOptionSchema): CtrlMakerSchema => {
     return Controllers[name];
 }
 function ctrlAccessValidator(ctx: ContextSchema, access: string) {
-    Log('access', {ok: access == 'any' ? true : (access == ctx.__permission),access , permission: ctx.__permission});
+    access = access || 'any';
     return access == 'any' ? true : (access == ctx.__permission);
 }
 

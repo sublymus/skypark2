@@ -14,7 +14,6 @@ export class List extends BaseComponent {
             modelInstance: null,
             arrayInstance: null,
             model: null,
-            instance: null,
 
         }, data);
         const { _, $, $All, viewName } = this.mvc;
@@ -72,9 +71,9 @@ export class List extends BaseComponent {
                 this.view.remove();
                 this.parentCpn.emit('show');
             },
-            ['@update:click']: () => {
+            ['@update:click']: async () => {
                 const option = JSON.parse($('textarea').value);
-                this.arrayInstance.update(option);
+                this.modelInstance[this.property] = option;
             },
             ['@rest:click']: () => {
                 this.container.append(_('List', {

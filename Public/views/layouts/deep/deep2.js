@@ -1,10 +1,6 @@
 import BaseComponent, { Components } from '../../ts_lib/baseComponent/baseComponent.js';
 import SQuery from "../../ts_lib/SQueryClient.js";
 
-
-
-
-
 export class Deep extends BaseComponent {
     constructor(data) {
         super({
@@ -35,15 +31,16 @@ export class Deep extends BaseComponent {
                 this.view.remove();
                 this.parentCpn.emit('show');
             },
-            ['@rest:click']: () => {
-                this.container.append(_('Deep', {
-                    id: this.id,
-                    parentCpn: this.parentCpn,
-                    modelPath: this.modelPath,
-                    container: this.container,
-                }))
-                this.view.remove();
-                this.emit('hide');
+            ['@rest:click']: async () => {
+                // this.container.append(_('Deep', {
+                //     id: this.id,
+                //     parentCpn: this.parentCpn,
+                //     modelPath: this.modelPath,
+                //     container: this.container,
+                // }))
+                // this.view.remove();
+                //this.emit('hide');
+                //await this.instance.refresh()
             },
 
             [viewName]: () => {
@@ -61,8 +58,8 @@ export class Deep extends BaseComponent {
                     for (const property in description) {
                         if (Object.hasOwnProperty.call(description, property)) {
                             const rule = description[property];
-                            
-                           // console.log(rule.type, (await this.instance[property]));
+
+                            // console.log(rule.type, (await this.instance[property]));
                             if (rule.ref) {
                                 this.emit('createBtn', {
                                     data: {
@@ -93,7 +90,10 @@ export class Deep extends BaseComponent {
                             } else if (Array.isArray(rule)) {
                                 //console.log('***********   Array.isArray(rule)  **************', rule);
                             } else {
+                                console.log('********', rule, property, this.instance);
                                 this.emit('createInput', {
+
+
                                     data: {
                                         property: property,
                                         value: await this.instance[property],
@@ -119,6 +119,9 @@ export class Deep extends BaseComponent {
                         _('h1', 'model', data.modelPath),
                         _('h3', 'id', await data.id),
                     );
+                    this.instance.when('refresh', async () => {
+                        $(btn, 'h3').textContent = await this.instance[data.property];
+                    })
                     btn.addEventListener('click', async () => {
                         this.emit('hide');
                         this.container.append(_('Deep', {
@@ -135,6 +138,9 @@ export class Deep extends BaseComponent {
                         _('h1', 'label', 'Show Array'),
                         _('h3', 'id', data.modelPath + '.' + data.property),
                     );
+                    this.instance.when('refresh', async () => {
+                        $(btn, 'h3').textContent = await this.instance[data.property];
+                    })
                     btn.addEventListener('click', async () => {
                         this.emit('hide');
                         console.log('------- list btn ------', data);
@@ -149,9 +155,26 @@ export class Deep extends BaseComponent {
                 });
                 this.when('createInput', ({ data, cb }) => {
                     const input = _('input', ['type:text', `value:${data.value}`, 'class:password', 'placeholder:' + data.property])
-                    input.addEventListener('blur', () => {
+                    input.addEventListener('blur', async () => {
                         this.instance[data.property] = input.value;
+                        // input.value = await this.instance[data.property]
                     });
+                    this.instance.when('refresh', async () => {
+                        console.log('#############################', await this.instance[data.property]);
+                        let i = 0;
+                        const v = await this.instance[data.property];
+                        input.value = '';
+                        const id = setInterval(() => {
+
+                            input.value += " .. "
+                            i++;
+                            if (i > 5) {
+                                input.value = v;
+                                clearInterval(id)
+                            }
+                        }, 200);
+
+                    })
                     const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), input)
                     cb(inputCtn);
                 });
@@ -160,12 +183,19 @@ export class Deep extends BaseComponent {
                     fileElm.addEventListener("change", async () => {
                         this.instance[data.property] = fileElm.files;
                     });
+                    const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), fileElm, _('br'));
                     const f = [];
-                    (data.value).forEach(filePath => {
-                        f.push(_('a', ['target:_blank', 'href:' + filePath], filePath.substring(filePath.lastIndexOf('/'))), _('br'));
-                    });
-
-                    const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), fileElm, _('br'), ...f)
+                    const make = async () => {
+                        f.forEach(e => {
+                            e.remove();
+                        });
+                        (await this.instance[data.property]).forEach(filePath => {
+                            f.push(_('a', ['target:_blank', 'href:' + filePath], filePath.substring(filePath.lastIndexOf('/'))), _('br'));
+                        });
+                        inputCtn.append(...f)
+                    }
+                    this.instance.when('refresh', make)
+                    make();
                     cb(inputCtn)
                 })
             }
