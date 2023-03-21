@@ -139,7 +139,7 @@ export class Deep extends BaseComponent {
                         _('h3', 'id', data.modelPath + '.' + data.property),
                     );
                     this.instance.when('refresh', async () => {
-                        $(btn, 'h3').textContent = await this.instance[data.property];
+                        $(btn, 'h3').textContent = (await this.instance[data.property]).id;
                     })
                     btn.addEventListener('click', async () => {
                         this.emit('hide');
@@ -184,17 +184,17 @@ export class Deep extends BaseComponent {
                         this.instance[data.property] = fileElm.files;
                     });
                     const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), fileElm, _('br'));
-                    const f = [];
+                    const list_a = [];
                     const make = async () => {
-                        f.forEach(e => {
+                        list_a.forEach(e => {
                             e.remove();
                         });
                         (await this.instance[data.property]).forEach(filePath => {
-                            f.push(_('a', ['target:_blank', 'href:' + filePath], filePath.substring(filePath.lastIndexOf('/'))), _('br'));
+                            list_a.push(_('a', ['target:_blank', 'href:' + filePath], filePath.substring(filePath.lastIndexOf('/'))), _('br'));
                         });
-                        inputCtn.append(...f)
+                        inputCtn.append(...list_a)
                     }
-                    this.instance.when('refresh', make)
+                    this.instance.when('refresh:'+data.property, make)
                     make();
                     cb(inputCtn)
                 })

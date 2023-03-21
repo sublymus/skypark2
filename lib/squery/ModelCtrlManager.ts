@@ -4,7 +4,7 @@ import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { Config } from "../../squeryconfig";
 import { ContextSchema } from "./Context";
-import { CtrlModelMakerSchema, DescriptionSchema, EventPostSchema, EventPreSchema, FileSchema, ListenerPostSchema, ListenerPreSchema, ModelActionAvailable, ModelControllers, ModelControllerSchema, ModelFrom_optionSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, TypeRuleSchema } from "./Initialize";
+import { CtrlModelMakerSchema, DescriptionSchema, EventPostSchema, EventPreSchema, FileSchema, ListenerPostSchema, ListenerPreSchema, ModelActionAvailable, ModelControllers, ModelControllerSchema, ModelFrom_optionSchema, ModelInstanceSchema, MoreSchema, PopulateSchema, ResponseSchema, ResultSchema, TypeRuleSchema } from "./Initialize";
 
 // les tableau 2D sont pas tolere
 const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchema = (options: ModelFrom_optionSchema): CtrlModelMakerSchema => {
@@ -338,14 +338,14 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 more: { ...more },
                 action,
             });
-            const { paging, addId, addNew, remove, property } = ctx.data;
+            const { paging, addNew, remove, property } = ctx.data;
             let parentModelInstance: ModelInstanceSchema;
             more = {
                 savedlist: [],
                 ...more,
                 __parentModel: paging?.query?.__parentModel,
             };
-
+            //   Log('remove', { remove })
             const parts = more.__parentModel?.split('_');
             const parentPath = parts?.[0];
             const parentId = parts?.[1];
@@ -440,7 +440,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     const promises = addNew.map((data) => {
                         return new Promise(async (rev, rej) => {
                             if (!more.__parentModel) rej(null);
-                            const res = await (ctrl.create || ctrl.store)(
+                            const res = await ctrl.create(
                                 {
                                     ...ctx,
                                     data,
@@ -458,7 +458,48 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     })
                     validAddNew.push(...validResult);
                 }
-                if (validAddNew.length > 0) {
+
+                /***********************  remove : in DB - > in List ****************** */
+                try {
+                    Log('try', { remove, parentProperty });
+                    if (Array.isArray(remove)) {
+                        const description: DescriptionSchema = ModelControllers[parentPath].option.schema.obj;
+                        const rule = description[parentProperty];
+                        Log('isArray', { parentProperty, rule });
+                        for (const id of remove) {
+                            const impact = Array.isArray(rule) && rule[0].impact != false;
+                            let res: ResultSchema;
+                            Log('impact', { impact, parentProperty, rule });
+                            if (impact) {
+                                res = await ModelControllers[option.modelPath]().delete(
+                                    {
+                                        ...ctx,
+                                        data: { id },
+                                    }, more
+                                );
+                            }
+                            parentModelInstance[parentProperty] = parentModelInstance[parentProperty].filter((some_id: string) => {
+                                return !(some_id == id)
+                            })
+                        }
+                    }
+                } catch (error) {
+                    await backDestroy(ctx, more);
+                    return await callPost({
+                        ctx,
+                        more: { ...more },
+                        action,
+                        res: {
+                            error: "OPERATION_FAILED",
+                            ...(await STATUS.OPERATION_FAILED(ctx, {
+                                target: option.modelPath.toLocaleUpperCase(),
+                                message: error.message,
+                            })),
+                        },
+                    });
+                }
+
+                if (validAddNew.length > 0 || (Array.isArray(remove) && remove.length > 0)) {
                     try {
                         parentModelInstance[property].push(...validAddNew);
                         await parentModelInstance.save();
@@ -478,32 +519,9 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         });
                     }
                 }
-                /***********************  remove  ****************** */
-                try {
-                    if (remove) {
-                        parentModelInstance[parentProperty] = parentModelInstance[parentProperty].filter((id) => {
-                            return !remove.includes(id.toString());
-                        })
-                        await parentModelInstance.save();
-                    }
-                    // remove. /////////// impact ///////////////////////
-                } catch (error) {
-                    await backDestroy(ctx, more);
-                    return await callPost({
-                        ctx,
-                        more: { ...more },
-                        action,
-                        res: {
-                            error: "OPERATION_FAILED",
-                            ...(await STATUS.OPERATION_FAILED(ctx, {
-                                target: option.modelPath.toLocaleUpperCase(),
-                                message: error.message,
-                            })),
-                        },
-                    });
-                }
+
             } else {
-                Log('wertyuiop', 'wer54t67u8io9')
+                //Log('wertyuiop', 'wer54t67u8io9')
             }
             Log('parent', parentModelInstance);
             const defaultPaging = {
@@ -708,7 +726,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             });
         };
 
-        /////////////////////////////////////////////////////////////////
+        //***************la supresion doit forcement bien se passer **********/
         ///////////////////          DELETE          ////////////////////
         /////////////////////////////////////////////////////////////////
         controller[option.volatile ? "delete" : "destroy"] = async (
@@ -928,7 +946,7 @@ function deepPopulate(
                 }
                 exec(rule[0]);
             }
-            console.log(info.select);
+            //console.log(info.select);
 
         }
     }
@@ -1118,7 +1136,6 @@ async function FileValidator(
 
     return await Map[action]();
 }
-
 function accessValidator(
     ctx: ContextSchema,
     action: ModelActionAvailable,

@@ -21,6 +21,23 @@ export async function getDesription(modelPath) {
         })
     })
 }
+export async function getDesriptions() {
+
+    const descriptions = await new Promise((rev) => {
+        SQuery.socket.emit('server:descriptions', {}, (res) => {
+            if (res.error) throw new Error(JSON.stringify(res));
+            //console.log('88888888888888888888888888', res);
+            rev(res.response);
+        })
+    })
+    for (const key in descriptions) {
+        if (Object.hasOwnProperty.call(descriptions, key)) {
+            Descriptions[key] = descriptions[key];
+        }
+    }
+
+    return Descriptions
+}
 export async function createModelFrom(modelPath) {
     const Model = {}
     const description = await getDesription(modelPath);
@@ -135,7 +152,7 @@ export async function createInstanceFrom({ modelPath, id }) {
                 console.log(res);
                 cache = res.response
                 lastInstanceUpdateAt = cache.updatedAt;
-                emitRefresh(['name'])
+                emitRefresh()
                 rev(cache);
             });
         })
@@ -186,10 +203,7 @@ export async function createInstanceFrom({ modelPath, id }) {
                             if (firstRead) {
                                 propertyCache[property] = await createArrayInstanceFrom({ modelPath, id, property, description });
                                 firstRead = false;
-                            } else if (lastPropertyUpdateAt != lastInstanceUpdateAt) {
-                                propertyCache[property].update();
-                                lastPropertyUpdateAt = lastInstanceUpdateAt;
-                                console.log('get:propertyCache[' + property + ']', { propertyCache, cache });
+                                propertyCache[property].when('')
                             }
                             return propertyCache[property];
                         } else if (rule[0]) {
@@ -214,7 +228,7 @@ export async function createInstanceFrom({ modelPath, id }) {
                         if (value == cache[property]) return;
                         if (rule.ref) {
 
-                            // on vouloire changer l'id stocker dans une proprieter, cella de doit etre permis ou non
+                            //vouloire changer l'id stocker dans une proprieter, cella de doit etre permis ou non
                             return console.error('ReadOnly modelInstance["refProperty"], Exemple: const modelInstance =  await modelInstance["refProperty"] ');
                         } else if (rule[0] && rule[0].ref) {
                             const ai = await instance[property];
@@ -250,6 +264,7 @@ export async function createInstanceFrom({ modelPath, id }) {
                             if (res.error) {
                                 throw new Error(JSON.stringify(res));
                             }
+                            lastPropertyUpdateAt = res.response.updatedAt;
                             cache[property] = res.response[property];
                         })
                     },
@@ -298,22 +313,27 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
 
     const arrayInstance = {};
     const refresh = async (options) => {
-
+        console.log('-------------------option : ', options);
         options = options || {};
-
+        console.log('+++++++++++++++++++option : ', options);
         if (options.paging) {
             options.paging = paging = {
                 ...paging,
                 ...options.paging,
+                ert: 'pagin'
             }
             console.log(paging);
             emiter.emit('paging', paging);
         } else {
-            options.paging = paging
+            options.paging = paging;
+            options.opi = 'node p'
+
         }
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@option : ', options);
         options.paging.query = {
             __parentModel: parentModel + '_' + parentId + '_' + property,
         }
+        console.log('#####################option : ', options);
 
         return await new Promise((rev) => {
             if (SQuery.socket.connected) {
@@ -404,8 +424,8 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
         return await refresh();
     }
     arrayInstance.update = async (options) => {
-        console.log('options : ', options);
-        return await refresh(options);
+        console.error('**********options********* : ', options);
+        return await refresh({ ...options });
     }
     arrayInstance.when = (...arg) => {
         emiter.when(...arg);

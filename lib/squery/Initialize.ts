@@ -162,7 +162,7 @@ export type TypeRuleSchema = {
   //(NB:non implementer )duplicable?:boolean;//default:false ; true =>  on peut ajouter plusieurs fois un meme id a une list de ref
   //checkout?:true,
   type: TypeSchema//TypeSchema;
-  //impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
+  impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
   //watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
   access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//
   populate?: boolean;// 

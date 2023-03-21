@@ -64,7 +64,7 @@ const ctrlMaker = MakeModelCtlForm({
 
 ctrlMaker.pre('read', async (e) => {
   await new Promise((rev => {
-    const d = Date.now() + 1000
+    const d = Date.now() + 100;
     const t = () => {
       console.log(Date.now());
       if (d < Date.now()) {

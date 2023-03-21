@@ -73,6 +73,7 @@ export class List extends BaseComponent {
             },
             ['@update:click']: async () => {
                 const option = JSON.parse($('textarea').value);
+                console.error('+++++++++++++++++++option : ', option);
                 this.modelInstance[this.property] = option;
             },
             ['@rest:click']: () => {

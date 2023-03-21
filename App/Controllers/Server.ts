@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { ContextSchema } from "../../lib/squery/Context";
 import { SaveCtrl } from "../../lib/squery/CtrlManager";
-import { ControllerSchema, DescriptionSchema, ModelControllers, ResponseSchema } from "../../lib/squery/Initialize";
+import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema } from "../../lib/squery/Initialize";
 
 const Server: ControllerSchema = {
 
@@ -50,10 +50,40 @@ const Server: ControllerSchema = {
             };
         }
     },
+    descriptions: async (ctx: ContextSchema, more: MoreSchema): ResponseSchema => {
+        try {
+            const descriptions: {
+                [p: string]: DescriptionSchema,
+            } = {}
+
+            for (const key in ModelControllers) {
+                /// TODO verifier la permitsson   
+                //if (accessValidator(ctx, '', ModelControllers[key].option.access, 'controller'))
+                ctx.data.modelPath = key
+                descriptions[key] = (await Server.description(ctx, more)).response;
+                console.log('1', key, descriptions[key]);
+
+            }
+            console.log('2', descriptions);
+            return {
+                response: descriptions,
+                status: 202,
+                code: "OPERATION_SUCCESS",
+                message: ''
+            }
+        } catch (error) {
+            return {
+                error: "NOT_FOUND",
+                status: 404,
+                code: "UNDEFINED",
+                message: error.message,
+            };
+        }
+    },
     valideId: async (ctx: ContextSchema): ResponseSchema => {
         try {
 
-            if (new mongoose.Types.ObjectId(ctx.data.id)._id.toString()==ctx.data.id) {
+            if (new mongoose.Types.ObjectId(ctx.data.id)._id.toString() == ctx.data.id) {
                 return {
                     response: true,
                     status: 404,
@@ -62,7 +92,7 @@ const Server: ControllerSchema = {
                 };
             }
             throw new Error("ID is not valid");
-            
+
         } catch (error) {
             return {
                 error: "BAD_ARGUMENT",

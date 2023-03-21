@@ -1,13 +1,11 @@
 import BaseComponent, { Components } from '../../ts_lib/baseComponent/baseComponent.js';
+import SQuery from '../../ts_lib/SQueryClient.js';
 
 export class EntryPoint extends BaseComponent {
     constructor(data) {
         super({
             model: 'user',
-            models: {
-                user: {},
-                account: {}
-            }
+            descriptions: {}
         }, data);
         const { _, $, $All, viewName } = this.mvc;
         this.view = _('div', viewName,
@@ -31,14 +29,16 @@ export class EntryPoint extends BaseComponent {
                     id: $('input').value,
                 })
             },
-            [viewName]: () => {
-                this.when('models', (models) => {
+            [viewName]: async () => {
+                this.when('descriptions', (descriptions) => {
                     $('select').childNodes.forEach(option => {
                         option.remove();
                     });
-                    for (const modelPath in models) {
-                        if (Object.hasOwnProperty.call(models, modelPath)) {
-                            $('select').append(_('option',['value:'+modelPath], modelPath.toUpperCase()));
+                    console.log({descriptions});
+                    for (const modelPath in descriptions) {
+                        if (Object.hasOwnProperty.call(descriptions, modelPath)) {
+                            $('select').append(_('option', ['value:' + modelPath], modelPath.toUpperCase()));
+                            console.log({modelPath});
                         }
                     }
 
@@ -46,6 +46,8 @@ export class EntryPoint extends BaseComponent {
                 this.when('error', (error) => {
                     alert(error);
                 });
+
+                this.descriptions = await SQuery.getDesriptions();
 
             }
         }

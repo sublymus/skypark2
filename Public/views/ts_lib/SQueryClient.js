@@ -1,4 +1,4 @@
-import { createModelFrom, getDesription } from './SQueryUtils.js';
+import { createModelFrom, getDesription, getDesriptions } from './SQueryUtils.js';
 const SQuery = {};
 
 const socket = io(null, {
@@ -34,6 +34,7 @@ SQuery.on = (event, ...arg) => {
     socket.on(event, ...arg);
 }
 SQuery.getDesription = getDesription;
+SQuery.getDesriptions = getDesriptions;
 
 // const ActionsMap = {
 //     String: {
