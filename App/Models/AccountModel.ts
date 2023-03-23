@@ -45,7 +45,7 @@ let accountSchema = SQuery.Schema({
   favorites: {
     type: Schema.Types.ObjectId,
     ref: FavoritesModel.modelName,
-    access: "private",
+    access: "public",
   },
   profile: {
     type: Schema.Types.ObjectId,
@@ -77,7 +77,7 @@ ctrlMaker.pre('read', async (e) => {
 })
 ctrlMaker.post('read', async (e) => {
   await new Promise((rev => {
-    const d = Date.now() + 1000
+    const d = Date.now() + 100
     const t = () => {
       console.log('_________________' + Date.now());
       if (d < Date.now()) {

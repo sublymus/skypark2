@@ -26,6 +26,7 @@ let ArticleShema = SQuery.Schema({
   folders: [{
     type: Schema.Types.ObjectId,
     ref: FolderModel.modelName,
+    alien:true,
   }],
   description: {
     type: String,

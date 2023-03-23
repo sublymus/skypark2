@@ -4,12 +4,13 @@ import { SQuery } from "../../lib/squery/SQuery";
 import AccountModel from "./AccountModel";
 import ArticlModel from "./ArticleModel";
 import BuildingModel from "./BuildingModel";
+import QuarterModel from "./Quarter";
 
 let userSchema = SQuery.Schema({
   account: {
     type: Schema.Types.ObjectId,
     ref: AccountModel.modelName,
-    required: true,
+  //  required: true,
   },
   my_article: {
     type: Schema.Types.ObjectId,
@@ -17,11 +18,12 @@ let userSchema = SQuery.Schema({
   },
   building: {
     type: Schema.Types.ObjectId,
-    ref: BuildingModel.modelName
+    ref: BuildingModel.modelName,
+    alien:true,
   },
   quarter: {
     type: Schema.Types.ObjectId,
-    ref: BuildingModel.modelName
+    ref: QuarterModel.modelName
   }
 });
 

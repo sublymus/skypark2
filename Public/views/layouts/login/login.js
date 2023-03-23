@@ -38,7 +38,6 @@ export class Login extends BaseComponent {
                         id: res.response.loginId,
                     })
                 });
-
             },
             [viewName]: () => {
                 this.when('error', (error) => {

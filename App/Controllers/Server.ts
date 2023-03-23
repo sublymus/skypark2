@@ -61,10 +61,10 @@ const Server: ControllerSchema = {
                 //if (accessValidator(ctx, '', ModelControllers[key].option.access, 'controller'))
                 ctx.data.modelPath = key
                 descriptions[key] = (await Server.description(ctx, more)).response;
-                console.log('1', key, descriptions[key]);
+               // console.log('1', key, descriptions[key]);
 
             }
-            console.log('2', descriptions);
+           // console.log('2', descriptions);
             return {
                 response: descriptions,
                 status: 202,

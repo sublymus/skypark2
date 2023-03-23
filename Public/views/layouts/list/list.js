@@ -91,7 +91,7 @@ export class List extends BaseComponent {
                 /***************************     Init    ********************** */
                 this.when('modelPath', async (modelPath) => {
                     this.model = await SQuery.Model(modelPath);
-                    this.modelInstance = await this.model.instance({ id: this.id });
+                    this.modelInstance = await this.model.newInstance({ id: this.id });
                     this.description = this.model.description;
                     this.arrayInstance = (await this.modelInstance[this.property])
 

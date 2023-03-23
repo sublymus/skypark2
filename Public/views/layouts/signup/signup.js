@@ -58,18 +58,19 @@ export class Signup extends BaseComponent {
                     alert(error);
                 }
 
-                SQuery.on("signup:user/config", (data, cb) => {
-                    alert("vous avez " + data.expireAt + " pour entrez le code");
-                    let btnSend = document.querySelector(".btnSend");
-                    btnSend.style.backgroundColor = "yellow";
-                    btnSend.addEventListener("click", () => {
-                        cb(document.querySelector(".number").value);
-                    });
-                });
+
             },
             [viewName]: (view) => {
                 this.when("error", (error) => {
                     alert(error);
+                });
+                SQuery.on("signup:user/config", (data, cb) => {
+                    alert("vous avez " + data.expireAt + " pour entrez le code");
+                    let btnSend = $(".btnSend");
+                    btnSend.style.backgroundColor = "yellow";
+                    btnSend.addEventListener("click", () => {
+                        cb(document.querySelector(".number").value);
+                    });
                 });
                 this.when("type", (type) => {
                     console.log("wertyui");

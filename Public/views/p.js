@@ -13,10 +13,22 @@ export const load = {
   },
   article: {
     create: {
-      name: "IPHONE 14",
-      stock: 12,
-      description: "le plus simple des laler",
-      price: 23000,
+      name: 'Salade',
+      stock: 2,
+      description: 'Plante cultivée dont on fait la salade (surtout laitues; batavias; scaroles; chicorées). Repiquer des salades.',
+      views: [],
+      price: 5,
+      folders: [
+        {
+          folderName: "wena0",
+        },
+        {
+          folderName: "wena1",
+        },
+        {
+          folderName: "wena2",
+        },
+      ]
     },
     read: { id: "", key: "" },
     delete: { id: "", key: "" },
@@ -95,6 +107,30 @@ export const load = {
         },
         createdDate: Date.now() - 1_000_000_000 + parseInt(Math.random() * 1_000_000_000),
       },
+      building: {
+        name: "skypark Center",
+        city: "Rostov on don",
+        community: {
+          name: "Together Group",
+          activities: [{
+            poster: {
+              //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
+              //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
+              message: "*** BEST ****",
+            },
+            channel: {
+              name: "Sport_Channel",
+              firstWatcher: "",
+              description: "more description about sport channel",
+              vectors: [],
+              watcher: []
+            },
+            name: "Sport",
+            description: "we love sport"
+          }]
+        },
+      }
+
     },
     read: {
       id: "",
@@ -168,6 +204,23 @@ export const load = {
   },
   folder: {
     create: { folderName: "", __key: "" },
+    read: { id: "", __key: "" },
+    update: {
+      id: "",
+      __key: "",
+      folderName: "",
+    },
+    delete: { id: "", __key: "" },
+  },
+  post: {
+    create: {
+      message: {
+        user: '',
+        text: 'Hello Its my',
+        fileList: [],
+      },
+      likeCount: 2098,
+    },
     read: { id: "", __key: "" },
     update: {
       id: "",

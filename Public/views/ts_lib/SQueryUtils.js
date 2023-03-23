@@ -78,13 +78,13 @@ export async function createModelFrom(modelPath) {
         })
     };
     /** ****************      Instance      ******************* */
-    Model.instance = async (data, errorCb) => {
+    Model.newInstance = async (data, errorCb) => {
         if (!errorCb) errorCb = (e) => console.error(e);
         let instance = null
         try {
             try {
                 // console.log('*************', { modelPath, id: data.id, description });
-                instance = await createInstanceFrom({ modelPath, id: data.id, description });
+                instance = await createInstanceFrom({ modelPath, id: data.id, Model });
             } catch (e) {
                 errorCb(e);
             }
@@ -92,6 +92,30 @@ export async function createModelFrom(modelPath) {
             errorCb(e);
         }
         return instance;
+    };
+
+    Model.newParentInstance = async ({ childInstance, childId }, errorCb) => {
+        if (!errorCb) errorCb = (e) => console.error(e);
+        let parentInstance = null
+        let parentModelPath;
+        let parentId;
+        if (!childInstance) {
+            childInstance = await createInstanceFrom({ modelPath, id: childId, Model });
+        }
+        try {
+            try {
+                parentId = await childInstance['$parentId'];
+                parentModelPath = await childInstance['$parentModelPath']
+                const parentModel = await SQuery.Model(parentModelPath);
+                parentInstance = parentModel.newInstance({ id: parentId });
+            } catch (e) {
+                errorCb(e);
+            }
+        } catch (e) {
+            errorCb(e);
+        }
+
+        return parentInstance;
     };
     Model.update = async (data) => {
         const validation = dataValidator('update', description, data);
@@ -109,7 +133,7 @@ export async function createModelFrom(modelPath) {
                                 return rev(null);
                             }
                             //console.log('*************', { modelPath, id: res.response, description });
-                            rev(createInstanceFrom({ modelPath, id: res.response, description }))
+                            rev(createInstanceFrom({ modelPath, id: res.response, Model }))
                             //restCarte.text.value = JSON.stringify(res);
                         } catch (e) {
                             console.error(res);
@@ -128,7 +152,7 @@ export async function createModelFrom(modelPath) {
     }
     return Model;
 }
-export async function createInstanceFrom({ modelPath, id }) {
+export async function createInstanceFrom({ modelPath, id, Model }) {
     let cache = {};
     let propertyCache = {};
     const instance = {};
@@ -147,12 +171,12 @@ export async function createInstanceFrom({ modelPath, id }) {
         await new Promise((rev) => {
             SQuery.emit("model_" + modelPath + ':read', {
                 id: id,
-            }, (res) => {
+            }, async (res) => {
                 if (res.error) throw new Error(JSON.stringify(res));
                 console.log(res);
                 cache = res.response
                 lastInstanceUpdateAt = cache.updatedAt;
-                emitRefresh()
+                await emitRefresh()
                 rev(cache);
             });
         })
@@ -165,12 +189,12 @@ export async function createInstanceFrom({ modelPath, id }) {
         console.log('data.properties : ' + data.properties);
         cache = data.doc;
         lastInstanceUpdateAt = data.doc.updatedAt;
-        emitRefresh(data.properties)
+        await emitRefresh(data.properties)
 
     })
     //////
-    function emitRefresh(properties) {
-        emiter.emit('refresh', properties);
+    async function emitRefresh(properties) {
+        emiter.emit('refresh', instance);
         if (properties) {
             properties.forEach(p => {
                 emiter.emit('refresh:' + p, p);
@@ -178,7 +202,7 @@ export async function createInstanceFrom({ modelPath, id }) {
         } else {
             for (const p in description) {
                 if (Object.hasOwnProperty.call(description, p)) {
-                    emiter.emit('refresh:' + p, p);
+                    emiter.emit('refresh:' + p, await instance[p]);
                 }
             }
         }
@@ -203,7 +227,6 @@ export async function createInstanceFrom({ modelPath, id }) {
                             if (firstRead) {
                                 propertyCache[property] = await createArrayInstanceFrom({ modelPath, id, property, description });
                                 firstRead = false;
-                                propertyCache[property].when('')
                             }
                             return propertyCache[property];
                         } else if (rule[0]) {
@@ -227,7 +250,6 @@ export async function createInstanceFrom({ modelPath, id }) {
                     set: async function (value) {
                         if (value == cache[property]) return;
                         if (rule.ref) {
-
                             //vouloire changer l'id stocker dans une proprieter, cella de doit etre permis ou non
                             return console.error('ReadOnly modelInstance["refProperty"], Exemple: const modelInstance =  await modelInstance["refProperty"] ');
                         } else if (rule[0] && rule[0].ref) {
@@ -259,8 +281,6 @@ export async function createInstanceFrom({ modelPath, id }) {
                             id,
                             [property]: value,
                         }, (res) => {
-                            //console.log('update', 'modelPath : ', modelPath, 'property : ', property);
-                            //console.log(res);
                             if (res.error) {
                                 throw new Error(JSON.stringify(res));
                             }
@@ -273,20 +293,33 @@ export async function createInstanceFrom({ modelPath, id }) {
         }
     }
 
-    instance.id = instance._id
+
     instance.update = async (data) => {
-        SQuery.emit("model_" + modelPath + ':update', data, (res) => {
-            //console.log('update', 'modelPath : ', modelPath, 'property : ', property);
-            //console.log(res);
+        SQuery.emit("model_" + modelPath + ':update', {
+            ...data,
+            id
+        }, (res) => {
             if (res.error) {
                 throw new Error(JSON.stringify(res));
             }
+            lastPropertyUpdateAt = res.response.updatedAt;
             cache = res.response;
         })
     }
     instance.when = (...arg) => {
         emiter.when(...arg);
     };
+    const parts = (await instance.__parentModel).split('_');
+    instance.$modelPath = modelPath;
+    instance.$parentModelPath = parts[0];;
+    instance.$parentId = parts[1];
+    instance.$parentProperty = parts[2];
+    instance.$model = Model;
+    instance.$id = await instance._id
+    instance.newParentInstance = async () => {
+        return Model.newParentInstance({ childInstance: instance })
+    }
+    console.log('_______________>>>>>>>>', { instance });
     return instance;
 }
 export async function createArrayInstanceFrom({ modelPath: parentModel, id: parentId, property, description }) {
@@ -415,6 +448,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
             throw new Error("page(" + page + ") == null; page interval = [ 1 ; " + currentData.totalPages + " ]");
         }
     }
+    arrayInstance.__itemModelPath = Promise.resolve(itemModelPath);
     arrayInstance.last = async () => {
         if (paging.page == currentData.totalPages) {
             emiter.emit('data', currentData);

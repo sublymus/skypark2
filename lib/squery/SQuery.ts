@@ -197,7 +197,7 @@ SQuery.Schema = (description: DescriptionSchema) => {
 
   schema.post('save', async function (doc: any) {
     //emettre dans  les room dedier
-    Log('cache', doc)
+    //Log('cache', doc)
     Global.io.emit('update:' + doc._id.toString(), {
 
       id: doc._id.toString(),

@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import ForumModel from "./ForumModel";
+import ChannelModel from "./ChannelModel";
 import ProfileModel from "./ProfileModel";
 
 let ActivitySchema = SQuery.Schema({
@@ -10,9 +10,9 @@ let ActivitySchema = SQuery.Schema({
     ref: ProfileModel.modelName,
     required: true,
   },
-  forum: {
+  channel: {
     type: Schema.Types.ObjectId,
-    ref: ForumModel.modelName,
+    ref: ChannelModel.modelName,
   },
   name: {
     type: String,

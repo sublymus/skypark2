@@ -89,7 +89,7 @@ export type SaveCtrlOptionSchema = {
   },
   name?: string,
   access?: {
-    [p:string]: 'any'|'user'|'admin'
+    [p: string]: 'any' | 'user' | 'admin'
   },
 };
 export type ModelControllersStorage = {
@@ -164,6 +164,7 @@ export type TypeRuleSchema = {
   type: TypeSchema//TypeSchema;
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
   //watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
+  alien?:boolean,
   access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//
   populate?: boolean;// 
   file?: {//
@@ -175,6 +176,7 @@ export type TypeRuleSchema = {
 
   required?: boolean;
   ref?: string;
+  refPath?: string;
   match?: RegExp;
   default?: valueSchema;
   unique?: boolean;

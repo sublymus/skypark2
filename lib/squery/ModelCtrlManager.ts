@@ -80,7 +80,27 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 if (Object.prototype.hasOwnProperty.call(description, property) && ctx.data[property] != undefined) {
                     const rule = description[property];
                     //Log('log2', { property, value: ctx.data[property], modelPath: option.modelPath })
-                    if (rule.ref) {
+                    if (!Array.isArray(rule) && rule.ref) {
+                        if (rule.alien && typeof ctx.data[property] == 'string') {
+                            try {
+                                accu[property] = new mongoose.Types.ObjectId(ctx.data[property])._id.toString();
+                            } catch (error) {
+                                return await callPost({
+                                    ctx,
+                                    more: { ...more },
+                                    action,
+                                    res: {
+                                        error: "ACCESS_NOT_FOUND",
+                                        status: 404,
+                                        code: "ACCESS_NOT_FOUND",
+                                        message: 'model_' + option.modelPath + ':' + action + ' , can not create child :' + property + ', ref = ' + rule.ref + '; with : ' + ctx.data[property]
+                                    },
+                                });
+                            }
+                            continue
+                        }
+
+
                         const ctrl = ModelControllers[rule.ref]();
                         //  Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
                         const res = await (ctrl.create || ctrl.store)(
@@ -130,6 +150,22 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         accu[property] = [];
                         const ctrl = ModelControllers[rule[0].ref]();
                         for (let i = 0; i < ctx.data[property].length; i++) {
+                            Log('******', { property }, ' = ', accu[property][i], ' value = ', ctx.data[property][i]);
+                            Log('info', 'alien = ', rule[0].alien, ' if ', (rule[0].alien && typeof ctx.data[property][i] == 'string'))
+                            if (rule[0].alien && typeof ctx.data[property][i] == 'string') {
+                                try {
+                                    Log('******rule', { rule })
+                                    accu[property][i] = new mongoose.Types.ObjectId(ctx.data[property][i])._id.toString();
+                                } catch (error) {
+                                    console.log({
+                                        error: "ILLEGAL_ARGUMENT",
+                                        status: 404,
+                                        code: "ILLEGAL_ARGUMENT",
+                                        message: 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule[0].ref + '> with id : <' + ctx.data[property][i] + "> \n\n" + error.message,
+                                    });
+                                }
+                                continue
+                            }
                             const res = await (ctrl.create || ctrl.store)(
                                 {
                                     ...ctx,
@@ -198,7 +234,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             accu["__key"] = ctx.__key;
             accu["__parentModel"] = more.__parentModel;
-            // Log('logAccu', { accu });
+            Log('logAccu', { accu });
             try {
                 modelInstance = new option.model({
                     ...accu,
@@ -521,7 +557,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 }
 
             } else {
-                //Log('wertyuiop', 'wer54t67u8io9')
+                Log('AccesRefuse', 'update List')
             }
             Log('parent', parentModelInstance);
             const defaultPaging = {
@@ -548,8 +584,11 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
 
             let result = null;
             try {
-                result = await ModelControllers[option.modelPath].option.model.paginate(
-                    paging.query, options);
+                result = await ModelControllers[option.modelPath].option.model.paginate({
+                    '_id': {
+                        '$in': parentModelInstance[parentProperty],
+                    }
+                }, options);
                 if (!result) {
 
                 }
@@ -1225,7 +1264,7 @@ function accessValidator(
 
     valid = accessMap[type]?.[action]?.[access].includes(permission);
 
-    // Log('access', { permission }, { action }, { access }, { type }, { valid })
+    //Log('access', { permission }, { action }, { access }, { type }, { valid })
 
     return valid;
 }

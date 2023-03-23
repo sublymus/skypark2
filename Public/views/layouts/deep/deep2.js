@@ -25,8 +25,22 @@ export class Deep extends BaseComponent {
             ['.title']: (title) => {
                 title.textContent = this.modelPath;
             },
-            ['@back:click']: () => {
-                if (!this.parentCpn) return this.emit('error', 'not parent found');
+            ['@back:click']: async () => {
+                if (!this.parentCpn) {
+                    const parentInstance = await this.instance.newParentInstance();
+                    if (parentInstance) {
+                        this.emit('hide');
+                        this.container.append(_('Deep', {
+                            modelPath:parentInstance.$modelPath,
+                            id: parentInstance.$id,
+                           // parentCpn: this,
+                            container: this.container,
+                        }));
+                        return
+                    }
+                    return this.emit('error', 'not parent found')
+                };
+
                 this.emit('hide');
                 this.view.remove();
                 this.parentCpn.emit('show');
@@ -48,7 +62,7 @@ export class Deep extends BaseComponent {
                 this.when('modelPath', async (modelPath) => {
                     /*************************** Mise En Cache ********************** */
                     this.model = await SQuery.Model(modelPath);
-                    this.instance = await this.model.instance({ id: this.id });
+                    this.instance = await this.model.newInstance({ id: this.id });
                     console.log('model : ', this.model);
                     console.log('instance : ', this.instance);
 
@@ -64,7 +78,7 @@ export class Deep extends BaseComponent {
                                 this.emit('createBtn', {
                                     data: {
                                         modelPath: rule.ref,
-                                        id: (await this.instance[property])?.id,
+                                        id: (await this.instance[property])?.$id,
                                     },
                                     cb: (elem) => $('.container').append(elem),
                                 })
@@ -117,7 +131,7 @@ export class Deep extends BaseComponent {
                 this.when('createBtn', async ({ data, cb }) => {
                     const btn = _('div', 'ref-btn',
                         _('h1', 'model', data.modelPath),
-                        _('h3', 'id', await data.id),
+                        _('h3', 'id', data.id),
                     );
                     this.instance.when('refresh', async () => {
                         $(btn, 'h3').textContent = await this.instance[data.property];
@@ -126,7 +140,7 @@ export class Deep extends BaseComponent {
                         this.emit('hide');
                         this.container.append(_('Deep', {
                             ...data,
-                            id: await data.id,
+                            id: data.id,
                             parentCpn: this,
                             container: this.container,
                         }));
@@ -139,7 +153,7 @@ export class Deep extends BaseComponent {
                         _('h3', 'id', data.modelPath + '.' + data.property),
                     );
                     this.instance.when('refresh', async () => {
-                        $(btn, 'h3').textContent = (await this.instance[data.property]).id;
+                        $(btn, 'h3').textContent = (await this.instance[data.property]).$id;
                     })
                     btn.addEventListener('click', async () => {
                         this.emit('hide');
@@ -159,7 +173,7 @@ export class Deep extends BaseComponent {
                         this.instance[data.property] = input.value;
                         // input.value = await this.instance[data.property]
                     });
-                    this.instance.when('refresh:'+data.property, async () => {
+                    this.instance.when('refresh:' + data.property, async () => {
                         console.log('#############################', await this.instance[data.property]);
                         let i = 0;
                         const v = await this.instance[data.property];
@@ -194,7 +208,7 @@ export class Deep extends BaseComponent {
                         });
                         inputCtn.append(...list_a)
                     }
-                    this.instance.when('refresh:'+data.property, make)
+                    this.instance.when('refresh:' + data.property, make)
                     make();
                     cb(inputCtn)
                 })
