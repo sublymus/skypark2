@@ -59,9 +59,7 @@ export async function createModelFrom(modelPath) {
                     async (res) => {
                         try {
                             if (res.error) {
-                                errorCb({
-                                    server: res,
-                                });
+                                errorCb(res);
                                 return rev(null);
                             }
                             rev(await createInstanceFrom({ modelPath, id: res.response }))
@@ -248,10 +246,11 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                         }
                     },
                     set: async function (value) {
-                        if (value == cache[property]) return;
+                        console.log('modelPath:',modelPath,'value:',value);
+                        if (value == cache[property]) return; 
                         if (rule.ref) {
                             //vouloire changer l'id stocker dans une proprieter, cella de doit etre permis ou non
-                            return console.error('ReadOnly modelInstance["refProperty"], Exemple: const modelInstance =  await modelInstance["refProperty"] ');
+                            //return console.error('ReadOnly modelInstance["refProperty"], Exemple: const modelInstance =  await modelInstance["refProperty"] ');
                         } else if (rule[0] && rule[0].ref) {
                             const ai = await instance[property];
                             //console.log('array instance avant .update(conf)', ai);

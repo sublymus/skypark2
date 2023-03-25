@@ -36,6 +36,7 @@ let accountSchema = SQuery.Schema({
   telephone: {
     type: String,
     required: true,
+    access:'private',
   },
   address: {
     type: Schema.Types.ObjectId,
@@ -45,7 +46,7 @@ let accountSchema = SQuery.Schema({
   favorites: {
     type: Schema.Types.ObjectId,
     ref: FavoritesModel.modelName,
-    access: "public",
+    access: "private",
   },
   profile: {
     type: Schema.Types.ObjectId,

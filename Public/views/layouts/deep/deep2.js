@@ -31,9 +31,9 @@ export class Deep extends BaseComponent {
                     if (parentInstance) {
                         this.emit('hide');
                         this.container.append(_('Deep', {
-                            modelPath:parentInstance.$modelPath,
+                            modelPath: parentInstance.$modelPath,
                             id: parentInstance.$id,
-                           // parentCpn: this,
+                            // parentCpn: this,
                             container: this.container,
                         }));
                         return
@@ -78,6 +78,7 @@ export class Deep extends BaseComponent {
                                 this.emit('createBtn', {
                                     data: {
                                         modelPath: rule.ref,
+                                        property,
                                         id: (await this.instance[property])?.$id,
                                     },
                                     cb: (elem) => $('.container').append(elem),
@@ -131,12 +132,18 @@ export class Deep extends BaseComponent {
                 this.when('createBtn', async ({ data, cb }) => {
                     const btn = _('div', 'ref-btn',
                         _('h1', 'model', data.modelPath),
-                        _('h3', 'id', data.id),
+                        _('input', ['type:text', `value:${data.id}`, 'placeholder:id']),
                     );
                     this.instance.when('refresh', async () => {
-                        $(btn, 'h3').textContent = await this.instance[data.property];
+                        $(btn, 'input').value = await this.instance[data.property];
                     })
-                    btn.addEventListener('click', async () => {
+                    $(btn, 'input').addEventListener('blur', async () => {
+                        console.log('*******************************', this.instance , data.property, $(btn, 'input').value);
+
+                        this.instance[data.property] = $(btn, 'input').value;
+                        // input.value = await this.instance[data.property]
+                    });
+                    $(btn, 'h1').addEventListener('click', async () => {
                         this.emit('hide');
                         this.container.append(_('Deep', {
                             ...data,
@@ -168,8 +175,9 @@ export class Deep extends BaseComponent {
                     cb(btn);
                 });
                 this.when('createInput', ({ data, cb }) => {
-                    const input = _('input', ['type:text', `value:${data.value}`, 'class:password', 'placeholder:' + data.property])
+                    const input = _('input', ['type:text', `value:${data.value}`, 'placeholder:' + data.property])
                     input.addEventListener('blur', async () => {
+                        console.log(this.instance[data.property]);
                         this.instance[data.property] = input.value;
                         // input.value = await this.instance[data.property]
                     });

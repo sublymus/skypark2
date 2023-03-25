@@ -10,6 +10,7 @@ specifiers:
   '@vonage/server-sdk': ^3.1.1
   bcrypt: ^5.1.0
   cookie: ^0.5.0
+  cors: ^2.8.5
   ezcryption: ^1.0.4
   finalhandler: ^1.2.0
   flatted: ^3.2.7
@@ -33,6 +34,7 @@ dependencies:
   '@vonage/server-sdk': 3.1.2
   bcrypt: 5.1.0
   cookie: 0.5.0
+  cors: 2.8.5
   ezcryption: 1.0.4
   finalhandler: 1.2.0
   flatted: 3.2.7

@@ -37,7 +37,7 @@ export class CreationPage extends BaseComponent {
                         })
                         .join("");
                 } catch (error) {
-                    alert('Not found : '+ input.value)
+                    alert('Not found : ' + input.value)
                 }
             },
             ['@create:click']: async () => {
@@ -48,7 +48,7 @@ export class CreationPage extends BaseComponent {
                     console.log({ instance });
                     this.emit('next', {
                         modelPath: this.modelPath,//this.type,
-                        id: await instance.id,
+                        id: instance.$id,
                     })
                 } catch (error) {
                     alert(JSON.stringify(error))

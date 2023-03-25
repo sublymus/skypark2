@@ -15,6 +15,7 @@ let ChannelSchema = SQuery.Schema({
     firstWatcher: {
         type: Schema.Types.ObjectId,
         ref: 'user',
+        strictAlien: true,
         access: 'public',
     },
     description: {

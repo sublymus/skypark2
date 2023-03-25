@@ -29,16 +29,31 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
         }
     };
     const callPost: (e: EventPostSchema) => ResponseSchema = async (e: EventPostSchema) => {
+        //  if(['channel'].includes(option.modelPath) || e.res.error)Log("post", option.modelPath, e.res);
         if (!(EventManager[e.action]?.post)) return e.res;
 
         for (const listener of EventManager[e.action].post) {
             if (listener) await listener(e);
         }
+
+
         return e.res;
     };
     const ctrlMaker = function () {
         const controller: ModelControllerSchema = {};
 
+        const validId = async ({ id, modelPath }) => {
+
+            const local_modelInstance = await ModelControllers[modelPath].option.model.findOne({
+                _id: id
+            });
+            if (!local_modelInstance) {
+                Log('local_modelInstance : ', local_modelInstance)
+                throw new Error("Id not found; modePath:" + option.modelPath + "; alienId:" + id + "; alienModelPath:" + modelPath);
+
+            }
+            return true;
+        }
 
         /////////////////////////////////////////////////////////////////
         ///////////////////           CREATE         ////////////////////
@@ -67,12 +82,13 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 action,
             });
             const modelId = new mongoose.Types.ObjectId().toString();
-            const description = option.schema.obj;
+            const description: DescriptionSchema = option.schema.obj;
             if (!more) {
                 more = {};
                 more.savedlist = [];
                 more.__parentModel = '';
             }
+
             const accu = {};
             let modelInstance: ModelInstanceSchema;
             if (!ctx.__key) ctx.__key = new mongoose.Types.ObjectId().toString(); ///// cle d'auth
@@ -81,28 +97,59 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     const rule = description[property];
                     //Log('log2', { property, value: ctx.data[property], modelPath: option.modelPath })
                     if (!Array.isArray(rule) && rule.ref) {
-                        if (rule.alien && typeof ctx.data[property] == 'string') {
+                        const isStr = typeof ctx.data[property] == 'string';
+                        const isAlien = !!(rule.alien || rule.strictAlien);
+                        Log('alien', 'strictAlien: ', !!rule.strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule.strictAlien) && !isStr)
+                        if (!isAlien && isStr) {
+                            return await callPost({
+                                ctx,
+                                more: { ...more },
+                                action,
+                                res: {
+                                    error: "ILLEGAL_ARGUMENT",
+                                    status: 404,
+                                    code: "ILLEGAL_ARGUMENT",
+                                    message: 'the property not a alien.. ; value must be creation data object;' + 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule.ref + '> with id : <' + ctx.data[property] + ">",
+                                },
+                            });
+                        } else if (isAlien && isStr) {
                             try {
-                                accu[property] = new mongoose.Types.ObjectId(ctx.data[property])._id.toString();
+                                const alienId = ctx.data[property];
+                                if (await validId({
+                                    id: alienId,
+                                    modelPath: rule.ref
+                                })) {
+                                    accu[property] = alienId;
+                                }
                             } catch (error) {
                                 return await callPost({
                                     ctx,
                                     more: { ...more },
                                     action,
                                     res: {
-                                        error: "ACCESS_NOT_FOUND",
+                                        error: "ILLEGAL_ARGUMENT",
                                         status: 404,
-                                        code: "ACCESS_NOT_FOUND",
-                                        message: 'model_' + option.modelPath + ':' + action + ' , can not create child :' + property + ', ref = ' + rule.ref + '; with : ' + ctx.data[property]
+                                        code: "ILLEGAL_ARGUMENT",
+                                        message: 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule.ref + '> with id : <' + ctx.data[property] + ">",
                                     },
                                 });
                             }
                             continue
+                        } else if ((!!rule.strictAlien) && !isStr) {
+                            return await callPost({
+                                ctx,
+                                more: { ...more },
+                                action,
+                                res: {
+                                    error: "ILLEGAL_ARGUMENT",
+                                    status: 404,
+                                    code: "ILLEGAL_ARGUMENT",
+                                    message: 'the property strictAlien.. ; value must be id;' + 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule.ref + '> with id : <' + ctx.data[property] + ">",
+                                },
+                            });
                         }
-
-
                         const ctrl = ModelControllers[rule.ref]();
-                        //  Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
+                        //Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
                         const res = await (ctrl.create || ctrl.store)(
                             {
                                 ...ctx,
@@ -128,7 +175,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                     error: "ACCESS_NOT_FOUND",
                                     status: 404,
                                     code: "ACCESS_NOT_FOUND",
-                                    message: 'model_' + option.modelPath + ':' + action + ' , can not create child :' + property + ', ref = ' + rule.ref
+                                    message: 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule.ref + '> with id : <' + ctx.data[property] + ">",
                                 },
                             });
                         }
@@ -150,21 +197,58 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         accu[property] = [];
                         const ctrl = ModelControllers[rule[0].ref]();
                         for (let i = 0; i < ctx.data[property].length; i++) {
-                            Log('******', { property }, ' = ', accu[property][i], ' value = ', ctx.data[property][i]);
-                            Log('info', 'alien = ', rule[0].alien, ' if ', (rule[0].alien && typeof ctx.data[property][i] == 'string'))
-                            if (rule[0].alien && typeof ctx.data[property][i] == 'string') {
-                                try {
-                                    Log('******rule', { rule })
-                                    accu[property][i] = new mongoose.Types.ObjectId(ctx.data[property][i])._id.toString();
-                                } catch (error) {
-                                    console.log({
+                            //Log('******', { property }, ' = ', accu[property][i], ' value = ', ctx.data[property][i]);
+                            // Log('info', 'alien = ', rule[0].alien, ' if ', (rule[0].alien && typeof ctx.data[property][i] == 'string'))
+                            const isStr = typeof ctx.data[property][i] == 'string';
+                            const isAlien = !!(rule[0].alien || rule[0].strictAlien);
+                            Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
+                            if (!isAlien && isStr) {
+                                return await callPost({
+                                    ctx,
+                                    more: { ...more },
+                                    action,
+                                    res: {
                                         error: "ILLEGAL_ARGUMENT",
                                         status: 404,
                                         code: "ILLEGAL_ARGUMENT",
-                                        message: 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule[0].ref + '> with id : <' + ctx.data[property][i] + "> \n\n" + error.message,
+                                        message: 'the property not a alien.. ; value must be creation data object;' + 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule[0].ref + '> with id : <' + ctx.data[property][i] + ">",
+                                    },
+                                });
+                            } else if (isAlien && isStr) {
+                                try {
+                                    const alienId = ctx.data[property][i];
+                                    if (await validId({
+                                        id: alienId,
+                                        modelPath: rule[0].ref
+                                    })) {
+                                        accu[property][i] = alienId;
+                                    }
+                                } catch (error) {
+                                    return await callPost({
+                                        ctx,
+                                        more: { ...more },
+                                        action,
+                                        res: {
+                                            error: "ILLEGAL_ARGUMENT",
+                                            status: 404,
+                                            code: "ILLEGAL_ARGUMENT",
+                                            message: 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule[0].ref + '> with id : <' + ctx.data[property][i] + ">",
+                                        },
                                     });
                                 }
                                 continue
+                            } else if ((!!rule[0].strictAlien) && !isStr) {
+                                return await callPost({
+                                    ctx,
+                                    more: { ...more },
+                                    action,
+                                    res: {
+                                        error: "ILLEGAL_ARGUMENT",
+                                        status: 404,
+                                        code: "ILLEGAL_ARGUMENT",
+                                        message: 'the property strictAlien.. ; value must be id;' + 'model_<' + option.modelPath + '>:<' + action + '> , can not create child :<' + property + '>, ref = <' + rule[0].ref + '> with id : <' + ctx.data[property][i] + ">",
+                                    },
+                                });
                             }
                             const res = await (ctrl.create || ctrl.store)(
                                 {
@@ -234,7 +318,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             accu["__key"] = ctx.__key;
             accu["__parentModel"] = more.__parentModel;
-            Log('logAccu', { accu });
+            // Log('logAccu', { accu });
             try {
                 modelInstance = new option.model({
                     ...accu,
@@ -374,7 +458,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 more: { ...more },
                 action,
             });
-            const { paging, addNew, remove, property } = ctx.data;
+            const { paging, addNew, addId, remove, property } = ctx.data;
             let parentModelInstance: ModelInstanceSchema;
             more = {
                 savedlist: [],
@@ -383,10 +467,10 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             };
             //   Log('remove', { remove })
             const parts = more.__parentModel?.split('_');
-            const parentPath = parts?.[0];
+            const parentModelPath = parts?.[0];
             const parentId = parts?.[1];
             const parentProperty = parts?.[2];
-            if (!more.__parentModel || !parentPath || !parentId || !parentProperty) {
+            if (!more.__parentModel || !parentModelPath || !parentId || !parentProperty) {
                 return await callPost({
                     ctx,
                     more: { ...more },
@@ -402,11 +486,11 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
 
             try {
-                parentModelInstance = await ModelControllers[parentPath].option.model.findOne({
+                parentModelInstance = await ModelControllers[parentModelPath].option.model.findOne({
                     _id: parentId,
                 });
                 if (!parentModelInstance) {
-                    throw new Error('parentModelInstance is undefined, using {id:' + parentId + ", modelPath:" + parentPath + "}");
+                    throw new Error('parentModelInstance is undefined, using {id:' + parentId + ", modelPath:" + parentModelPath + "}");
                 }
             } catch (error) {
                 return await callPost({
@@ -416,7 +500,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     res: {
                         error: "NOT_FOUND",
                         ...(await STATUS.NOT_FOUND(ctx, {
-                            target: parentPath.toLocaleUpperCase(),
+                            target: parentModelPath.toLocaleUpperCase(),
                             message: error.message,
                         })),
                     },
@@ -424,51 +508,32 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             const isParentUser = parentModelInstance.__key._id.toString() == ctx.__key
             if (accessValidator(ctx, 'update', option.access, "property", isParentUser)) {
-                // let validAddId = []
+                let validAddId = []
                 let validAddNew = []
                 /***********************  AddId  ****************** */
-                // if (Array.isArray(addId)) {
-                //     const promises = addId.map((id) => {
-                //         return new Promise<string>(async (rev, rej) => {
-                //             try {                          ///////
-                //                 const local_modelInstance = await option.model.findOne({
-                //                     _id: id,////////////////////////////////////////////
-                //                 });
-                //                 if (!local_modelInstance) {
-                //                     return rej(null);
-                //                 }
-                //                 const parts = local_modelInstance.__parentModel.split('_');
-                //                 const local_parentPath = parts[0];
-                //                 const local_parentId = parts[1];
-                //                 const local_parentProperty = parts[2];
-                //                 const local_description = ModelControllers[local_parentPath]?.option.schema.obj;
-                //                 if (!local_description) {
-                //                     return rej(null);
-                //                 }
-                //                 let rule = local_description[parentProperty];
-                //                 rule = Array.isArray(rule) ? rule[0] : rule;
-                //                 if (parentModelInstance[parentProperty].includes(local_modelInstance._id.toString())) {
-                //                     Log('duplication', 'not provide')//////////duplicableId//////////////
-                //                     return rej(null);
-                //                 }
-                //                 const isItemUser = local_modelInstance.__key._id.toString() == ctx.__key
-                //                 if (!accessValidator(ctx, 'update', rule.access, "property", isItemUser)) {
-                //                     return rej(null);//////////////alienId//////////////////
-                //                 }
-                //                 rev(id);
-                //             } catch (error) {
-                //                 rej(null);
-                //             }
-                //         });
-                //     });
-                //     const result = await Promise.allSettled(promises);
-                //     const validResult = result.filter((data: any) => {
-                //         return !!data.value;
-                //     }).map((data: any) => {
-                //         return data.value;
-                //     })
-                //     validAddId.push(...validResult);
-                // }
+                if (Array.isArray(addId)) {
+                    const promises = addId.map((id) => {
+                        return new Promise<string>(async (rev, rej) => {
+                            try {
+                                await validId({
+                                    id,
+                                    modelPath: option.modelPath
+                                })
+
+                                rev(id);
+                            } catch (error) {
+                                rej(null);
+                            }
+                        });
+                    });
+                    const result = await Promise.allSettled(promises);
+                    const validResult = result.filter((data: any) => {
+                        return !!data.value;
+                    }).map((data: any) => {
+                        return data.value;
+                    })
+                    validAddId.push(...validResult);
+                }
                 /***********************  AddNew  ****************** */
                 if (Array.isArray(addNew)) {
                     const ctrl = ModelControllers[option.modelPath]();
@@ -499,7 +564,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 try {
                     Log('try', { remove, parentProperty });
                     if (Array.isArray(remove)) {
-                        const description: DescriptionSchema = ModelControllers[parentPath].option.schema.obj;
+                        const description: DescriptionSchema = ModelControllers[parentModelPath].option.schema.obj;
                         const rule = description[parentProperty];
                         Log('isArray', { parentProperty, rule });
                         for (const id of remove) {
@@ -664,26 +729,61 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 for (const p in description) {
                     if (Object.prototype.hasOwnProperty.call(description, p)) {
                         const rule = description[p];
-                        if (Array.isArray(rule)) {
-                            Log('fun', p)
-                            if (!accessValidator(ctx, action, rule[0].access, "property", modelInstance.__key._id.toString() == ctx.__key)) {
-                                continue;
-                            }
-                        } else {
-                            Log('fun', p)
-                            if (!accessValidator(ctx, action, rule.access, "property", modelInstance.__key._id.toString() == ctx.__key)) {
-                                continue;
-                            }
-                        }
-                        console.log(p);
+                        // if (Array.isArray(rule)) {
+                        //     Log('fun', p)
+                        //     if (!accessValidator(ctx, action, rule[0].access, "property", modelInstance.__key._id.toString() == ctx.__key)) {
+                        //         continue;
+                        //     }
+                        // } else {
+                        //     Log('fun', p)
+                        //     if (!accessValidator(ctx, action, rule.access, "property", modelInstance.__key._id.toString() == ctx.__key)) {
+                        //         continue;
+                        //     }
+                        // }
+                        // console.log(p);
 
                         if (!ctx.data[p]) continue;
-                        if (!Array.isArray(rule) && rule.ref) {
-                            continue
+                        else if (!Array.isArray(rule) && rule.ref) {
+                            const oldId = modelInstance[p];
+                            try {
+                                const alienId = ctx.data[p];
+                                if (await validId({
+                                    id: alienId,
+                                    modelPath: rule.ref
+                                })) {
+                                    modelInstance[p] = alienId;
+                                }
+                            } catch (error) {
+                                Log('Error_Ilegall_Arg_update_ref', error);
+                                continue
+                            }
+                            try {
+                                if (!await validId({
+                                    id: oldId,
+                                    modelPath: rule.ref
+                                })) continue;
+                                
+                                const impact = rule.impact != false;
+                                let res: ResultSchema;
+                                Log('impact', { impact, rule });
+                                if (impact) {
+                                    res = await ModelControllers[rule.ref]().delete({
+                                        ...ctx,
+                                        data: { id: oldId },
+                                    }, more
+                                    );
+                                    Log('Error_impactRes', res);
+                                }
+                                continue
+                            } catch (error) {
+                                Log('Error_update_ref', error);
+                                continue
+                            }
+
                         }
-                        if (Array.isArray(rule)) {
+                        else if (Array.isArray(rule)) {
                             if (rule[0].ref) {
-                                continue//////////////////////
+                                continue;
                             } else if (rule[0].file) {
                                 try {
                                     modelInstance[p] = await FileValidator(
@@ -1194,7 +1294,7 @@ function accessValidator(
     const accessMap = {
         controller: {
             create: {
-                public: ["user", "admin", "global"],
+                public: ["user", "admin", "any"],
                 share: ["admin"],
                 admin: ["admin"],
                 secret: ["admin"],
@@ -1226,21 +1326,21 @@ function accessValidator(
         },
         property: {
             read: {
-                public: ["global", "user", "admin"],
-                default: ["global", "user", "admin"],
+                public: ["any", "user", "admin"],
+                default: ["any", "user", "admin"],
                 private: ["user", "admin"],
-                admin: ["global", "user", "admin"],
+                admin: ["any", "user", "admin"],
                 secret: ["admin"],
             },
             list: {
-                public: ["global", "user", "admin"],
-                default: ["global", "user", "admin"],
+                public: ["any", "user", "admin"],
+                default: ["any", "user", "admin"],
                 private: ["user", "admin"],
-                admin: ["global", "user", "admin"],
+                admin: ["any", "user", "admin"],
                 secret: ["admin"],
             },
             update: {
-                public: ["global", "user", "admin"],
+                public: ["any", "user", "admin"],
                 default: ["user", "admin"],
                 private: ["user", "admin"],
                 admin: ["admin"],
@@ -1259,7 +1359,7 @@ function accessValidator(
 
     let permission = ctx.__permission;
     if (type == "property" && permission == "user") {
-        permission = isUser ? "user" : "global";
+        permission = isUser ? "user" : "any";
     }
 
     valid = accessMap[type]?.[action]?.[access].includes(permission);

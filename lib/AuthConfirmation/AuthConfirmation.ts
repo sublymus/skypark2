@@ -57,7 +57,7 @@ export type ContextSchema = {
     any
   >,
   __key: string, /// pour le moment data.__key = cookies[__key]
-  __permission: 'user' | 'admin' | 'global'
+  __permission: 'user' | 'admin' | 'any'
 } & MoreProperty;
 
 export class PhoneConfirmartion {

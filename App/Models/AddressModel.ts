@@ -13,7 +13,8 @@ let addressSchema = SQuery.Schema({
   building: {
     type: Schema.Types.ObjectId,
     ref: BuildingModel.modelName,
-    required: true,
+    //required: true,
+    strictAlien: true,
   },
   room: {
     type: String,

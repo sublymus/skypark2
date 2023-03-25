@@ -1,4 +1,5 @@
 .deep {
+    /* color: #ffffffb0; */
     width: 100%;
     height: 100%;
     display: flex;
@@ -19,11 +20,21 @@
     flex-direction: column;
     padding: 10px 30px;
     margin: 10px 0;
-    color: #fff;
+    color: #ffffffa9;
     font-size: 1.2em;
     border-radius: 10px;
-    background: rgb(51, 85, 102);
-    cursor: pointer;
+    background: rgba(51, 102, 85, 0.572);
+    /* cursor: pointer; */
+}
+
+.deep .ref-btn h1:hover {
+    color: #fff;
+    /* cursor: pointer; */
+}
+.deep .ref-btn input {
+
+    color: #fff;
+    /* cursor: pointer; */
 }
 
 .deep .top-ctn {

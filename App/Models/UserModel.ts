@@ -12,10 +12,7 @@ let userSchema = SQuery.Schema({
     ref: AccountModel.modelName,
   //  required: true,
   },
-  my_article: {
-    type: Schema.Types.ObjectId,
-    ref: ArticlModel.modelName,
-  },
+
   building: {
     type: Schema.Types.ObjectId,
     ref: BuildingModel.modelName,
