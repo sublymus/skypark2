@@ -173,6 +173,7 @@ SQuery.auth = (authData: authDataSchema) => {
 SQuery.Schema = (description: DescriptionSchema) => {
   description.__parentModel = {
     type: String,
+    access: 'admin',
   }
   description.__key = {
     type: Schema.Types.ObjectId,
@@ -182,6 +183,7 @@ SQuery.Schema = (description: DescriptionSchema) => {
   description.createdAt = {
     type: Date,
     default: Date.now(),
+    access: 'admin'
   }
   description.updatedAt = {
     type: Date,

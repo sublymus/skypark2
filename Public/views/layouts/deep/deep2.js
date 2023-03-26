@@ -84,7 +84,7 @@ export class Deep extends BaseComponent {
                                     cb: (elem) => $('.container').append(elem),
                                 })
                             } else if (rule[0] && rule[0].ref) {
-                                console.log('createListBtn');
+                                //console.log('createListBtn');
                                 this.emit('createListBtn', {
                                     data: {
                                         modelPath: this.modelPath,
@@ -105,7 +105,7 @@ export class Deep extends BaseComponent {
                             } else if (Array.isArray(rule)) {
                                 //console.log('***********   Array.isArray(rule)  **************', rule);
                             } else {
-                                console.log('********', rule, property, this.instance);
+                                // console.log('********', rule, property, this.instance);
                                 this.emit('createInput', {
 
 
@@ -134,11 +134,11 @@ export class Deep extends BaseComponent {
                         _('h1', 'model', data.modelPath),
                         _('input', ['type:text', `value:${data.id}`, 'placeholder:id']),
                     );
-                    this.instance.when('refresh:'+data.property, async () => {
-                        $(btn, 'input').value =( await this.instance[data.property]).$id;
+                    this.instance.when('refresh:' + data.property, async () => {
+                        console.log('*******************************', this.instance, data.property, $(btn, 'input').value);
+                        this.wait($(btn, 'input'), 'value', (await this.instance[data.property]).$id)
                     })
                     $(btn, 'input').addEventListener('blur', async () => {
-                        console.log('*******************************', this.instance , data.property, $(btn, 'input').value);
 
                         this.instance[data.property] = $(btn, 'input').value;
                         // input.value = await this.instance[data.property]
@@ -147,7 +147,7 @@ export class Deep extends BaseComponent {
                         this.emit('hide');
                         this.container.append(_('Deep', {
                             ...data,
-                            id: data.id,
+                            id: (await this.instance[data.property]).$id,
                             parentCpn: this,
                             container: this.container,
                         }));
@@ -160,14 +160,14 @@ export class Deep extends BaseComponent {
                         _('h3', 'id', data.modelPath + '.' + data.property),
                     );
                     this.instance.when('refresh', async () => {
-                        $(btn, 'h3').textContent = (await this.instance[data.property]).$id;
+                        //this.wait($(btn, 'h3'), 'textContent', (await this.instance[data.property]).$id)
                     })
                     btn.addEventListener('click', async () => {
                         this.emit('hide');
-                        console.log('------- list btn ------', data);
+                        // console.log('------- list btn ------', data);
                         this.container.append(_('List', {
                             ...data,
-                            id: await data.id,
+                            id: (await this.instance[data.property]).$id,
                             parentCpn: this,
                             container: this.container,
                         }));
@@ -177,24 +177,16 @@ export class Deep extends BaseComponent {
                 this.when('createInput', ({ data, cb }) => {
                     const input = _('input', ['type:text', `value:${data.value}`, 'placeholder:' + data.property])
                     input.addEventListener('blur', async () => {
-                        console.log(this.instance[data.property]);
+                        //console.log(this.instance[data.property]);
                         this.instance[data.property] = input.value;
                         // input.value = await this.instance[data.property]
                     });
                     this.instance.when('refresh:' + data.property, async () => {
-                        console.log('#############################', await this.instance[data.property]);
+                        /// console.log('#############################', await this.instance[data.property]);
                         let i = 0;
                         const v = await this.instance[data.property];
                         input.value = '';
-                        const id = setInterval(() => {
-
-                            input.value += " .. "
-                            i++;
-                            if (i > 5) {
-                                input.value = v;
-                                clearInterval(id)
-                            }
-                        }, 200);
+                        this.wait(input, 'value', v)
 
                     })
                     const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), input)
@@ -222,6 +214,20 @@ export class Deep extends BaseComponent {
                 })
             }
         }
+    }
+    wait(input, property, value, time) {
+        const d = Date.now();
+        input[property] = "";
+        const id = setInterval(() => {
+
+            input[property] += " .";
+
+            if (Date.now() >= d + (time || 700)) {
+                input[property] = value;
+                clearInterval(id)
+            }
+        }, 100);
+
     }
 }
 Components.Deep = Deep;

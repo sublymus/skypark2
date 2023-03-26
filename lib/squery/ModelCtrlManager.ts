@@ -744,9 +744,9 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         //     }
                         // }
                         // console.log(p);
-
                         if (!ctx.data[p]) continue;
                         else if (!Array.isArray(rule) && rule.ref) {
+                            if (!accessValidator(ctx, 'update', rule.access, "property", ctx.__key == modelInstance.__key._id.toString())) continue;
                             const oldId = modelInstance[p];
                             try {
                                 const alienId = ctx.data[p];
@@ -785,6 +785,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
 
                         }
                         else if (Array.isArray(rule)) {
+                            if (!accessValidator(ctx, 'update', rule[0].access, "property", ctx.__key == modelInstance.__key._id.toString())) continue;
                             if (rule[0].ref) {
                                 continue;
                             } else if (rule[0].file) {
@@ -814,6 +815,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                 modelInstance[p] = ctx.data[p];
                             }
                         } else {
+                            if (!accessValidator(ctx, 'update', rule.access, "property", ctx.__key == modelInstance.__key._id.toString())) continue;
                             modelInstance[p] = ctx.data[p];
                         }
                     }
@@ -1367,7 +1369,7 @@ function accessValidator(
 
     valid = accessMap[type]?.[action]?.[access].includes(permission);
 
-    //Log('access', { permission }, { action }, { access }, { type }, { valid })
+    Log('access', { permission }, { action }, { access }, { type }, { valid })
 
     return valid;
 }

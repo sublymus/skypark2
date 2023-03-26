@@ -30,8 +30,8 @@ export const load = {
         },
       ]
     },
-    read: { id: "", key: "" },
-    delete: { id: "", key: "" },
+    read: { id: "" },
+    delete: { id: "" },
     update: {
       id: "",
       name: "IPHONE 14",
@@ -133,19 +133,67 @@ export const load = {
 
     },
     read: {
-      id: "",
-      __key: "",
+      id: ""
     },
     delete: {
-      id: "",
-      __key: "",
+      id: ""
     },
   },
-  account: {
-    read: { id: "", __key: "" },
+  building: {
+    create: {
+      name: "skypark Center",
+      city: "Rostov on don",
+      community: {
+        name: "Together Group",
+        activities: [{
+          poster: {
+            //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
+            //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
+            message: "*** BEST ****",
+          },
+          channel: {
+            name: "Sport_Channel",
+            firstWatcher: "",
+            description: "more description about sport channel",
+            vectors: [],
+            watcher: []
+          },
+          name: "Sport",
+          description: "we love sport"
+        }]
+      },
+    },
+    read: { id: "" },
     update: {
       id: "",
-      __key: "",
+      name: "skypark Center",
+      city: "Rostov on don",
+      community: {
+        name: "Together Group",
+        activities: [{
+          poster: {
+            //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
+            //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
+            message: "*** BEST ****",
+          },
+          channel: {
+            name: "Sport_Channel",
+            firstWatcher: "",
+            description: "more description about sport channel",
+            vectors: [],
+            watcher: []
+          },
+          name: "Sport",
+          description: "we love sport"
+        }]
+      },
+    },
+    delete: { id: "" },
+  },
+  account: {
+    read: { id: "" },
+    update: {
+      id: "",
 
       name: "baron",
       email: "sublymus@gmail.com",
@@ -171,30 +219,27 @@ export const load = {
     },
   },
   profile: {
-    read: { id: "", __key: "" },
+    read: { id: "" },
     update: {
       id: "",
-      __key: "",
       imgProfile: "http://www.ert.fr/fgiurr85o28t5.img",
       banner: "http://www.ert.fr/fgiurr85o28t5.img",
       message: "*** BEST ****",
     },
   },
   address: {
-    read: { id: "", __key: "" },
+    read: { id: "" },
     update: {
       id: "",
-      __key: "",
       location: "l:567455;h45678654",
       home: "ville",
       description: "je suis ici",
     },
   },
   favorites: {
-    read: { id: "", __key: "" },
+    read: { id: "" },
     update: {
       id: "",
-      __key: "",
       folders: [
         {
           folderName: "wena",
@@ -203,14 +248,13 @@ export const load = {
     },
   },
   folder: {
-    create: { folderName: "", __key: "" },
-    read: { id: "", __key: "" },
+    create: { folderName: "" },
+    read: { id: "" },
     update: {
       id: "",
-      __key: "",
       folderName: "",
     },
-    delete: { id: "", __key: "" },
+    delete: { id: "" },
   },
   post: {
     create: {
@@ -221,13 +265,12 @@ export const load = {
       },
       likeCount: 2098,
     },
-    read: { id: "", __key: "" },
+    read: { id: "" },
     update: {
       id: "",
-      __key: "",
       folderName: "",
     },
-    delete: { id: "", __key: "" },
+    delete: { id: "" },
   },
   login: {
     email: "sublymus@gmail.com",

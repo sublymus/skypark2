@@ -13,7 +13,7 @@ export async function getDesription(modelPath) {
         SQuery.emit('server:description', {
             modelPath,
         }, (res) => {
-            console.log('server:description', res);
+            // console.log('server:description', res);
             if (res.error) throw new Error(JSON.stringify(res));
             Descriptions[modelPath] = res.response;
             //console.log('********************', res);
@@ -165,26 +165,25 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
 
     let lastInstanceUpdateAt = 0;
     const emiter = new EventEmiter();
-    const refresh = async () => {
+    await (async () => {
         await new Promise((rev) => {
             SQuery.emit("model_" + modelPath + ':read', {
                 id: id,
             }, async (res) => {
                 if (res.error) throw new Error(JSON.stringify(res));
-                console.log(res);
+                console.log('--> response:' + "model_" + modelPath + ':read', res);
                 cache = res.response
                 lastInstanceUpdateAt = cache.updatedAt;
-                await emitRefresh()
+                //  await emitRefresh()
                 rev(cache);
             });
         })
-    };
-    await refresh();
+    })();
     SQuery.on('update:' + cache._id, async (data) => {
-        console.log(data);
-        console.log('last : ' + lastInstanceUpdateAt, 'data update At  :' + data.doc.updatedAt);
-        console.log('now : ' + lastInstanceUpdateAt, 'data update At  :' + data.doc.updatedAt);
-        console.log('data.properties : ' + data.properties);
+        console.log('+++++++++++++ 1 ++++++++++++++', data);
+        // console.log('last : ' + lastInstanceUpdateAt, 'data update At  :' + data.doc.updatedAt);
+        // console.log('now : ' + lastInstanceUpdateAt, 'data update At  :' + data.doc.updatedAt);
+        // console.log('data.properties : ' + data.properties);
         cache = data.doc;
         lastInstanceUpdateAt = data.doc.updatedAt;
         await emitRefresh(data.properties)
@@ -194,12 +193,14 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
     async function emitRefresh(properties) {
         emiter.emit('refresh', instance);
         if (properties) {
-            properties.forEach(p => {
-                emiter.emit('refresh:' + p, p);
+            properties.forEach(async (p) => {
+                console.log('+++++++++++++ 2 ++++++++++++++', p, await instance[p]);
+                emiter.emit('refresh:' + p, await instance[p]);
             });
         } else {
             for (const p in description) {
                 if (Object.hasOwnProperty.call(description, p)) {
+                    console.log('+++++++++++++ 3 ++++++++++++++', p, await instance[p]);
                     emiter.emit('refresh:' + p, await instance[p]);
                 }
             }
@@ -215,7 +216,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                     get: async function () {
                         if (rule.ref) {
                             if (firstRead || lastPropertyUpdateAt != lastInstanceUpdateAt) {
-                                propertyCache[property] = await createInstanceFrom({ modelPath: rule.ref, id: cache[property],Model })
+                                propertyCache[property] = await createInstanceFrom({ modelPath: rule.ref, id: cache[property], Model })
                                 lastPropertyUpdateAt = lastInstanceUpdateAt;
                                 firstRead = false
                                 console.log('get:propertyCache[' + property + ']', { propertyCache, cache });
@@ -223,7 +224,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                             return propertyCache[property];
                         } else if (rule[0] && rule[0].ref) {// invalible
                             if (firstRead) {
-                                propertyCache[property] = await createArrayInstanceFrom({ modelPath, id, property, description ,Model});
+                                propertyCache[property] = await createArrayInstanceFrom({ modelPath, id, property, description, Model });
                                 firstRead = false;
                             }
                             return propertyCache[property];
@@ -232,7 +233,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                                 propertyCache[property] = cache[property];
                                 lastPropertyUpdateAt = lastInstanceUpdateAt;
                                 firstRead = false
-                                console.log('get:propertyCache[' + property + ']', { propertyCache, cache });
+                                // console.log('get:propertyCache[' + property + ']', { propertyCache, cache });
                             }
                             return propertyCache[property];
                         } else {
@@ -240,14 +241,14 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                                 propertyCache[property] = cache[property];
                                 lastPropertyUpdateAt = lastInstanceUpdateAt;
                                 firstRead = false
-                                console.log('get:propertyCache[' + property + ']', { propertyCache, cache });
+                                //  console.log('get:propertyCache[' + property + ']', { propertyCache, cache });
                             }
                             return propertyCache[property];
                         }
                     },
                     set: async function (value) {
-                        console.log('modelPath:',modelPath,'value:',value);
-                        if (value == cache[property]) return; 
+                        console.log('modelPath:', modelPath, 'value:', value);
+                        if (value == cache[property]) return;
                         if (rule.ref) {
                             //vouloire changer l'id stocker dans une proprieter, cella de doit etre permis ou non
                             //return console.error('ReadOnly modelInstance["refProperty"], Exemple: const modelInstance =  await modelInstance["refProperty"] ');
@@ -273,26 +274,25 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                         }
                         const result = await SQuery.Validatior(description[property], value);
                         if (result.value == undefined) {
+                            await emitRefresh([property])
                             throw new Error('Invalide Value :' + value + ' \n because : ' + result.message);
                         }
+                        try {
 
-                        SQuery.emit("model_" + modelPath + ':update', {
-                            id,
-                            [property]: value,
-                        }, (res) => {
-                            if (res.error) {
-                                throw new Error(JSON.stringify(res));
-                            }
-                            lastPropertyUpdateAt = res.response.updatedAt;
-                            cache[property] = res.response[property];
-                        })
+                            await instance.update({
+                                id,
+                                [property]: value,
+                            });
+                        } catch (error) {
+                            console.error(error);
+                        }
+                        await emitRefresh([property])
+                        lastPropertyUpdateAt = cache.updatedAt;
                     },
                 },
             });
         }
     }
-
-
     instance.update = async (data) => {
         SQuery.emit("model_" + modelPath + ':update', {
             ...data,
@@ -301,7 +301,6 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
             if (res.error) {
                 throw new Error(JSON.stringify(res));
             }
-            lastPropertyUpdateAt = res.response.updatedAt;
             cache = res.response;
         })
     }
