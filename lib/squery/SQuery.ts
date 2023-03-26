@@ -45,7 +45,7 @@ const SQuery: SQuerySchema = function (
         data,
         socket,
         __key: "", /// pour le moment data.__key = cookies[__key]
-        __permission: "user", ///  data.__permission = undefined
+        __permission: "any", ///  data.__permission = undefined
       };
 
       const midList = [...GlobalMiddlewares];
@@ -86,8 +86,16 @@ export const Global: GlobalSchema = {
 
 SQuery.io = (server: any) => {
   /********************    Cookies   *********************** */
+
   const io = new Server(server, {
-    cookie: true,
+    cookie: {
+      name: "io",
+      path: "/",
+      httpOnly: false,
+      sameSite: "lax",
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      maxAge: Date.now() + 24 * 60 * 60 * 1000,
+    }
   });
   Global.io = io;
 
@@ -134,7 +142,7 @@ SQuery.auth = (authData: authDataSchema) => {
         ctrlName: 'login',
         data,
         __key: "",
-        __permission: "user",
+        __permission: "any",
         action: "read",
         socket,
         authData
@@ -151,7 +159,7 @@ SQuery.auth = (authData: authDataSchema) => {
         action: "create",
         data,
         __key,
-        __permission: "user",
+        __permission: "any",
         socket,
         authData
       });
@@ -197,7 +205,7 @@ SQuery.Schema = (description: DescriptionSchema) => {
 
   schema.post('save', async function (doc: any) {
     //emettre dans  les room dedier
-    //Log('cache', doc)
+    Log('cache', doc)
     Global.io.emit('update:' + doc._id.toString(), {
 
       id: doc._id.toString(),

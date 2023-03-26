@@ -7,11 +7,7 @@ import ProfileModel from "./ProfileModel";
 
 let accountSchema = SQuery.Schema({
 
-  __permission: {
-    type: String,
-    default: "user",
-    access: "secret",
-  },
+
   name: {
     type: String,
     trim: true,

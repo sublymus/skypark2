@@ -69,7 +69,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     more: { ...more },
                     action,
                     res: {
-                        error: "BAD_AUTH",
+                        error: "BAD_AUTH_CONTROLLER",
                         ...(await STATUS.BAD_AUTH(ctx, {
                             target: option.modelPath.toLocaleUpperCase(),
                         })),
@@ -368,13 +368,16 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
         /////////////////////////////////////////////////////////////////
         controller["read"] = async (ctx, more): ResponseSchema => {
             const action = "read";
+
+
+            //Log('auth', { ctx, action, access: option.access, "controller": "" })
             if (!accessValidator(ctx, action, option.access, "controller")) {
                 return await callPost({
                     ctx,
                     more: { ...more },
                     action,
                     res: {
-                        error: "BAD_AUTH",
+                        error: "BAD_AUTH_CONTROLLER",
                         ...(await STATUS.BAD_AUTH(ctx, {
                             target: option.modelPath.toLocaleUpperCase(),
                         })),
@@ -391,7 +394,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 modelInstance = await option.model.findOne({
                     _id: ctx.data.id,
                 });
-
+                //Log('__permission', ctx.__permission, '__key', ctx.__key, 'instance__key', modelInstance.__key);
                 if (!modelInstance) {
                     return await callPost({
                         ctx,
@@ -446,7 +449,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     more: { ...more },
                     action,
                     res: {
-                        error: "BAD_AUTH",
+                        error: "BAD_AUTH_CONTROLLER",
                         ...(await STATUS.BAD_AUTH(ctx, {
                             target: option.modelPath.toLocaleUpperCase(),
                         })),
@@ -693,7 +696,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     more: { ...more },
                     action,
                     res: {
-                        error: "BAD_AUTH",
+                        error: "BAD_AUTH_CONTROLLER",
                         ...(await STATUS.BAD_AUTH(ctx, {
                             target: option.modelPath.toLocaleUpperCase(),
                         })),
@@ -762,7 +765,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                     id: oldId,
                                     modelPath: rule.ref
                                 })) continue;
-                                
+
                                 const impact = rule.impact != false;
                                 let res: ResultSchema;
                                 Log('impact', { impact, rule });
@@ -879,7 +882,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     more: { ...more },
                     action,
                     res: {
-                        error: "BAD_AUTH",
+                        error: "BAD_AUTH_CONTROLLER",
                         ...(await STATUS.BAD_AUTH(ctx, {
                             target: option.modelPath.toLocaleUpperCase(),
                         })),
@@ -1300,25 +1303,25 @@ function accessValidator(
                 secret: ["admin"],
             },
             read: {
-                public: ["user", "admin"],
+                public: ["user", "admin", "any"],
                 share: ["user", "admin"],
                 admin: ["user", "admin"],
                 secret: ["admin"],
             },
             list: {
-                public: ["user", "admin"],
+                public: ["user", "admin", "any"],
                 share: ["user", "admin"],
                 admin: ["user", "admin"],
                 secret: ["admin"],
             },
             update: {
-                public: ["user", "admin"],
+                public: ["user", "admin", "any"],
                 share: ["user", "admin"],
                 admin: ["admin"],
                 secret: ["admin"],
             },
             delete: {
-                public: ["user", "admin"],
+                public: ["user", "admin", "any"],
                 share: ["admin"],
                 admin: ["admin"],
                 secret: ["admin"],
@@ -1358,7 +1361,7 @@ function accessValidator(
     if (type == "property" && access == "share") access = "public";
 
     let permission = ctx.__permission;
-    if (type == "property" && permission == "user") {
+    if (permission == "user") {
         permission = isUser ? "user" : "any";
     }
 

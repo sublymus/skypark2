@@ -134,8 +134,8 @@ export class Deep extends BaseComponent {
                         _('h1', 'model', data.modelPath),
                         _('input', ['type:text', `value:${data.id}`, 'placeholder:id']),
                     );
-                    this.instance.when('refresh', async () => {
-                        $(btn, 'input').value = await this.instance[data.property];
+                    this.instance.when('refresh:'+data.property, async () => {
+                        $(btn, 'input').value =( await this.instance[data.property]).$id;
                     })
                     $(btn, 'input').addEventListener('blur', async () => {
                         console.log('*******************************', this.instance , data.property, $(btn, 'input').value);

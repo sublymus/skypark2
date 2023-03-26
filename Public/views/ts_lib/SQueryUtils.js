@@ -215,7 +215,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                     get: async function () {
                         if (rule.ref) {
                             if (firstRead || lastPropertyUpdateAt != lastInstanceUpdateAt) {
-                                propertyCache[property] = await createInstanceFrom({ modelPath: rule.ref, id: cache[property] })
+                                propertyCache[property] = await createInstanceFrom({ modelPath: rule.ref, id: cache[property],Model })
                                 lastPropertyUpdateAt = lastInstanceUpdateAt;
                                 firstRead = false
                                 console.log('get:propertyCache[' + property + ']', { propertyCache, cache });
@@ -223,7 +223,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                             return propertyCache[property];
                         } else if (rule[0] && rule[0].ref) {// invalible
                             if (firstRead) {
-                                propertyCache[property] = await createArrayInstanceFrom({ modelPath, id, property, description });
+                                propertyCache[property] = await createArrayInstanceFrom({ modelPath, id, property, description ,Model});
                                 firstRead = false;
                             }
                             return propertyCache[property];

@@ -46,7 +46,7 @@ export class AuthManager {
 
     const info = {
       __key: loginModelInstance.__key,
-      __permission: loginModelInstance.__permission,
+      __permission: 'user',
     };
 
     this.#cookiesInSocket(info, socket);
@@ -83,21 +83,18 @@ export class AuthManager {
         error: "OPERATION_FAILED",
         ...(await STATUS.OPERATION_FAILED(ctx, {
           target: authData.signup.toLocaleUpperCase(),
-          message:result.error
+          message: result.error
         })),
       };
     }
     const info = {
       __key: ctx.__key,
-      __permission: 'user',
+      __permission: 'user', // any non logue, user logue , admin logue admin
     };
     this.#cookiesInSocket(info, socket);
 
     return result
   };
-
-
-
 
   #cookiesInSocket(info: any, socket) {
     let cookies = {};
@@ -111,7 +108,15 @@ export class AuthManager {
 
     socket.request.headers["set-cookie"] = serialize(
       "cookies",
-      JSON.stringify(cookies)
+      JSON.stringify(cookies),
+      {
+        name: "io",
+        path: "/",
+        httpOnly: false,
+        sameSite: "lax",
+        expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        maxAge: Date.now() + 24 * 60 * 60 * 1000,
+      }
     );
 
     socket.emit("storeCookie", socket.request.headers["set-cookie"]);

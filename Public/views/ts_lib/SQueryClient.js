@@ -6,9 +6,12 @@ const socket = io(null, {
 });
 
 socket.on("storeCookie", (cookie) => {
+    //console.log('longCookies', socket.io.engine.transport.pollXhr.xhr.getResponseHeader("set-cookie"));
+    console.log('receed  cookies', cookie);
     document.cookie = cookie;
 });
 
+console.log('available - cookies',  document.cookie);
 SQuery.socket = socket;
 
 SQuery.Model = async (modelPath) => {
