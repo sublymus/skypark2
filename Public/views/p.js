@@ -7,7 +7,7 @@ export const load = {
       page: 1,
       limit: 3,
       select: '',
-      sort: {},
+      sort: { "createdAt": -1 },
       query: {},
     }
   },

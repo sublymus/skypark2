@@ -6,7 +6,7 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
 import { AuthManager } from "./AuthManager";
 import { authDataSchema, ContextSchema } from "./Context";
-import { Controllers, DescriptionSchema, GlobalMiddlewares, ModelControllers, ResultSchema } from "./Initialize";
+import { Controllers, DescriptionSchema, GlobalMiddlewares, ModelControllers, ResultSchema, SQueryMongooseSchema } from "./Initialize";
 
 export type FirstDataSchema = {
   __action: "create" | "read" | "list" | "update" | "delete";
@@ -170,7 +170,7 @@ SQuery.auth = (authData: authDataSchema) => {
 
 
 
-SQuery.Schema = (description: DescriptionSchema) => {
+SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
   description.__parentModel = {
     type: String,
     access: 'admin',
@@ -195,27 +195,27 @@ SQuery.Schema = (description: DescriptionSchema) => {
   }];
 
   const schema = new Schema(description as any);
-  (schema as any).description = description;
   schema.plugin(mongoosePaginate);
   schema.plugin(mongoose_unique_validator);
-
+  
   schema.pre('save', async function () {
     this.updatedAt = Date.now();
     this.modifiedPaths();
     this.updatedProperty = this.modifiedPaths();
   });
-
+  
   schema.post('save', async function (doc: any) {
     //emettre dans  les room dedier
     Log('cache', doc)
     Global.io.emit('update:' + doc._id.toString(), {
-
+      
       id: doc._id.toString(),
       doc,
       properties: doc.updatedProperty,
     })
   });
-
-  return schema;
+  
+  (schema as any).description = description;
+  return schema as SQueryMongooseSchema;
 }
 export { SQuery };

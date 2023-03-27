@@ -20,7 +20,6 @@ let buildingSchema = SQuery.Schema({
 
 });
 
-
 const BuildingModel = mongoose.model("building", buildingSchema);
 
 MakeModelCtlForm({

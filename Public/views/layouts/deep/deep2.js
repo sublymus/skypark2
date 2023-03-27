@@ -167,7 +167,7 @@ export class Deep extends BaseComponent {
                         // console.log('------- list btn ------', data);
                         this.container.append(_('List', {
                             ...data,
-                            id: (await this.instance[data.property]).$id,
+                            id: data.id,
                             parentCpn: this,
                             container: this.container,
                         }));

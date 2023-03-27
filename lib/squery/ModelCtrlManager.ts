@@ -29,7 +29,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
         }
     };
     const callPost: (e: EventPostSchema) => ResponseSchema = async (e: EventPostSchema) => {
-        //  if(['channel'].includes(option.modelPath) || e.res.error)Log("post", option.modelPath, e.res);
+        Log("post", option.modelPath, e.res);
         if (!(EventManager[e.action]?.post)) return e.res;
 
         for (const listener of EventManager[e.action].post) {
@@ -509,12 +509,30 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     },
                 });
             }
+            const parentDescription = ModelControllers[parentModelPath].option.schema.description
+            let parentPropertyRule = parentDescription[parentProperty];
+            if (!Array.isArray(parentPropertyRule)) return await callPost({
+                ctx,
+                more: { ...more, },
+                action,
+                res: {
+                    error: "OPERATION_FAILED",
+                    status: 404,
+                    code: "OPERATION_FAILED",
+                    message: " property <" + property + "> is not an array"
+                },
+            });
+            parentPropertyRule = parentPropertyRule[0];
+
             const isParentUser = parentModelInstance.__key._id.toString() == ctx.__key
-            if (accessValidator(ctx, 'update', option.access, "property", isParentUser)) {
+            if (accessValidator(ctx, 'update', parentPropertyRule.access, "property", isParentUser)) {
                 let validAddId = []
                 let validAddNew = []
                 /***********************  AddId  ****************** */
-                if (Array.isArray(addId)) {
+                const isAlien = !!(parentPropertyRule.alien || parentPropertyRule.strictAlien);
+                Log("isAlien", isAlien)
+                if (Array.isArray(addId) && isAlien) {
+                    Log('Je_peux_ajouter_dans_la_list',true)
                     const promises = addId.map((id) => {
                         return new Promise<string>(async (rev, rej) => {
                             try {
@@ -538,7 +556,9 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     validAddId.push(...validResult);
                 }
                 /***********************  AddNew  ****************** */
-                if (Array.isArray(addNew)) {
+                Log("strictAlien", parentPropertyRule.strictAlien);
+                if (Array.isArray(addNew) && parentPropertyRule.strictAlien != true) {
+                    Log('Je_peux_cree_dans_la_list',true)
                     const ctrl = ModelControllers[option.modelPath]();
                     more.__parentModel = paging?.query?.__parentModel;
                     const promises = addNew.map((data) => {
@@ -567,13 +587,10 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 try {
                     Log('try', { remove, parentProperty });
                     if (Array.isArray(remove)) {
-                        const description: DescriptionSchema = ModelControllers[parentModelPath].option.schema.obj;
-                        const rule = description[parentProperty];
-                        Log('isArray', { parentProperty, rule });
                         for (const id of remove) {
-                            const impact = Array.isArray(rule) && rule[0].impact != false;
+                            const impact = parentPropertyRule.impact == true;
                             let res: ResultSchema;
-                            Log('impact', { impact, parentProperty, rule });
+                            Log('impact', { impact, parentProperty, parentPropertyRule });
                             if (impact) {
                                 res = await ModelControllers[option.modelPath]().delete(
                                     {
@@ -602,7 +619,6 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         },
                     });
                 }
-
                 if (validAddNew.length > 0 || (Array.isArray(remove) && remove.length > 0)) {
                     try {
                         parentModelInstance[property].push(...validAddNew);
@@ -628,6 +644,17 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 Log('AccesRefuse', 'update List')
             }
             Log('parent', parentModelInstance);
+            if (!accessValidator(ctx, 'read', parentPropertyRule.access, "property", isParentUser)) return await callPost({
+                ctx,
+                more: { ...more, },
+                action,
+                res: {
+                    error: "OPERATION_FAILED",
+                    status: 404,
+                    code: "OPERATION_FAILED",
+                    message: "access refused for property <" + property + "> , mothod <read>"
+                },
+            });
             const defaultPaging = {
                 page: 1,
                 limit: 20,
@@ -665,12 +692,17 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 });
                 await Promise.allSettled(promise)
             } catch (error) {
-                return {
-                    error: "OPERATION_FAILED",
-                    status: 404,
-                    code: "OPERATION_FAILED",
-                    message: error.message,
-                };
+                return await callPost({
+                    ctx,
+                    more: { ...more, },
+                    action,
+                    res: {
+                        error: "OPERATION_FAILED",
+                        status: 404,
+                        code: "OPERATION_FAILED",
+                        message: error.message,
+                    },
+                });;
             }
             return await callPost({
                 ctx,
@@ -732,21 +764,16 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 for (const p in description) {
                     if (Object.prototype.hasOwnProperty.call(description, p)) {
                         const rule = description[p];
-                        // if (Array.isArray(rule)) {
-                        //     Log('fun', p)
-                        //     if (!accessValidator(ctx, action, rule[0].access, "property", modelInstance.__key._id.toString() == ctx.__key)) {
-                        //         continue;
-                        //     }
-                        // } else {
-                        //     Log('fun', p)
-                        //     if (!accessValidator(ctx, action, rule.access, "property", modelInstance.__key._id.toString() == ctx.__key)) {
-                        //         continue;
-                        //     }
-                        // }
-                        // console.log(p);
+
                         if (!ctx.data[p]) continue;
                         else if (!Array.isArray(rule) && rule.ref) {
                             if (!accessValidator(ctx, 'update', rule.access, "property", ctx.__key == modelInstance.__key._id.toString())) continue;
+
+                            const isStr = typeof ctx.data[p] == 'string';
+                            const isAlien = !!(rule.alien || rule.strictAlien);
+                            Log('alien', 'strictAlien: ', !!rule.strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule.strictAlien) && !isStr)
+                            if (!(isAlien && isStr)) continue
+
                             const oldId = modelInstance[p];
                             try {
                                 const alienId = ctx.data[p];
