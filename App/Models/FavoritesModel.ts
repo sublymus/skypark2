@@ -11,7 +11,7 @@ let favoritesSchema = SQuery.Schema({
     ref: FolderModel.modelName,
     //impact: true,
     access: "public",
-    //alien: true,
+    //: true,
   }],
   likeList: {
     type: Schema.Types.ObjectId,

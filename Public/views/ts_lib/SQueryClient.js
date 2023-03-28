@@ -1,17 +1,22 @@
 import { createModelFrom, getDesription, getDesriptions } from './SQueryUtils.js';
 const SQuery = {};
 
+
 const socket = io(null, {
-    extraHeaders: {},
+    extraHeaders: {
+        cookie: document.cookie || '',
+    }
 });
 
 socket.on("storeCookie", (cookie) => {
-    //console.log('longCookies', socket.io.engine.transport.pollXhr.xhr.getResponseHeader("set-cookie"));
-    console.log('receed  cookies', cookie);
     document.cookie = cookie;
+    socket.io.opts.extraHeaders = {
+        ...socket.io.opts.extraHeaders,
+        cookie,
+    }
 });
 
-console.log('available - cookies',  document.cookie);
+console.log('available - cookies', document.cookie);
 SQuery.socket = socket;
 
 SQuery.Model = async (modelPath) => {

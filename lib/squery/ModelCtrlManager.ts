@@ -1396,7 +1396,7 @@ function accessValidator(
 
     valid = accessMap[type]?.[action]?.[access].includes(permission);
 
-    Log('access', { permission }, { action }, { access }, { type }, { valid })
+    //Log('access', { permission }, { action }, { access }, { type }, { valid })
 
     return valid;
 }

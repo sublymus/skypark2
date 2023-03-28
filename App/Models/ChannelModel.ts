@@ -11,7 +11,8 @@ let ChannelSchema = SQuery.Schema({
         maxlength: [20, "trop long"],
         required: true,
         access: 'public',
-    },
+    },  
+    
     firstWatcher: {
         type: Schema.Types.ObjectId,
         ref: 'user',
