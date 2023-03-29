@@ -95,7 +95,7 @@ export class List extends BaseComponent {
                     this.description = this.model.description;
                     this.arrayInstance = (await this.modelInstance[this.property])
 
-                    this.arrayInstance.when('data', (data) => {
+                    this.arrayInstance.when('dataAvalaible', (data) => {
                         this.emit('createList', data)
                     })
                     await this.arrayInstance.update({

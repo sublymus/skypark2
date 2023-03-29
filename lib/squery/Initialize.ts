@@ -160,11 +160,13 @@ export type SQueryMongooseSchema = Schema & { description: DescriptionSchema }
 type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId;
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
 export type TypeRuleSchema = {
-  //valuePath // ./_id  ; ../../fileType;
-  //checkout?:true,
+  //TODO: valuePath // ./_id  ; ../../fileType;
+  //TODO: checkout?:true,
   type: TypeSchema//TypeSchema;
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
-  //watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
+  //TODO: watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
+  //TODO: refPath?: string;
+  
   alien?: boolean,
   strictAlien?: boolean,
   access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//
@@ -178,7 +180,6 @@ export type TypeRuleSchema = {
 
   required?: boolean;
   ref?: string;
-  refPath?: string;
   match?: RegExp;
   default?: valueSchema;
   unique?: boolean;

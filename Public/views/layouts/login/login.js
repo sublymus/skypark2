@@ -31,7 +31,7 @@ export class Login extends BaseComponent {
                 $All('input').forEach((input) => {
                     data[input.className] = input.value;
                 })
-                SQuery.emitLater("login:" + this.type, data, res => {
+                SQuery.emit("login:" + this.type, data, res => {
                     if (res.error) return this.emit('error', JSON.stringify(res));
                     this.emit('success', {
                         modelPath: 'account',//this.type,

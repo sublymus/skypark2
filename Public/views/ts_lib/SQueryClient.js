@@ -2,28 +2,23 @@ import { createModelFrom, getDesription, getDesriptions } from './SQueryUtils.js
 const SQuery = {};
 
 
+
 const socket = io(null, {
-    extraHeaders: {
-        cookie: document.cookie || '',
-    }
+    extraHeaders: {},
 });
 
 socket.on("storeCookie", (cookie) => {
+    console.log('receed  cookies', cookie);
     document.cookie = cookie;
-    socket.io.opts.extraHeaders = {
-        ...socket.io.opts.extraHeaders,
-        cookie,
-    }
 });
 
 console.log('available - cookies', document.cookie);
 SQuery.socket = socket;
 
 SQuery.Model = async (modelPath) => {
-
     return await createModelFrom(modelPath)
 }
-SQuery.emit = (event, ...arg) => {
+SQuery.emitNow = (event, ...arg) => {
     if (typeof event != 'string') throw new Error('cannot emit with following event : ' + event + '; event value must be string');
     if (SQuery.socket.connected) {
         socket.emit(event, ...arg);
@@ -31,10 +26,9 @@ SQuery.emit = (event, ...arg) => {
         throw new Error("DISCONNECT FROM SERVER");
     }
 }
-SQuery.emitLater = (event, ...arg) => {
+SQuery.emit = (event, ...arg) => {
     if (typeof event != 'string') throw new Error('cannot emit with following event : ' + event + '; event value must be string');
     socket.emit(event, ...arg);
-
 }
 
 SQuery.on = (event, ...arg) => {

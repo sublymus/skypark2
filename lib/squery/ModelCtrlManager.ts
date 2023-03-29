@@ -36,7 +36,6 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             if (listener) await listener(e);
         }
 
-
         return e.res;
     };
     const ctrlMaker = function () {
@@ -50,7 +49,6 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             if (!local_modelInstance) {
                 Log('local_modelInstance : ', local_modelInstance)
                 throw new Error("Id not found; modePath:" + option.modelPath + "; alienId:" + id + "; alienModelPath:" + modelPath);
-
             }
             return true;
         }
@@ -409,6 +407,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         },
                     });
                 }
+                Log('aboutAccessRead', { ctx, action, option, modelInstance })
                 await formatModelInstance(ctx, action, option, modelInstance);
                 //await modelInstance.select(i)
             } catch (error) {
@@ -532,7 +531,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 const isAlien = !!(parentPropertyRule.alien || parentPropertyRule.strictAlien);
                 Log("isAlien", isAlien)
                 if (Array.isArray(addId) && isAlien) {
-                    Log('Je_peux_ajouter_dans_la_list',true)
+                    Log('Je_peux_ajouter_dans_la_list', true)
                     const promises = addId.map((id) => {
                         return new Promise<string>(async (rev, rej) => {
                             try {
@@ -558,7 +557,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 /***********************  AddNew  ****************** */
                 Log("strictAlien", parentPropertyRule.strictAlien);
                 if (Array.isArray(addNew) && parentPropertyRule.strictAlien != true) {
-                    Log('Je_peux_cree_dans_la_list',true)
+                    Log('Je_peux_cree_dans_la_list', true)
                     const ctrl = ModelControllers[option.modelPath]();
                     more.__parentModel = paging?.query?.__parentModel;
                     const promises = addNew.map((data) => {
@@ -588,7 +587,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     Log('try', { remove, parentProperty });
                     if (Array.isArray(remove)) {
                         for (const id of remove) {
-                            const impact = parentPropertyRule.impact == true;
+                            const impact = parentPropertyRule.impact != false;
                             let res: ResultSchema;
                             Log('impact', { impact, parentProperty, parentPropertyRule });
                             if (impact) {
@@ -598,6 +597,8 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                         data: { id },
                                     }, more
                                 );
+                                Log('List_remove_res', res);
+                                if (res.error) continue;
                             }
                             parentModelInstance[parentProperty] = parentModelInstance[parentProperty].filter((some_id: string) => {
                                 return !(some_id == id)
@@ -842,7 +843,9 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                 modelInstance[p] = ctx.data[p];
                             }
                         } else {
-                            if (!accessValidator(ctx, 'update', rule.access, "property", ctx.__key == modelInstance.__key._id.toString())) continue;
+                            const access = accessValidator(ctx, 'update', rule.access, "property", ctx.__key == modelInstance.__key._id.toString())
+                            Log('AboutUpdateAccess', 'ctx:', ctx, '<update>', 'access:', rule.access, "<property>", "user: ", ctx.__key == modelInstance.__key._id.toString());
+                            if (!access) continue;
                             modelInstance[p] = ctx.data[p];
                         }
                     }
@@ -936,7 +939,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         more: { ...more, modelInstance },
                         action,
                         res: {
-                            error: "NOT_FOUND",
+                            error: "NOT_FOUND_MODEL_INSTANCE",
                             ...(await STATUS.NOT_FOUND(ctx, {
                                 target: option.modelPath.toLocaleUpperCase(),
                             })),
@@ -946,7 +949,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 for (const p in description) {
                     if (Object.prototype.hasOwnProperty.call(description, p)) {
                         const rule = description[p];
-                        if (!Array.isArray(rule) && rule.ref) {
+                        if (!Array.isArray(rule) && rule.ref && rule.impact != false) {
                             const ctrl = ModelControllers[rule.ref]();
                             const res = await (ctrl.delete || ctrl.destroy)({
                                 ...ctx,
@@ -955,17 +958,27 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                     id: modelInstance[p],
                                 },
                             });
-                        } else if (Array.isArray(rule) && rule[0].ref) {
-                            for (let i = 0; i < modelInstance[p].length; i++) {
-                                const ctrl = ModelControllers[rule[0].ref]();
-                                const res = await (ctrl.delete || ctrl.destroy)({
-                                    ...ctx,
-                                    data: {
-                                        ...ctx.data,
-                                        id: modelInstance[p][i],
-                                    },
-                                });
+                            if (res.error) {
+                                //////// tres important ///////////
                             }
+                        } else if (Array.isArray(rule) && rule[0].ref) {
+                            // for (let i = 0; i < modelInstance[p].length; i++) {
+                            //     const ctrl = ModelControllers[rule[0].ref]();
+                            //     const res = await (ctrl.delete || ctrl.destroy)({
+                            //         ...ctx,
+                            //         data: {
+                            //             ...ctx.data,
+                            //             id: modelInstance[p][i],
+                            //         },
+                            //     });
+                            // }
+                            const res = await ModelControllers[rule[0].ref]().list({
+                                ...ctx,
+                                data: {
+                                    "remove": modelInstance[p] || []
+                                }
+                            })
+                            Log('DELET_REF[]_LIST_RES',res);
                         } else if (Array.isArray(rule) && rule[0].file) {
                             //await FileValidator(ctx, action, rule[0], ctx.data[p], modelInstance[p])
                             try {
@@ -982,7 +995,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                     more: { ...more, modelInstance },
                                     action,
                                     res: {
-                                        error: "NOT_FOUND",
+                                        error: "FILE_REMOVE_ERROR",
                                         ...(await STATUS.NOT_FOUND(ctx, {
                                             target: option.modelPath.toLocaleUpperCase(),
                                             message: error.message,
@@ -999,7 +1012,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     more: { ...more, modelInstance },
                     action,
                     res: {
-                        error: "NOT_FOUND",
+                        error: "DELETE_ERROR",
                         ...(await STATUS.NOT_FOUND(ctx, {
                             target: option.modelPath.toLocaleUpperCase(),
                             message: error.message,

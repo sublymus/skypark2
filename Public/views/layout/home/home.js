@@ -127,7 +127,7 @@ export default class Home extends BaseComponent {
         })
         this.emit('@mainpage:change',$('.main'));
         // console.log(document.cookie);
-        //$('.page-switch-login').component.emit('success')
+        $('.page-switch-login').component.emit('success')
       },
     };
   }

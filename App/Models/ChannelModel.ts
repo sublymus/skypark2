@@ -46,7 +46,13 @@ const ctrlMaker = MakeModelCtlForm({
 });
 
 ctrlMaker.pre('read', async (e) => {
-
+    /*
+    TODO: pre:create 
+    TODO: read:create 
+    TODO: delete:create 
+    TODO: update:create 
+    TODO: access- droit
+    */
 })
 ctrlMaker.post('read', async (e) => {
 

@@ -1,4 +1,23 @@
 export const load = {
+  post: {
+    create: {
+      message: {
+       // user: '',
+        text: 'c\' est mon post',
+        fileList: [],
+        // __fileList: {
+        //   type: String,
+        //   maxlength: 10,
+        //   minlength: 10,
+        // },
+        // targets: {
+        //   type: Schema.Types.ObjectId,
+        //   ref: 'user',/////
+        // }
+      },
+    },
+    likeCount: 35,
+  },
   list: {
     addId: [],
     addNew: [],

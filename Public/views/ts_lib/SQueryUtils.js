@@ -10,7 +10,7 @@ export async function getDesription(modelPath) {
     }
     return await new Promise((rev) => {
         // console.log('********************');
-        SQuery.emit('server:description', {
+        SQuery.emitNow('server:description', {
             modelPath,
         }, (res) => {
             // console.log('server:description', res);
@@ -55,7 +55,7 @@ export async function createModelFrom(modelPath) {
         };
         return await new Promise((rev) => {
             try {
-                SQuery.emit("model_" + modelPath + ':create', data,
+                SQuery.emitNow("model_" + modelPath + ':create', data,
                     async (res) => {
                         try {
                             if (res.error) {
@@ -123,7 +123,7 @@ export async function createModelFrom(modelPath) {
         };
         return await new Promise((rev, rej) => {
             try {
-                SQuery.emit("model_" + modelPath + ':update', data,
+                SQuery.emitNow("model_" + modelPath + ':update', data,
                     (res) => {
                         try {
                             if (res.error) {
@@ -167,7 +167,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
     const emiter = new EventEmiter();
     await (async () => {
         await new Promise((rev) => {
-            SQuery.emit("model_" + modelPath + ':read', {
+            SQuery.emitNow("model_" + modelPath + ':read', {
                 id: id,
             }, async (res) => {
                 if (res.error) throw new Error(JSON.stringify(res));
@@ -225,6 +225,15 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                         } else if (rule[0] && rule[0].ref) {// invalible
                             if (firstRead) {
                                 propertyCache[property] = await createArrayInstanceFrom({ modelPath, id, property, description, Model });
+                                propertyCache[property].when('refresh', async () => {
+                                    console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ array emit  refresh  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+                                   // await emitRefresh([property]);
+                                })
+                                instance.when('refresh:' + property, (value) => {
+
+                                    console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ array emit  refresh  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~', { value });
+                                    propertyCache[property].update();
+                                })
                                 firstRead = false;
                             }
                             return propertyCache[property];
@@ -294,7 +303,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
         }
     }
     instance.update = async (data) => {
-        SQuery.emit("model_" + modelPath + ':update', {
+        SQuery.emitNow("model_" + modelPath + ':update', {
             ...data,
             id
         }, (res) => {
@@ -344,10 +353,12 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
 
     const arrayInstance = {};
     const refresh = async (options) => {
-        console.log('-------------------option : ', options);
+        
+      
         options = options || {};
-        console.log('+++++++++++++++++++option : ', options);
+       let canRefresh = options.remove|| options.addNew||options.addId;
         if (options.paging) {
+            canRefresh = true;
             options.paging = paging = {
                 ...paging,
                 ...options.paging,
@@ -368,7 +379,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
 
         return await new Promise((rev) => {
             if (SQuery.socket.connected) {
-                SQuery.emit("model_" + itemModelPath + ':list', {
+                SQuery.emitNow("model_" + itemModelPath + ':list', {
                     ...options,
                     property
                 }, async (res) => {
@@ -376,8 +387,8 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                     currentData = res.response;
                     paging.page = currentData.page;
                     paging.limit = currentData.limit;
-                    emiter.emit('data', currentData);
-                    emiter.emit('change', currentData);
+                    emiter.emit('dataAvalaible', currentData);
+                    if(canRefresh)emiter.emit('refresh', currentData);
 
                     Object.defineProperties(currentData, {
                         ['itemsInstance']: {
@@ -435,7 +446,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
     arrayInstance.page = async (page) => {
         if (!page) {
             if (currentData) {
-                emiter.emit('data', currentData);
+                emiter.emit('dataAvalaible', currentData);
                 return currentData;
             }
             return await refresh();
@@ -449,7 +460,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
     arrayInstance.__itemModelPath = Promise.resolve(itemModelPath);
     arrayInstance.last = async () => {
         if (paging.page == currentData.totalPages) {
-            emiter.emit('data', currentData);
+            emiter.emit('dataAvalaible', currentData);
             return currentData;
         }
         paging.page = currentData.totalPages;
