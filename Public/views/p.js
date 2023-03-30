@@ -124,7 +124,7 @@ export const load = {
           //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
           message: "*** BEST ****",
         },
-        createdDate: Date.now() - 1_000_000_000 + parseInt(Math.random() * 1_000_000_000),
+        //createdDate: Date.now() - 1_000_000_000 + parseInt(Math.random() * 1_000_000_000),
       },
       building: {
         name: "skypark Center",

@@ -7,7 +7,6 @@ import ProfileModel from "./ProfileModel";
 
 let accountSchema = SQuery.Schema({
 
-
   name: {
     type: String,
     trim: true,
@@ -32,12 +31,12 @@ let accountSchema = SQuery.Schema({
   telephone: {
     type: String,
     required: true,
-    access:'private',
+    access: 'private',
   },
   address: {
     type: Schema.Types.ObjectId,
     ref: AddressModel.modelName,
-    required: true,
+    //required: true,
   },
   favorites: {
     type: Schema.Types.ObjectId,
@@ -59,32 +58,18 @@ const ctrlMaker = MakeModelCtlForm({
   volatile: false,
 });
 
-ctrlMaker.pre('read', async (e) => {
-  await new Promise((rev => {
-    const d = Date.now() + 100;
-    const t = () => {
-      console.log(Date.now());
-      if (d < Date.now()) {
-        return rev(d);
-      }
-      setTimeout(t, 10)
-    }
-    t()
-  }))
-})
-ctrlMaker.post('read', async (e) => {
-  await new Promise((rev => {
-    const d = Date.now() + 100
-    const t = () => {
-      console.log('_________________' + Date.now());
-      if (d < Date.now()) {
-        return rev(d);
-      }
-      setTimeout(t, 10)
-    }
-    t()
+ctrlMaker.pre('store', async ({ ctx }) => {
+  console.log('********************#################################*********', ctx.data);
 
-  }))
+  ctx.data = {
+    ...ctx.data,
+    profile: {
+     /// imgProfile: ['/temp/1677915905612_6402f701d7944fff36120416.png'],
+     // banner: ['/temp/1677915905612_6402f701d7944fff36120416.png'],
+      message: "*** BEST ****",
+    },
+  }
 })
+
 
 export default AccountModel;

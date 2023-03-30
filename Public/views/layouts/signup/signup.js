@@ -5,7 +5,7 @@ import BaseComponent, {
 import SQuery from "../../ts_lib/SQueryClient.js";
 
 export class Signup extends BaseComponent {
-    constructor(data) {
+    constructor(data) { 
         super(
             {
                 type: "user",

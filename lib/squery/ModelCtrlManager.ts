@@ -147,7 +147,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             });
                         }
                         const ctrl = ModelControllers[rule.ref]();
-                        //Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
+                       // Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
                         const res = await (ctrl.create || ctrl.store)(
                             {
                                 ...ctx,

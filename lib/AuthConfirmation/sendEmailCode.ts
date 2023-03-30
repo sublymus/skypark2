@@ -7,23 +7,22 @@ const transport = nodemailer.createTransport({
   // secure: false,
   // auth: { user: "wena.ui@outlook.com", pass: "Log('wena','ui');" },
   auth: { user: "306507e8c879cd", pass: "4d2dc4532e7111" },
-}); 
+});
 
 // Préparer les détails de l'email à envoyer
 
-
-export function genereCodeEmail(){
+export function genereCodeEmail() {
   const randomNum = Math.floor(Math.random() * 100000);
   const numStr = randomNum.toString().padStart(5, '0');
   return numStr
 }
 
-export function sendEmail(email : string , name : string , code : string) : Promise<boolean> {
-    const mailOptions = {
-      from: "wena.ui@outlook.com",
-      to: email,
-      subject: 'SKYPARK - Email Verification',
-      html : `
+export function sendEmail(email: string, name: string, code: string): Promise<boolean> {
+  const mailOptions = {
+    from: "wena.ui@outlook.com",
+    to: email,
+    subject: 'SKYPARK - Email Verification',
+    html: `
         <div style="background-color: #f5f5f5; padding: 20px;">
           <div style="background-color: white; padding: 20px; border-radius: 10px;">
             <h1 style="color: #006699; text-align: center;">Bienvenue ${name} chez skypark</h1>
@@ -36,19 +35,23 @@ export function sendEmail(email : string , name : string , code : string) : Prom
     
           </div>
         </div>`
-      
-    };
-    // Envoyer l'email en utilisant l'objet de transport
-    return new Promise((reso , reje) =>{
-      transport.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.log(error);
-          reje(false)
-        } else {
-          console.log(`Email envoyé: ${info.response}`);
-          reso(true)
-        }
-      });
-    })
- 
+
+  };
+  // Envoyer l'email en utilisant l'objet de transport
+  return new Promise((reso, reje) => {
+    setTimeout(() => {
+      console.log(`Email envoyé:`,code);
+      reso(true);
+    }, 1500);
+    // transport.sendMail(mailOptions, (error, info) => {
+    //   if (error) {
+    //     console.log(error);
+    //     reje(false)
+    //   } else {
+    //     console.log(`Email envoyé: ${info.response}`);
+    //     reso(true)
+    //   }
+    // });
+  })
+
 }

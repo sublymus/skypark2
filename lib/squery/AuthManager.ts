@@ -61,20 +61,25 @@ export class AuthManager {
   signup = async (ctx: ContextSchema): ResponseSchema => {
     let { socket, authData } = ctx;
 
-    for (let i = 0; i < authData.extension.length; i++) {
-      const ext = authData.extension[i];
-      const Ext = new ext();
-      let A1 = await Ext.confirm(ctx);
+    try {
 
-      if (!A1) {
-        return {
-          error: 'OPERATION FAILED',
-          ...(await STATUS.OPERATION_FAILED(ctx, {
-            target: authData.signup.toLocaleUpperCase(),
-            message: Ext.error()
-          })),
-        };
+      for (let i = 0; i < authData.extension.length; i++) {
+        const Ext = authData.extension[i];
+        const ext = new Ext();
+        let confirmed = await ext.confirm(ctx);
+
+        if (!confirmed) {
+          throw new Error(ext.error());
+        }
       }
+    } catch (error) {
+      return {
+        error: 'OPERATION FAILED',
+        ...(await STATUS.OPERATION_FAILED(ctx, {
+          target: authData.signup.toLocaleUpperCase(),
+          message: error
+        })),
+      };
     }
     const result = await ModelControllers[authData.signup]()["create"](ctx);
     Log("ici", result)

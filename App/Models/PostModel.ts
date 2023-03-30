@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import Log from "sublymus_logger";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import MessageModel from "./MessageModel";
@@ -24,9 +25,13 @@ PostSchema.add(new Schema({
     }]
 }))
 
-MakeModelCtlForm({
+const maker = MakeModelCtlForm({
     schema: PostSchema,
     model: PostModel,
     volatile: true,
 });
+
+maker.pre('create',async ({ctx})=>{
+    Log('piou',ctx.data)
+})
 export default PostModel;

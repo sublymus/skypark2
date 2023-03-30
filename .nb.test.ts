@@ -1,6 +1,9 @@
 /*
+TODO: const profile = await user['/account/profile']
+TODO: const building = await address['../../building']
 
 =======================================  access  ==================================================
+-access:property {ref:modelPath,access:private} il est mieux de definir en plus les property du ref comme etant private
 =======================================   populate  ==================================================
 =======================================   file  ==================================================
 *****delete 
@@ -14,6 +17,7 @@
 =======================================   Controllers  ==================================================
 =======================================   ModelControllers ==================================================
 *****create - store
+- defaultData
 *****read -show
 *****list
 *****update

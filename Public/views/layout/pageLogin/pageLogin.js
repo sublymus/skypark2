@@ -1,10 +1,12 @@
 import BaseComponent, { Components } from "../../ts_lib/baseComponent/baseComponent.js";
+import SQuery from "../../ts_lib/SQueryClient.js";
 
 export default class PageLogin extends BaseComponent {
 
     constructor(data) {
         super({
-            authList: {},
+            signupModelPath:'user',
+            loginModelPath:'account',
         }, data)
 
         const { _, viewName, $, $All } = this.mvc;
@@ -26,8 +28,20 @@ export default class PageLogin extends BaseComponent {
             ['h1.title']: (title) => {
                 title.textContext = 'Sing in to ' + 'Skypark'
             },
-            ['.submit-button']: (elem) => {
-
+            ['@submit:click']: (elem) => {
+                const data = {};
+                $All('input').forEach((input) => {
+                    //console.log(input);
+                    data[input.name] = input.value;
+                })
+                //console.log({data});
+                SQuery.emit("login:"+this.signupModelPath, data, res => {
+                    if (res.error) return this.emit('error', JSON.stringify(res));
+                    this.emit('connected', {
+                        modelPath: this.loginModelPath,//,
+                        id: res.response.loginId,
+                    })
+                });
             },
 
         }

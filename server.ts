@@ -11,7 +11,7 @@ const server = app.listen(3500, () => {
 app.use(express.static(path.join(__dirname, "Public")));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "Public/views/test.html"));
+  res.sendFile(path.join(__dirname, "Public/views/index.html"));
 });
 
 app.get("*", (req, res) => {

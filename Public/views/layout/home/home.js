@@ -121,13 +121,13 @@ export default class Home extends BaseComponent {
       [viewName]: (page, all) => {
         this.emit("@menu:click", $(".label.welcome"));
         $('.page-switch-login').component.when('success', (data) => {
-          const dash = _('DashManager@mainpage');
+          const dash = _('DashManager@mainpage',data);
           this.view.append(dash);
           this.emit('@mainpage:change',dash);
         })
         this.emit('@mainpage:change',$('.main'));
         // console.log(document.cookie);
-        $('.page-switch-login').component.emit('success')
+       // $('.page-switch-login').component.emit('success')
       },
     };
   }

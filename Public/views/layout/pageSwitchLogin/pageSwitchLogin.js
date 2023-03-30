@@ -74,13 +74,13 @@ export default class PageSwitchLogin extends BaseComponent {
                 })
 
                 this.view.addEventListener('click', (e) => {
-                    if(e.target==this.view){
+                    if (e.target == this.view) {
                         console.log('trertyuiop');
                         this.emit('cancel')
                     }
                 })
 
-                this.when('cancel',()=>{
+                this.when('cancel', () => {
                     doneAnim.start();
                 })
                 this.view.style.display = 'none';
@@ -91,21 +91,22 @@ export default class PageSwitchLogin extends BaseComponent {
                         _('PageLogin@page'),
                         _('PageSignup@page')
                     )
-                    $('.page-signup').component.when('success', (data_p) => {
+                    $('.page-signup').component.when('success', (data) => {
                         successAnim.toggle();
-                        this.emit('success',data)
-                        data = data_p;
+                        console.log('&&&&&&&&&&',data);
+                        this.emit('success', data);
                     })
                     $('.page-signup').component.when('done', () => {
                         doneAnim.start();
-                    })
-                    $('.page-login').component.when('connected', () => {
+                    });
+                    $('.page-login').component.when('connected', (data) => {
+                        this.emit('success', data);
                         doneAnim.start();
                     })
 
                     this.view.style.display = 'flex';
                     this.view.style.opacity = '1'
-                    let p = 0 
+                    let p = 0
                     if (action == 'login') {
                         anim.start()
                     } else {

@@ -7,16 +7,17 @@ export default class InputUi extends BaseComponent {
             type: 'text',
             hint: '',
             icon: null,
-            name: 'input'
+            name: 'input',
+            value: ''
         }, data)
 
         const { _, viewName, $, $All } = this.mvc;
 
-        this.view =_('div', viewName,
-        _('div', 'icon'),
-        _('input'),
-        _('div', 'eye'),
-    );
+        this.view = _('div', viewName,
+            _('div', 'icon'),
+            _('input'),
+            _('div', 'eye'),
+        );
         this.controller = {
             ['.icon']: (elem) => {
                 this.when('icon', (icon) => {
@@ -44,10 +45,13 @@ export default class InputUi extends BaseComponent {
                 this.when('hint', (hint) => {
                     input.placeholder = hint;
                 });
+                this.when('value', (value) => {
+                    input.value = value;
+                });
             },
             ['.eye']: (elem) => {
                 $('.eye').addEventListener('click', () => {
-                   // $('input').type = $('input').type == 'password' ? 'text' : 'password';
+                    // $('input').type = $('input').type == 'password' ? 'text' : 'password';
                 });
 
             }

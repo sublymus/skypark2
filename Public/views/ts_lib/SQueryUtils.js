@@ -318,7 +318,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
     };
     const parts = (await instance.__parentModel).split('_');
     instance.$modelPath = modelPath;
-    instance.$parentModelPath = parts[0];;
+    instance.$parentModelPath = parts[0];
     instance.$parentId = parts[1];
     instance.$parentProperty = parts[2];
     instance.$model = Model;
