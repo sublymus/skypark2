@@ -17,7 +17,6 @@ let ChannelSchema = SQuery.Schema({
         type: Schema.Types.ObjectId,
         ref: 'user',
         strictAlien: true,
-        access: 'public',
     },
     description: {
         type: String,
@@ -29,10 +28,12 @@ let ChannelSchema = SQuery.Schema({
         type: Schema.Types.ObjectId,
         ref: 'post',
         access: 'public',
+        impact:true,
     }],
-    watcher: [{
+    watcher:[{
         type: Schema.Types.ObjectId,
         ref: WatcherModel.modelName,
+        impact:true,
         access: 'public',
     }]
 });

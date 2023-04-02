@@ -19,7 +19,7 @@ let ArticleShema = SQuery.Schema({
     type: Number,
     required: true,
     validate: [{
-      validator: (value) => value > 0,
+      validator: (value:number) => value > 0,
       msg: "be great than Zero"
     }]
   },

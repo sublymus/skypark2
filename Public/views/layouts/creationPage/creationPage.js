@@ -24,10 +24,10 @@ export class CreationPage extends BaseComponent {
                         const parts = input.value.split('.');
                         this.modelPath = parts[0];
                         this.action = parts[1];
-                        console.log('input.value : ', input.value, parts);
+                        //console.log('input.value : ', input.value, parts);
                     } else {
                         this.modelPath = input.value;
-                        console.log('input.value : ', input.value);
+                        //console.log('input.value : ', input.value);
                     }
                     const data = this.action ? load[this.modelPath][this.action] : load[this.modelPath]
                     $("textarea").value = JSON.stringify(data)
@@ -45,7 +45,7 @@ export class CreationPage extends BaseComponent {
                     if (!(this.modelPath && this.action)) return this.emit('error', 'input is empty');
                     const Model = await SQuery.Model(this.modelPath);
                     const instance = await Model.create(JSON.parse($('textarea').value));
-                    console.log({ instance });
+                    //console.log({ instance });
                     this.emit('next', {
                         modelPath: this.modelPath,//this.type,
                         id: instance.$id,

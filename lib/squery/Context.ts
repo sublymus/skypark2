@@ -12,11 +12,14 @@ export type AuthExtensionSchema = {
     error: () => string;
   };
 };
-export type authDataSchema = {
+export type authDataOptionSchema = {
   login: string;
   match: string[];
   signup: string;
   extension?: AuthExtensionSchema[];
+};
+export type authDataSchema = authDataOptionSchema & {
+  __permission: string,
 };
 export type DataSchema = {
   [p: string]: any;

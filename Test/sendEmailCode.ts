@@ -7,12 +7,12 @@ const transport = nodemailer.createTransport({
   // secure: false,
   // auth: { user: "wena.ui@outlook.com", pass: "Log('wena','ui');" },
   auth: { user: "1eedc3e8e694d8", pass: "a28c00ad2601f4" },
-}); 
+});
 
 // Préparer les détails de l'email à envoyer
 
 
-export function genereCode(){
+export function genereCode() {
   const randomNum = Math.floor(Math.random() * 100000);
   const numStr = randomNum.toString().padStart(5, '0');
   return numStr
@@ -20,12 +20,12 @@ export function genereCode(){
 
 
 
-export function sendEmail(email : string , name : string , code : string) : void {
-    const mailOptions = {
-      from: "wena.ui@outlook.com",
-      to: email,
-      subject: 'SKYPARK - Email Verification',
-      html : `
+export function sendEmail(email: string, name: string, code: string): void {
+  const mailOptions = {
+    from: "wena.ui@outlook.com",
+    to: email,
+    subject: 'SKYPARK - Email Verification',
+    html: `
         <div style="background-color: #f5f5f5; padding: 20px;">
           <div style="background-color: white; padding: 20px; border-radius: 10px;">
             <h1 style="color: #006699; text-align: center;">Bienvenue ${name} chez skypark</h1>
@@ -38,14 +38,14 @@ export function sendEmail(email : string , name : string , code : string) : void
     
           </div>
         </div>`
-      
-    };
-    // Envoyer l'email en utilisant l'objet de transport
-    transport.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log(`Email envoyé: ${info.response}`);
-      }
-    });
+
+  };
+  // Envoyer l'email en utilisant l'objet de transport
+  transport.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      //console.log(error);
+    } else {
+      //console.log(`Email envoyé: ${info.response}`);
+    }
+  });
 }

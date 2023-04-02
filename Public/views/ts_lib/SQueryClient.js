@@ -8,11 +8,11 @@ const socket = io(null, {
 });
 
 socket.on("storeCookie", (cookie) => {
-    console.log('receed  cookies', cookie);
+    //console.log('receed  cookies', cookie);
     document.cookie = cookie;
 });
 
-console.log('available - cookies', document.cookie);
+//console.log('available - cookies', document.cookie);
 SQuery.socket = socket;
 
 SQuery.Model = async (modelPath) => {
@@ -125,7 +125,7 @@ const validations = {
         };
     },
     match: (value, requirement) => {
-        console.log(requirement);
+        //console.log(requirement);
         const re = new RegExp(requirement);
         const isValide = re.test(value);
         return {
@@ -141,7 +141,7 @@ const validations = {
         };
     },
     file: (value, requirement) => {
-        console.log('value.type', value.type, 'isValide', isValideType(requirement.type || ['*/*'], value.type));
+        //console.log('value.type', value.type, 'isValide', isValideType(requirement.type || ['*/*'], value.type));
         if (value.type && isValideType(requirement.type || ['*/*'], value.type)) {
             return {
                 isValide: false,
@@ -240,19 +240,19 @@ const validations = {
 
 SQuery.Validatior = async (rule, value) => {
     let res = await validations.type(value, rule.type);
-    console.log('rule : ', rule, 'value : ', value, 'res: ', res);
+    //console.log('rule : ', rule, 'value : ', value, 'res: ', res);
     if (!res.isValide) return {
         message: res.message,
-        e: console.log('res: ', { res })
+       // e: //console.log('res: ', { res })
     };
 
     if (ValidationMap[rule.type]) {
         for (const p of ValidationMap[rule.type]) {
             if (rule[p] && validations[p]) {
-                console.log('rule[p] : ', rule[p], 'value : ', validations[p](value, rule[p]));
+                //console.log('rule[p] : ', rule[p], 'value : ', validations[p](value, rule[p]));
                 if (!(res = validations[p](value, rule[p])).isValide) return {
                     message: res.message,
-                    e: console.log('res: ', { res })
+                    //e: console.log('res: ', { res })
                 };
 
             }
@@ -261,13 +261,13 @@ SQuery.Validatior = async (rule, value) => {
     if (rule.file) {
         if (!(res = validations.file(value, rule.file)).isValide) return {
             message: res.message,
-            e: console.log('res: ', { res })
+            //e: //console.log('res: ', { res })
         };
     }
 
     // if (ActionsMap[rule.type]) {
     //     const actions = ActionsMap[rule.type];
-    //     console.log(ActionsMap[rule.type]);
+    //     //console.log(ActionsMap[rule.type]);
     //     for (const p in actions) {
     //         if (rule[p] && actions[p]) {
     //             value = actions[p](value, rule[p]);
@@ -287,7 +287,7 @@ export default SQuery;
 //       .then(data => callback(data));
 //   }
 //   getIP(function(ip){
-//   console.log(ip);
+//   //console.log(ip);
 
 //   });
 

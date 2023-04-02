@@ -1,9 +1,9 @@
 import { Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
-import { genereCodeEmail, sendEmail } from "./sendEmailCode";
 import { genereCodePhone } from "./SendPhoneCode";
 import { sendWithClickatail } from "./SendPhoneCode2";
+import { genereCodeEmail, sendEmail } from "./sendEmailCode";
 
 /* 
 ...............WENA-PHONE..................
@@ -103,7 +103,7 @@ export class EmailConfirmartion {
   async confirm(ctx: ContextSchema): Promise<boolean> {
     let { data, socket } = ctx;
     const code = genereCodeEmail();
-    console.log({ code });
+    //console.log({ code });
 
     if (!(await sendEmail(data.account.email, data.account.name, code))) {
       this.#msgError = "email n'a pa pu etre envoye";
@@ -121,7 +121,7 @@ export class EmailConfirmartion {
             this.#msgError = "expiration du code";
             res(false);
           }
-          console.log({ code }, { codeuser });
+          //console.log({ code }, { codeuser });
           if (!(codeuser === code)) {
             this.#msgError = "code invalide";
             res(false);

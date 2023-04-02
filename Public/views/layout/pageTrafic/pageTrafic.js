@@ -62,7 +62,7 @@ export default class PageTrafic extends BaseComponent {
 
                     )
                 ),
-                
+
             ),
             _('InfoBull', {})
         );
@@ -86,13 +86,13 @@ export default class PageTrafic extends BaseComponent {
             ['@newUser:click']: (newBtn) => {
                 const page = _('PageSingupUser@page', {});
                 $('.container').append(page)
-                page.component.when('back',(data)=>{
-                    this.emit('@page:change',$('.list-container'))
+                page.component.when('back', (data) => {
+                    this.emit('@page:change', $('.list-container'))
                     page.remove();
-                    if(data){
+                    if (data) {
                     }
                 })
-                this.emit('@page:change',$('.page-singup-user'))
+                this.emit('@page:change', $('.page-singup-user'))
             },
             [viewName]: (view) => {
                 $('.item-list').component.when('selected', item => {
@@ -103,9 +103,9 @@ export default class PageTrafic extends BaseComponent {
                 })
                 $('.info-bull').classList.add('exite')
                 $('.info-bull').style.display = 'none';
-                console.log($('.page-singup-user'));
-               
-               // this.emit('@page:change',$('.page-singup-user'))
+                //console.log($('.page-singup-user'));
+
+                // this.emit('@page:change',$('.page-singup-user'))
             }
         }
     }

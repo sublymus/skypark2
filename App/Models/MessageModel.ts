@@ -7,6 +7,7 @@ let MessageSchema = SQuery.Schema({
     user: {
         type: Schema.Types.ObjectId,
         ref: 'user',
+        strictAlien:true,
     },
     text: {
         type: String
@@ -16,11 +17,6 @@ let MessageSchema = SQuery.Schema({
         ref: FileListModel.modelName,
         //checkout:true,
     }],
-    __fileList: {
-        type: String,
-        maxlength: 10,
-        minlength: 10,
-    },
     targets: {
         type: Schema.Types.ObjectId,
         ref: 'user',/////
@@ -34,4 +30,5 @@ MakeModelCtlForm({
     model: MessageModel,
     volatile: true,
 });
+
 export default MessageModel;

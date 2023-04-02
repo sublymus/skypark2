@@ -20,7 +20,7 @@ export class EntryPoint extends BaseComponent {
         this.controller = {
             ['@model:change']: (select) => {
                 this.model = select.value;
-                console.log(select.value);
+                //console.log(select.value);
             },
             ['@submit:click']: () => {
                 if (!$('input').value) return this.emit('error', 'id is empty');
@@ -34,11 +34,11 @@ export class EntryPoint extends BaseComponent {
                     $('select').childNodes.forEach(option => {
                         option.remove();
                     });
-                    console.log({descriptions});
+                    //console.log({descriptions});
                     for (const modelPath in descriptions) {
                         if (Object.hasOwnProperty.call(descriptions, modelPath)) {
                             $('select').append(_('option', ['value:' + modelPath], modelPath.toUpperCase()));
-                            console.log({modelPath});
+                            //console.log({modelPath});
                         }
                     }
 

@@ -19,7 +19,7 @@ GlobalMiddlewares.push(async (ctx: ContextSchema) => {
       const decoded: any = jwt.verify(token, "a");
       Log("decoded", { decoded })
       ctx.__key = decoded.__key;
-      ctx.__permission = decoded.__permission || 'any';
+      ctx.__permission = decoded.__permission || 'any'; 
     } catch (error) {
      // Log("jwtError", error);
     }

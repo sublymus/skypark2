@@ -98,21 +98,22 @@ export type ModelControllersStorage = {
 export type ControllersStorage = {
   [p: string]: CtrlMakerSchema;
 };
-export type ModelFrom_optionSchema = {
-  schema: {
-    paths: {
-      [p: string]: {
-        instance: string;
-        options?: {
-          ref?: string;
-        };
+export type SQuerySchemaType = {
+  paths: {
+    [p: string]: {
+      instance: string;
+      options?: {
+        ref?: string;
       };
     };
-    obj: {
-      [p: string]: any
-    },
-    description?: DescriptionSchema
   };
+  obj: {
+    [p: string]: any
+  },
+  description?: DescriptionSchema
+};
+export type ModelFrom_optionSchema = {
+  schema: SQueryMongooseSchema;
   model: any;
   volatile: boolean;
   access?: ControllerAccesSchema;
@@ -166,7 +167,7 @@ export type TypeRuleSchema = {
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
   //TODO: watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
   //TODO: refPath?: string;
-  
+
   alien?: boolean,
   strictAlien?: boolean,
   access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//

@@ -2,7 +2,7 @@ import { serialize } from "cookie";
 import jwt from "jsonwebtoken";
 import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
-import { ContextSchema } from "./Context";
+import { ContextSchema, authDataSchema } from "./Context";
 import { ModelControllers, ResponseSchema } from "./Initialize";
 
 const secret = "a";
@@ -13,7 +13,8 @@ const generateToken = (payload) => {
 export class AuthManager {
 
   login = async (ctx: ContextSchema): ResponseSchema => {
-    const { data, socket, authData } = ctx;
+    const { data, socket, authData: authDataAny } = ctx;
+    const authData: authDataSchema = authDataAny;
     let loginModelInstance = null;
     try {
       let filter: any = {};
@@ -46,7 +47,7 @@ export class AuthManager {
 
     const info = {
       __key: loginModelInstance.__key,
-      __permission: 'user',
+      __permission: authData.__permission,
     };
 
     this.#cookiesInSocket(info, socket);
@@ -59,8 +60,8 @@ export class AuthManager {
   };
 
   signup = async (ctx: ContextSchema): ResponseSchema => {
-    let { socket, authData } = ctx;
-
+    let { socket, authData: authDataAny } = ctx;
+    const authData: authDataSchema = authDataAny;
     try {
 
       for (let i = 0; i < authData.extension.length; i++) {
@@ -94,7 +95,7 @@ export class AuthManager {
     }
     const info = {
       __key: ctx.__key,
-      __permission: 'user', // any non logue, user logue , admin logue admin
+      __permission: authData.__permission, // any non logue, user logue , admin logue admin
     };
     this.#cookiesInSocket(info, socket);
 

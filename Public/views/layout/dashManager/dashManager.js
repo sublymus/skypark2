@@ -3,15 +3,15 @@ import BaseComponent, { Components } from "../../ts_lib/baseComponent/baseCompon
 import '../pageInfoCode/pageInfoCode.js';
 import '../pageInfoPerso/pageInfoPerso.js';
 import '../pageInfoProfile/pageInfoProfile.js';
+import '../pageInfoSuccess/pageInfoSuccess.js';
 import '../pageLogin/pageLogin.js';
 import '../pageSignup/pageSignup.js';
 import '../pageSwitchLogin/pageSwitchLogin.js';
-import '../pageInfoSuccess/pageInfoSuccess.js';
 
 import '../../component/infoBull/infoBull.js';
+import '../../component/inputUi/inputUi.js';
 import '../../component/item/item.js';
 import '../../component/itemList/itemList.js';
-import '../../component/inputUi/inputUi.js'
 
 import '../page404/page404.js';
 import '../pageProfile/pageProfile.js';
@@ -84,7 +84,7 @@ export default class DashManager extends BaseComponent {
                 }
             },
             [viewName]: (page, all) => {
-                console.log($('.agenda'));
+                //console.log($('.agenda'));
                 this.emit('@page:changeBye', $('.page-trafic'))
             },
         }

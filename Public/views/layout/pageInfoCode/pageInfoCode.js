@@ -8,7 +8,7 @@ export default class PageInfoCode extends BaseComponent {
   constructor(data) {
     super(
       {
-        parent:null,
+        parent: null,
         loadingIcon: "/img/search.gif",
         leftLabel: "back",
         rightLabel: "confirm",
@@ -45,11 +45,11 @@ export default class PageInfoCode extends BaseComponent {
         this.when("confirm", (cb) => {
           this.inputsData.codeCb({
             code: $('input[name^="code"]').value, createCallBack_p: (data) => {
-              if(data.error) {
+              if (data.error) {
                 alert(data.message)
-                return this.parent.emit('@left:click',$(this.parent.view,'left-button'))
+                return this.parent.emit('@left:click', $(this.parent.view, 'left-button'))
               };
-              //console.log("** all ok **", { data });
+              ////console.log("** all ok **", { data });
               cb(data);
             }
           })

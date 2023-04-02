@@ -1,16 +1,18 @@
 import mongoose, { Schema } from "mongoose";
+import { SQuerySchemaType } from "../../lib/squery/Initialize";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
-import ManagerAccountModel from "./ManagerAccountModel";
+import { SQuery } from "../../lib/squery/SQuery";
+import UserModel from "./UserModel";
+import Log from "sublymus_logger";
 
-const managerSchema = new Schema({
-
-  manageraccount: {
+const managerSchema = SQuery.Schema({
+  ...(UserModel.schema as SQuerySchemaType).description,
+  entreprise: {
     type: Schema.Types.ObjectId,
-    ref: ManagerAccountModel.modelName,
-    require: true,
-  },
+    ref: 'entrepise',
+  }
 });
-
+Log('managerSchema',managerSchema.description);
 export const ManagerModel = mongoose.model("manager", managerSchema);
 
 const maker = MakeModelCtlForm({

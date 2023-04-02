@@ -1,6 +1,6 @@
- import EventEmiter from '/ts_lib/event/eventEmiter.js'
-class Anim  extends  EventEmiter{
-    
+import EventEmiter from '/ts_lib/event/eventEmiter.js';
+class Anim extends EventEmiter {
+
     #accu = 0;
     #curentRun;
     #runnig = false;
@@ -81,15 +81,15 @@ class Anim  extends  EventEmiter{
     #updateStatus(event) {
         if (event != this.#status) {
             this.#status = event;
-            this.emit(event ,this);
-            this.emit("change" ,this);
+            this.emit(event, this);
+            this.emit("change", this);
         }
     }
     #progress() {
-        //console.log('progress');
-        this.emit("progress" ,this.#accu / this.duration);
+        ////console.log('progress');
+        this.emit("progress", this.#accu / this.duration);
     }
-    
+
 
     start() {
         if (this.endRequire && this.#runnig) {

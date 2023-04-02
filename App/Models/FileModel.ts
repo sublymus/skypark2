@@ -4,10 +4,11 @@ import { SQuery } from "../../lib/squery/SQuery";
 
 let fileSchema = SQuery.Schema({
 
-  url: {
+  url: [{
     type: String,
     required: true,
-  },
+    file:{}
+  }],
   typeMIME: {
     type: String,
   },

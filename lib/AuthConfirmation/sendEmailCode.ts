@@ -40,15 +40,15 @@ export function sendEmail(email: string, name: string, code: string): Promise<bo
   // Envoyer l'email en utilisant l'objet de transport
   return new Promise((reso, reje) => {
     setTimeout(() => {
-      console.log(`Email envoyé:`,code);
+      //console.log(`Email envoyé:`,code);
       reso(true);
     }, 1500);
     // transport.sendMail(mailOptions, (error, info) => {
     //   if (error) {
-    //     console.log(error);
+    //     //console.log(error);
     //     reje(false)
     //   } else {
-    //     console.log(`Email envoyé: ${info.response}`);
+    //     //console.log(`Email envoyé: ${info.response}`);
     //     reso(true)
     //   }
     // });

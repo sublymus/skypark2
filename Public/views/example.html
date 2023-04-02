@@ -38,14 +38,14 @@
       if (res.error) return console.error(res.message) || resolve(null);
 
       res.response.forEach((modelInfo) => {
-        console.log(modelInfo);
+        //console.log(modelInfo);
       });
     });
 
     const fileElm = document.querySelector("input");
 
     fileElm.addEventListener("change", async () => {
-      console.log();
+      //console.log();
       const files = [];
       for (const p in fileElm.files) {
         if (Object.hasOwnProperty.call(fileElm.files, p)) {
@@ -60,7 +60,7 @@
         }
       }
       socket.emit("upload", files, (status) => {
-        console.log(status);
+        //console.log(status);
       });
     });
 
@@ -139,7 +139,7 @@
 
           title.addEventListener("click", async () => {
             try {
-             const res =  await Model.create(JSON.parse(text.value))
+              const res = await Model.create(JSON.parse(text.value))
               restCarte.text.value = res;
             } catch (e) {
               restCarte.text.value = e;
@@ -169,8 +169,8 @@
     const submit = document.querySelector("#login");
     submit.addEventListener("click", () => {
       if (socket.connected) {
-        socket.emit("login:user", JSON.parse(areaLogin.value), res => console.log(res));
-        socket.emit("signup:user", JSON.parse(areaLogin.value), res => console.log(res));
+        socket.emit("login:user", JSON.parse(areaLogin.value), res => //console.log(res));
+          socket.emit("signup:user", JSON.parse(areaLogin.value), res => //console.log(res));
       } else {
       }
     });

@@ -61,10 +61,10 @@ const Server: ControllerSchema = {
                 //if (accessValidator(ctx, '', ModelControllers[key].option.access, 'controller'))
                 ctx.data.modelPath = key
                 descriptions[key] = (await Server.description(ctx, more)).response;
-               // console.log('1', key, descriptions[key]);
+                // //console.log('1', key, descriptions[key]);
 
             }
-           // console.log('2', descriptions);
+            // //console.log('2', descriptions);
             return {
                 response: descriptions,
                 status: 202,
@@ -116,7 +116,7 @@ ctrlMaker.pre('description', async (e) => {
     await new Promise((rev => {
         const d = Date.now() + 100
         const t = () => {
-            console.log(Date.now());
+            //console.log(Date.now());
             if (d < Date.now()) {
                 return rev(d);
             }
@@ -129,7 +129,7 @@ ctrlMaker.post('description', async (e) => {
     await new Promise((rev => {
         const d = Date.now() + 100
         const t = () => {
-            console.log('_________________' + Date.now());
+            //console.log('_________________' + Date.now());
             if (d < Date.now()) {
                 return rev(d);
             }

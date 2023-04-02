@@ -1,8 +1,9 @@
+
 export const load = {
   post: {
     create: {
       message: {
-       // user: '',
+        // user: '',
         text: 'c\' est mon post',
         fileList: [],
         // __fileList: {
@@ -158,6 +159,33 @@ export const load = {
       id: ""
     },
   },
+
+  entreprise: {
+    create: {
+      managers: [""],
+      buildings: [""],
+      address: {
+        location: "l:567455;h45678654",
+        building: {
+          name: 'Sublymus E45',
+          city: 'Rostov-On-Don',
+        },
+        room: 45,
+        door: 296,
+        etage: 4,
+        description: "je suis ici",
+      },
+      telephone: [1234567890, 8765432, 65456787654],
+      email: "etp@gmail.com",
+      webPageUrl: "https://v2.voiranime.com/anime/tengoku-daimakyou/tengoku-daimakyou-01-vostfr/",
+      profile: {
+        //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
+        //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
+        message: "*** BEST ****",
+      },
+      creationDate: Date.now(),
+    }
+  },
   building: {
     create: {
       name: "skypark Center",
@@ -299,5 +327,11 @@ export const load = {
     create: {
       modelPath: "account",
     },
+  },
+};
+load.manager = {
+  create: {
+    ...load['user'].create,
+    entreprise: '',
   },
 };

@@ -33,35 +33,35 @@ export default class PageInfoPerso extends BaseComponent {
           icon: "user2",
           hint: "Name",
           name: "name",
-          value:'ertyu'
+          value: 'ertyu'
         }),
         _("InputUi", {
           type: "email",
           icon: "email",
           hint: "Email",
           name: "email",
-          value:'sublymus@gmail.com'
+          value: 'sublymus@gmail.com'
         }),
         _("InputUi", {
           type: "text",
           icon: "phone",
           hint: "Telephone",
           name: "telephone",
-          value:"123456789"
+          value: "123456789"
         }),
         _("InputUi", {
           type: "password",
           icon: "padlock",
           hint: "Password",
           name: "password",
-          value:"piou"
+          value: "piou"
         }),
         _("InputUi", {
           type: "password",
           icon: "padlock",
           hint: "Password",
           name: "password2",
-          value:'piou'
+          value: 'piou'
         }),
         _("InputUi", {
           type: "password",
@@ -79,12 +79,12 @@ export default class PageInfoPerso extends BaseComponent {
           nextCallBack = cb;
           const account = {};
           $All('input').forEach((input) => {
-            console.log(input);
+            //console.log(input);
             account[input.name] = input.value;
           })
-          console.log({ account });
+          //console.log({ account });
           SQuery.emit("signup:user", { account }, (res) => {
-            console.log(res);
+            //console.log(res);
 
             if (res.error) return createCallBack?.({
               error: res.error

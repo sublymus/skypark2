@@ -25,7 +25,7 @@
                 <label for="duration">duration</label>
                 <input type="number" name="duration" class="duration" placeholder="duration">
             </div>
-            <input type="checkbox" name="endRequire" class="endRequire checkbox" >
+            <input type="checkbox" name="endRequire" class="endRequire checkbox">
             endRequire
             </input>
             <textarea name="cursor" id="cursor" cols="30" rows="5" placeholder="cursor's code"></textarea>
@@ -50,18 +50,18 @@
         var ctx = canvas.getContext("2d");
 
         const draw = function draw(x, y) {
-            
+
             ctx.beginPath();
-            ctx.arc(x,  400-y,7, 0, Math.PI * 2, true);
+            ctx.arc(x, 400 - y, 7, 0, Math.PI * 2, true);
             ctx.strokeStyle = a;
-            ctx.fillStyle =a;
+            ctx.fillStyle = a;
             ctx.fill();
             ctx.stroke();
         }
-        draw(0 ,0)
+        draw(0, 0)
 
         const obj = document.querySelector(".object");
-        let progress ;
+        let progress;
         let status;
 
         const anim = new Anim({
@@ -70,22 +70,22 @@
         });
 
         anim.when("progress", (p) => {
-            console.log('progress');
-            const a = p*Math.PI*2
-            const f =  (Math.cos(a)*0.5 + 0.5)*400;
-            const f2 =  (Math.sin(a)*0.5 + 0.5)*400;
+            //console.log('progress');
+            const a = p * Math.PI * 2
+            const f = (Math.cos(a) * 0.5 + 0.5) * 400;
+            const f2 = (Math.sin(a) * 0.5 + 0.5) * 400;
             progress = p.toFixed(4);
-            draw(f2,f);
+            draw(f2, f);
             obj.textContent = ` status = ${status} --- progress = ${progress}`
         });
         anim.when("change", () => {
             status = anim.status;
             obj.textContent = ` status = ${status} --- progress = ${progress}`
-            if(anim.status =="onEnd" || anim.status =="onStart") return
-            a =  Number(Math.trunc(Math.random() * 9e9 + 1e9)).toString(16);;
-            a =  "#"+a.substring(a.length -6 , a.length);
+            if (anim.status == "onEnd" || anim.status == "onStart") return
+            a = Number(Math.trunc(Math.random() * 9e9 + 1e9)).toString(16);;
+            a = "#" + a.substring(a.length - 6, a.length);
             //if(anim.status !="normal" && anim.status !="reverse")
-            ctx.clearRect(0,0,600,400);
+            ctx.clearRect(0, 0, 600, 400);
         });
 
         const start = document.querySelector(".start");

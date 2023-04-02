@@ -108,7 +108,7 @@ export default class PageSignup extends BaseComponent {
       ["@right:click"]: (right) => {
         $(".btn-ctn").style.display = "none";
         $(".loading").style.display = "flex";
-        //  console.log(this.selectedIndex);
+        //  //console.log(this.selectedIndex);
 
         if (this.selectedIndex == 3) {
           this.emit("success", data);
@@ -119,7 +119,7 @@ export default class PageSignup extends BaseComponent {
         ////////////////////////////////////////////////////////////////////////////////
 
         pages[this.selectedIndex].component.emit(right.textContent.toLowerCase(), (data_p) => {
-          //console.log({data});
+          ////console.log({data});
           nextAnim.start();
           data = data_p;
           pages[this.selectedIndex + 1].component.inputsData = data;

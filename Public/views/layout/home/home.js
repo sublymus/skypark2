@@ -20,14 +20,14 @@ import '../../component/inputUi/inputUi.js';
 import '../../component/item/item.js';
 import '../../component/itemList/itemList.js';
 
+import '../dashManager/dashManager.js';
+import '../pageAgenda/pageAgenda.js';
+import '../pageCreateUser/pageCreateUser.js';
 import '../pageProfile/pageProfile.js';
+import '../pageSingupUser/pageSingupUser.js';
 import '../pageStatistic/pageStatistic.js';
 import '../pageSwitchLogin/pageSwitchLogin.js';
 import '../pageTrafic/pageTrafic.js';
-import '../dashManager/dashManager.js';
-import '../pageCreateUser/pageCreateUser.js';
-import '../pageAgenda/pageAgenda.js';
-import '../pageSingupUser/pageSingupUser.js';
 
 export default class Home extends BaseComponent {
   constructor() {
@@ -121,13 +121,13 @@ export default class Home extends BaseComponent {
       [viewName]: (page, all) => {
         this.emit("@menu:click", $(".label.welcome"));
         $('.page-switch-login').component.when('success', (data) => {
-          const dash = _('DashManager@mainpage',data);
+          const dash = _('DashManager@mainpage', data);
           this.view.append(dash);
-          this.emit('@mainpage:change',dash);
+          this.emit('@mainpage:change', dash);
         })
-        this.emit('@mainpage:change',$('.main'));
-        // console.log(document.cookie);
-       // $('.page-switch-login').component.emit('success')
+        this.emit('@mainpage:change', $('.main'));
+        // //console.log(document.cookie);
+        // $('.page-switch-login').component.emit('success')
       },
     };
   }

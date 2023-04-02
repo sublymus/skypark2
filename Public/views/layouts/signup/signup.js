@@ -5,7 +5,7 @@ import BaseComponent, {
 import SQuery from "../../ts_lib/SQueryClient.js";
 
 export class Signup extends BaseComponent {
-    constructor(data) { 
+    constructor(data) {
         super(
             {
                 type: "user",
@@ -17,13 +17,11 @@ export class Signup extends BaseComponent {
             "div",
             viewName,
             _("h1", "title", "SIGNUP"),
-            _(
-                "select@type",
-                "type",
-                _("option", ["value:user"], "User"),
-                _("option", ["value:admin"], "Admin"),
-                _("option", ["value:manager"], "Manager"),
-                _("option", ["value:compagny"], "Compagny")
+            _("select@type", "type",
+                _('option', ['value:user'], 'User'),
+                _('option', ['value:superadmin'], 'Admin'),
+                _('option', ['value:manager'], 'Manager'),
+                _('option', ['value:entreprisemanager'], 'Entreprise Manager'),
             ),
             _("div", "input-ctn",
                 _("textarea", ["rows:100", "cols:450"])
@@ -47,7 +45,7 @@ export class Signup extends BaseComponent {
 
                     SQuery.emit("signup:" + this.type, data, (res) => {
                         if (res.error) return this.emit("error", JSON.stringify(res));
-                        console.log(res);
+                        //console.log(res);
                         this.emit("success", {
                             modelPath: this.type,
                             id: res.response,
@@ -73,7 +71,7 @@ export class Signup extends BaseComponent {
                     });
                 });
                 this.when("type", (type) => {
-                    console.log("wertyui");
+                    //console.log("wertyui");
                     const data = load[type]?.["create"];
                     if (!data)
                         return ($("textarea").value = "Type <" + type + "> Undefined");

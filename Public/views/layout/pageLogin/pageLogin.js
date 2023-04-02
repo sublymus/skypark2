@@ -5,8 +5,8 @@ export default class PageLogin extends BaseComponent {
 
     constructor(data) {
         super({
-            signupModelPath:'user',
-            loginModelPath:'account',
+            signupModelPath: 'user',
+            loginModelPath: 'account',
         }, data)
 
         const { _, viewName, $, $All } = this.mvc;
@@ -21,7 +21,7 @@ export default class PageLogin extends BaseComponent {
             ),
             _('div', 'forget-btn', 'Forget your password?'),
             _('div', 'btn-ctn',
-                _('div@submit', 'submit','LOGIN')
+                _('div@submit', 'submit', 'LOGIN')
             )
         );
         this.controller = {
@@ -31,11 +31,11 @@ export default class PageLogin extends BaseComponent {
             ['@submit:click']: (elem) => {
                 const data = {};
                 $All('input').forEach((input) => {
-                    //console.log(input);
+                    ////console.log(input);
                     data[input.name] = input.value;
                 })
-                //console.log({data});
-                SQuery.emit("login:"+this.signupModelPath, data, res => {
+                ////console.log({data});
+                SQuery.emit("login:" + this.signupModelPath, data, res => {
                     if (res.error) return this.emit('error', JSON.stringify(res));
                     this.emit('connected', {
                         modelPath: this.loginModelPath,//,

@@ -8,41 +8,41 @@ export default class ItemList extends BaseComponent {
             class: '',
             columns: ['id', 'name', 'age'],
             childrens: [],
-            items:[]
+            items: []
         }, data)
 
         const { _, viewName, $, $All } = this.mvc;
 
         this.view = _('div', viewName,
-            _('div','title-bar'),
-            _('div','items-container')
+            _('div', 'title-bar'),
+            _('div', 'items-container')
         );
         this.controller = {
-            
+
             ['@item:mouseover']: (itemElem, isSelected) => {
-               itemElem.component.emit('mouseover',isSelected)
+                itemElem.component.emit('mouseover', isSelected)
             },
             ['@item:mouseout']: (itemElem, isSelected) => {
-                itemElem.component.emit('mouseout',isSelected) 
+                itemElem.component.emit('mouseout', isSelected)
             },
-            ['@item:click']:  (itemElem, isSelected) => {
-                itemElem.component.emit('click',isSelected) 
-                if(isSelected){
-                    this.emit('selected',itemElem.component)
-                    console.log('selected',itemElem);
+            ['@item:click']: (itemElem, isSelected) => {
+                itemElem.component.emit('click', isSelected)
+                if (isSelected) {
+                    this.emit('selected', itemElem.component)
+                    //console.log('selected',itemElem);
                 }
             },
             [viewName]: () => {
                 this.when('itemsData', itemsData => {
                     itemsData.forEach(itemData => {
-                        const itemElem = _(this.class+'@item',itemData)
-                       $('.items-container').append(itemElem);
+                        const itemElem = _(this.class + '@item', itemData)
+                        $('.items-container').append(itemElem);
                     });
                 })
                 this.when('columns', columns => {
                     columns.forEach(column => {
                         $('.title-bar').append(
-                            _('span',column+' title',column)
+                            _('span', column + ' title', column)
                         )
                     });
                 })

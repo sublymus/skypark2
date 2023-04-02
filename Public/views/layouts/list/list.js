@@ -39,10 +39,10 @@ export class List extends BaseComponent {
         this.controller = {
             ['@refresh:click']: async () => {
                 const arrayData = await this.arrayInstance.page();
-                console.log({ arrayData });
+                //console.log({ arrayData });
                 setTimeout(async () => {
-                    console.log('itemsInstance', await arrayData['itemsInstance']);
-                    console.log({ arrayData });
+                    //console.log('itemsInstance', await arrayData['itemsInstance']);
+                    //console.log({ arrayData });
                 }, 5000);
             },
             ['@last:click']: async () => {

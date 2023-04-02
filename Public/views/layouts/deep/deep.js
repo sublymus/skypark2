@@ -54,17 +54,17 @@ export class Deep extends BaseComponent {
                         }, (res) => {
                             this.cache = res.response;
                             rev(this.cache);
-                            console.log(modelPath, this.cache);
+                            //console.log(modelPath, this.cache);
                         });
                     })
-                    console.log(description);
+                    //console.log(description);
                     /***************************   Mise en Correspondance ********************** */
                     for (const property in description) {
                         if (Object.hasOwnProperty.call(description, property)) {
                             const rule = description[property];
-                            console.log('  **************', rule);
+                            //console.log('  **************', rule);
                             if (rule.ref) {
-                                console.log('***********   rule.ref  **************', rule);
+                                //console.log('***********   rule.ref  **************', rule);
                                 this.emit('createBtn', {
                                     data: {
                                         modelPath: rule.ref,
@@ -73,9 +73,9 @@ export class Deep extends BaseComponent {
                                     cb: (elem) => $('.container').append(elem),
                                 })
                             } else if (rule[0] && rule[0].ref) {
-                                console.log('***********   Array.isArray(rule) && rule[0].ref  **************', rule);
+                                //console.log('***********   Array.isArray(rule) && rule[0].ref  **************', rule);
                             } else if (rule[0] && rule[0].file) {
-                                console.log('***********   Array.isArray(rule) && rule[0].file  **************', rule);
+                                //console.log('***********   Array.isArray(rule) && rule[0].file  **************', rule);
                                 this.emit('createFile', {
                                     data: {
                                         value: this.cache[property],
@@ -84,7 +84,7 @@ export class Deep extends BaseComponent {
                                     cb: (elem) => $('.container').append(elem),
                                 })
                             } else if (Array.isArray(rule)) {
-                                console.log('***********   Array.isArray(rule)  **************', rule);
+                                //console.log('***********   Array.isArray(rule)  **************', rule);
                             } else {
                                 this.emit('createInput', {
                                     data: {
@@ -154,7 +154,7 @@ export class Deep extends BaseComponent {
                             if (Object.hasOwnProperty.call(fileElm.files, p)) {
                                 const file = fileElm.files[p];
                                 const fileData = {
-                                    fileName: file.name, 
+                                    fileName: file.name,
                                     size: file.size,
                                     type: file.type,
                                     buffer: await file.arrayBuffer(),

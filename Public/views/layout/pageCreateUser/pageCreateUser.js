@@ -86,13 +86,13 @@ export default class PageCreateUser extends BaseComponent {
 
     this.controller = {
       ['@submit:click']: (submit) => {
-  
+
       },
       [viewName]: (view) => {
         this.when("get_data", (cb) => {
           const data = {};
-          $All('input').forEach((input)=>{
-            data[input.name]= input.value
+          $All('input').forEach((input) => {
+            data[input.name] = input.value
           })
           this.data = data;
           cb(data);
@@ -131,11 +131,11 @@ export default class PageCreateUser extends BaseComponent {
                 },
               },
                 (id) => {
-                  console.log({ id });
+                  //console.log({ id });
                   data = id;
                   socket.emit("sendEmail", { userEmail, userName, code });
                   time = setTimeout(() => {
-                    console.log({ id });
+                    //console.log({ id });
                     cb({ id, userEmail });
                     clearTimeout(time);
                   }, 1000);
@@ -155,7 +155,7 @@ export default class PageCreateUser extends BaseComponent {
           let userEmail = data.email;
           let userName = data.name;
           let userPhone = data.phone;
-          console.log(data);
+          //console.log(data);
           function validateEmail() {
             return emailRegex.test(userEmail) && userEmail !== "";
           }
@@ -167,15 +167,15 @@ export default class PageCreateUser extends BaseComponent {
           function validatePhone() {
             return userPhone !== "";
           }
-          console.log(
-            validateEmail(),
+          //console.log(
+          validateEmail(),
             validateName(),
             validatePhone(),
           );
           return (
             validateEmail() &&
             validateName() &&
-            validatePhone() 
+            validatePhone()
           );
         }
       },

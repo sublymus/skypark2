@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
-let uri = "mongodb://127.0.0.1:27017/skypark";
+let uri = "mongodb://localhost:27017/skypark";
 
 mongoose.set("strictQuery", false);
 mongoose.connect(uri, (error) => {

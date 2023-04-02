@@ -1,11 +1,8 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import AddressModel from "./AddressModel";
-import FavoritesModel from "./FavoritesModel";
-import ProfileModel from "./ProfileModel";
 
-let accountSchema = SQuery.Schema({
+let SuperAdminSchema = SQuery.Schema({
 
   name: {
     type: String,
@@ -33,29 +30,14 @@ let accountSchema = SQuery.Schema({
     required: true,
     access: 'private',
   },
-  address: {
-    type: Schema.Types.ObjectId,
-    ref: AddressModel.modelName,
-    //required: true,
-  },
-  favorites: {
-    type: Schema.Types.ObjectId,
-    ref: FavoritesModel.modelName,
-    access: "private",
-  },
-  profile: {
-    type: Schema.Types.ObjectId,
-    ref: ProfileModel.modelName,
-    required: true,
-  },
 });
 
-const AccountModel = mongoose.model("account", accountSchema);
+const SuperAdminModel = mongoose.model("superadmin", SuperAdminSchema);
 
 const ctrlMaker = MakeModelCtlForm({
-  schema: accountSchema,
-  model: AccountModel,
-  volatile: false,
+  schema: SuperAdminSchema,
+  model: SuperAdminModel,
+  volatile: true,
 });
 
 ctrlMaker.pre('store', async ({ ctx }) => {
@@ -72,4 +54,4 @@ ctrlMaker.pre('store', async ({ ctx }) => {
 })
 
 
-export default AccountModel;
+export default SuperAdminModel;

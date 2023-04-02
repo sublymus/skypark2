@@ -96,7 +96,7 @@ export default class PageSingupUser extends BaseComponent {
       ["@left:click"]: (left) => {
         $(".btn-ctn").style.display = "none";
         $(".loading").style.display = "flex";
-        console.log(this.selectedIndex);
+        //console.log(this.selectedIndex);
         if (this.selectedIndex == 0) {
           this.emit('back')
         }
@@ -111,7 +111,7 @@ export default class PageSingupUser extends BaseComponent {
       ["@right:click"]: (right) => {
         $(".btn-ctn").style.display = "none";
         $(".loading").style.display = "flex";
-        console.log(this.selectedIndex);
+        //console.log(this.selectedIndex);
 
         if (this.selectedIndex == 2) {
           this.emit("back", data);

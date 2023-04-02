@@ -4,8 +4,8 @@ export default class InfoBull extends BaseComponent {
     constructor(data) {
         super({
             item: null,
-            size:2,
-            erty:'f'
+            size: 2,
+            erty: 'f'
         })
 
         const { _, viewName, $, $All } = this.mvc;
@@ -38,9 +38,9 @@ export default class InfoBull extends BaseComponent {
                 _('div@menu=history', 'historique menu', 'Historique'),
                 _('div@menu=setting', 'setting menu', 'Setting'),
             ),
-            _('div@page', 'page-setting',_('Page404',{})),
-            _('div@page', 'page-history',_('Page404',{})),
-            _('div@page', 'page-messenger',_('Page404',{})),
+            _('div@page', 'page-setting', _('Page404', {})),
+            _('div@page', 'page-history', _('Page404', {})),
+            _('div@page', 'page-messenger', _('Page404', {})),
             _('div@page', 'page-description',
                 _('div', 'status',
                     _('div', 'icon'),
@@ -90,7 +90,7 @@ export default class InfoBull extends BaseComponent {
             )
         );
         this.controller = {
-            
+
             ['@menu:click']: (menu, isSelected, e) => {
                 if (isSelected) {
                     menu.classList.add('active');
@@ -99,7 +99,7 @@ export default class InfoBull extends BaseComponent {
                     menu.classList.remove('active');
                 }
             },
-       
+
             ['@page:change']: (page, isSelected) => {
                 if (isSelected) {
                     page.style.display = "flex";
@@ -110,16 +110,16 @@ export default class InfoBull extends BaseComponent {
             ['@down:click']: (exite) => {
                 this.size--;
                 this.view.className = 'info-bull';
-                this.view.classList.add('size'+this.size)
+                this.view.classList.add('size' + this.size)
             },
             ['@up:click']: (exite) => {
                 this.size++;
                 this.view.className = 'info-bull';
-                this.view.classList.add('size'+this.size)
+                this.view.classList.add('size' + this.size)
             },
             ['@resize:click']: (exite) => {
                 this.view.className = 'info-bull';
-                this.view.classList.add('size'+this.size)
+                this.view.classList.add('size' + this.size)
             },
             ['@exite:click']: (exite) => {
                 this.view.className = 'info-bull';
@@ -129,13 +129,13 @@ export default class InfoBull extends BaseComponent {
                 //this.view.classList.add('exite')
             },
             [viewName]: (view) => {
-                this.emit('@page:change',$('.page-description'))
-                this.when('size',v=>{
-                    const val =  v<0 ? 0 : (v>2? 2 : v)
-                    this.size = this.size != val ?val :this.size  ; 
-                },true)
+                this.emit('@page:change', $('.page-description'))
+                this.when('size', v => {
+                    const val = v < 0 ? 0 : (v > 2 ? 2 : v)
+                    this.size = this.size != val ? val : this.size;
+                }, true)
                 this.when('item', (item) => {
-                    console.log(item);
+                    //console.log(item);
                     if (!item) return;
                     $('.location-info > .building').textContent = item.building
                     $('.info-bull > .name ').textContent = item.name
@@ -151,7 +151,7 @@ export default class InfoBull extends BaseComponent {
                     $('.page-description .room .value').textContent = item.room
                     $('.info-bull >.bainner').style.background = 'no-repeat center/cover url(' + (item.bainner || '/img/bainner.png') + ')';
                     $('.info-bull .img-profile').style.background = 'no-repeat center/contain url(' + (item.imgProfile + ".png" || '/img/user.png') + '),#345';
-                    $('.info-bull .created-date .value').textContent =  new Date(item.createdDate).toLocaleDateString();
+                    $('.info-bull .created-date .value').textContent = new Date(item.createdDate).toLocaleDateString();
                 })
             }
         }

@@ -27,11 +27,11 @@ export default class PageInfoSuccess extends BaseComponent {
             // setTimeout(() => {
             //   PageSwitchLogin().emit("cancel");
             // }, 2000);
-    
+
             /////// inpute validator
             /////// send to server
             /////// then All Ok
-            console.log(data);
+            //console.log(data);
             cb(data);
           });
         });

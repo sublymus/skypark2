@@ -5,7 +5,7 @@ import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
 import { AuthManager } from "./AuthManager";
-import { authDataSchema, ContextSchema } from "./Context";
+import { ContextSchema, authDataOptionSchema, authDataSchema } from "./Context";
 import { Controllers, DescriptionSchema, GlobalMiddlewares, ModelControllers, ResultSchema, SQueryMongooseSchema } from "./Initialize";
 
 export type FirstDataSchema = {
@@ -18,7 +18,7 @@ type CallBack = (...arg: any) => any;
 type SQuerySchema = Function & {
   io: (server: any) => Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
   Schema: (description: DescriptionSchema) => any,
-  auth: (authData: authDataSchema) => void
+  auth: (authData: authDataOptionSchema) => void
 }
 const SQuery: SQuerySchema = function (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
@@ -130,11 +130,37 @@ SQuery.io = (server: any) => {
   return io;
 };
 
-SQuery.auth = (authData: authDataSchema) => {
+SQuery.auth = (authDataOption: authDataOptionSchema) => {
+  const authData: authDataSchema = {
+    ...authDataOption,
+    __permission: "user:" + authDataOption.signup
+  };
+  authData.match.push("__permission");
+  Log("authData", authData, ModelControllers[authData.login]);
+
+
+  let firstConnection = true;
+
+  const initAuthPermission = () => {
+    const schema: SQueryMongooseSchema = ModelControllers[authData.login]?.option.schema;
+    const description = schema.description
+    description.__permission = {
+      type: String,
+      access: "secret",
+    }
+    schema.pre('save', async function () {
+      this.__permission = authData.__permission;
+    });
+  }
   Global.io.on("connection", (socket: any) => {
+    if (firstConnection) {
+      firstConnection = false;
+      initAuthPermission();
+    }
     Log('********************************************************')
     socket.on("login:" + authData.signup, async (data, cb) => {
-      Log('wertyuiopoiuytrtyuio', authData);
+      data.__permission = authData.__permission;
+      Log('wertyuiopoiuytrtyuio', { authData }, { data });
 
       /// authData.login = 'model_' + authData.signup;
       const authCtrl = new AuthManager();
@@ -197,24 +223,24 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
   const schema = new Schema(description as any);
   schema.plugin(mongoosePaginate);
   schema.plugin(mongoose_unique_validator);
-  
+
   schema.pre('save', async function () {
     this.updatedAt = Date.now();
     this.modifiedPaths();
     this.updatedProperty = this.modifiedPaths();
   });
-  
+
   schema.post('save', async function (doc: any) {
     //emettre dans  les room dedier
     Log('cache', doc)
     Global.io.emit('update:' + doc._id.toString(), {
-      
+
       id: doc._id.toString(),
       doc,
       properties: doc.updatedProperty,
     })
   });
-  
+
   (schema as any).description = description;
   return schema as SQueryMongooseSchema;
 }

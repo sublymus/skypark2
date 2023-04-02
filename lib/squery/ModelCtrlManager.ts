@@ -8,7 +8,7 @@ import { CtrlModelMakerSchema, DescriptionSchema, EventPostSchema, EventPreSchem
 
 // les tableau 2D sont pas tolere
 const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchema = (options: ModelFrom_optionSchema): CtrlModelMakerSchema => {
-    // console.log(options?.model?.modelName);
+    // //console.log(options?.model?.modelName);
     const option: ModelFrom_optionSchema & { modelPath: string } = {
         ...options,
         modelPath: options.model.modelName,
@@ -80,7 +80,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 action,
             });
             const modelId = new mongoose.Types.ObjectId().toString();
-            const description: DescriptionSchema = option.schema.obj;
+            const description: DescriptionSchema = option.schema.description;
             if (!more) {
                 more = {};
                 more.savedlist = [];
@@ -147,7 +147,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             });
                         }
                         const ctrl = ModelControllers[rule.ref]();
-                       // Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
+                        // Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
                         const res = await (ctrl.create || ctrl.store)(
                             {
                                 ...ctx,
@@ -407,7 +407,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         },
                     });
                 }
-                Log('aboutAccessRead', { ctx, action, option, modelInstance })
+                //Log('aboutAccessRead', { ctx, action, option, modelInstance })
                 await formatModelInstance(ctx, action, option, modelInstance);
                 //await modelInstance.select(i)
             } catch (error) {
@@ -743,7 +743,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             });
 
             let modelInstance: ModelInstanceSchema;
-            const description: DescriptionSchema = option.schema.obj;
+            const description: DescriptionSchema = option.schema.description;
 
             try {
                 modelInstance = await option.model.findOne({
@@ -927,7 +927,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 action,
             });
             let modelInstance: ModelInstanceSchema;
-            const description: DescriptionSchema = option.schema.obj;
+            const description: DescriptionSchema = option.schema.description;
             try {
                 modelInstance = await option.model.findOne({
                     _id: ctx.data.id,
@@ -978,7 +978,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                     "remove": modelInstance[p] || []
                                 }
                             })
-                            Log('DELET_REF[]_LIST_RES',res);
+                            Log('DELET_REF[]_LIST_RES', res);
                         } else if (Array.isArray(rule) && rule[0].file) {
                             //await FileValidator(ctx, action, rule[0], ctx.data[p], modelInstance[p])
                             try {
@@ -1100,7 +1100,7 @@ function deepPopulate(
     info: PopulateSchema,
     isUser?: boolean
 ) {
-    const description: DescriptionSchema = ModelControllers[ref].option.schema.obj;
+    const description: DescriptionSchema = ModelControllers[ref].option.schema.description;
     info.populate = [];
     info.select = "";
     for (const p in description) {
@@ -1130,7 +1130,7 @@ function deepPopulate(
                 }
                 exec(rule[0]);
             }
-            //console.log(info.select);
+            ////console.log(info.select);
 
         }
     }
@@ -1403,6 +1403,7 @@ function accessValidator(
     if (type == "property" && access == "share") access = "public";
 
     let permission = ctx.__permission;
+    permission = permission.startsWith('user:') ? 'user' : permission
     if (permission == "user") {
         permission = isUser ? "user" : "any";
     }

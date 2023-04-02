@@ -11,9 +11,9 @@ export class Login extends BaseComponent {
             _('h1', 'title', 'LOGIN'),
             _('select@type', 'type',
                 _('option', ['value:user'], 'User'),
-                _('option', ['value:admin'], 'Admin'),
+                _('option', ['value:superadmin'], 'Admin'),
                 _('option', ['value:manager'], 'Manager'),
-                _('option', ['value:compagny'], 'Compagny'),
+                _('option', ['value:entreprisemanager'], 'Entreprise Manager'),
             ),
             _('div', 'input-ctn',
                 _('input', ['type:text', 'class:email', 'placeholder:email']),
@@ -31,6 +31,7 @@ export class Login extends BaseComponent {
                 $All('input').forEach((input) => {
                     data[input.className] = input.value;
                 })
+                console.log("login:" + this.type,data);
                 SQuery.emit("login:" + this.type, data, res => {
                     if (res.error) return this.emit('error', JSON.stringify(res));
                     this.emit('success', {

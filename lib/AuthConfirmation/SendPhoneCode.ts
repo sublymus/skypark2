@@ -12,7 +12,7 @@ export function genereCodePhone() {
 
 const vonage = new Vonage({
   apiKey: "04618057",
-  apiSecret: "zCusJj7LDpjyBmlp" 
+  apiSecret: "zCusJj7LDpjyBmlp"
 });
 
 export const sendCodePhone = (Tel: string, code: string) => {
@@ -23,12 +23,12 @@ export const sendCodePhone = (Tel: string, code: string) => {
     await vonage.sms
       .send({ to, from, text })
       .then((resp) => {
-        console.log("Message sent successfully");
-        console.log(resp);
+        //console.log("Message sent successfully");
+        //console.log(resp);
         res(true);
       })
       .catch((err) => {
-        console.log("There was an error sending the messages.");
+        //console.log("There was an error sending the messages.");
         console.error(err);
         res(false);
       });

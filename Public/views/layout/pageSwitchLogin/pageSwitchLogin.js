@@ -43,7 +43,7 @@ export default class PageSwitchLogin extends BaseComponent {
                 const anim = new Anim({
                     duration: 700
                 }).when('start startReverse', (p) => {
-                    console.log(p);
+                    //console.log(p);
                     Width = $('.container').getBoundingClientRect().width
                 }).when('progress', (p) => {
                     $('.prompt').style.width = `${p * Math.sin(p * Math.PI) * 20 + 40}%`
@@ -75,7 +75,7 @@ export default class PageSwitchLogin extends BaseComponent {
 
                 this.view.addEventListener('click', (e) => {
                     if (e.target == this.view) {
-                        console.log('trertyuiop');
+                        //console.log('trertyuiop');
                         this.emit('cancel')
                     }
                 })
@@ -85,7 +85,7 @@ export default class PageSwitchLogin extends BaseComponent {
                 })
                 this.view.style.display = 'none';
                 this.when('start', (action) => {
-                    console.log('qwertyuioiuytrewertyui');
+                    //console.log('qwertyuioiuytrewertyui');
 
                     $('.form-ctn').append(
                         _('PageLogin@page'),
@@ -93,7 +93,7 @@ export default class PageSwitchLogin extends BaseComponent {
                     )
                     $('.page-signup').component.when('success', (data) => {
                         successAnim.toggle();
-                        console.log('&&&&&&&&&&',data);
+                        //console.log('&&&&&&&&&&',data);
                         this.emit('success', data);
                     })
                     $('.page-signup').component.when('done', () => {

@@ -6,6 +6,11 @@ let ComunytySchema = SQuery.Schema({
     name: {
         type: String,
     },
+    users: [{
+      type: Schema.Types.ObjectId,
+      ref: 'user',
+      strictAlien: true,
+    }],
     activities: [{
         type: Schema.Types.ObjectId,
         ref: ActivityModel.modelName,
@@ -18,7 +23,6 @@ MakeModelCtlForm({
     schema: ComunytySchema,
     model: ComunytyModel,
     volatile: true
-
 })
 
 export default ComunytyModel

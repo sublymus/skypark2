@@ -9,7 +9,7 @@ export async function sendWithClickatail(Tel: string, code: string) {
   };
   return await new Promise<boolean>((resolve) => {
     const req = https.request(options, (res) => {
-      console.log(`statusCode: ${res.statusCode}`);
+      //console.log(`statusCode: ${res.statusCode}`);
 
       res.on("data", (d) => {
         process.stdout.write(d);
