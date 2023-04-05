@@ -45,7 +45,7 @@ export class Signup extends BaseComponent {
 
                     SQuery.emit("signup:" + this.type, data, (res) => {
                         if (res.error) return this.emit("error", JSON.stringify(res));
-                        //console.log(res);
+                        console.log("signup:" + this.type , res);
                         this.emit("success", {
                             modelPath: this.type,
                             id: res.response,

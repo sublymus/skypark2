@@ -1,6 +1,5 @@
 /*
-TODO: const profile = await user['/account/profile']
-TODO: const building = await address['../../building']
+
 TODO: folder:{
     parentAccess:true,
     access:private,
@@ -15,14 +14,30 @@ TODO: rule:{
 }
 TODO: befor after autoexecute ,
 TODO: access permission shared  niveau Model et niveau Instance
+TODO: access au fichier..
+TODO: community{
+    user:{
+        ref:'user',
+        filter:{
+            'building.community':'./_id'
+        }
+    }
+}
 =======================================  access  ==================================================
 -access:property {ref:modelPath,access:private} il est mieux de definir en plus les property du ref comme etant private
+TODO: {login:account ,signup:user, extension:confirmIt,match:['p1','p2'], }
 =======================================   populate  ==================================================
 =======================================   file  ==================================================
 *****delete 
 -on suprime tous les fichier dont on dispose de l'url
 =======================================   impact  ==================================================
 =======================================   SQuery.Auth  ==================================================
+- on ne peut pas creat un signupMode en avec le __key du ctx, tout creation d'un signupModel entre la creation d'un __key unique pour ce dernier;
+- on peut ajouter un cookis dans le socket partout dans le code
+AuthManager.cookiesInSocket({
+        __key: ctx.__key,
+        __permission: ctx.__permission,
+      }, ctx.socket); 
 =======================================   SQuery.View  ==================================================
 =======================================   SQuery.io  ==================================================
 =======================================   SQuery.Schema  ==================================================
@@ -30,7 +45,7 @@ TODO: access permission shared  niveau Model et niveau Instance
 =======================================   Controllers  ==================================================
 =======================================   ModelControllers ==================================================
 *****create - store
-- defaultData
+
 *****read -show
 *****list
 *****update
@@ -55,18 +70,29 @@ TODO: access permission shared  niveau Model et niveau Instance
 
 -tout les ref modifiable doivent disposer alien ou de strictAlien + un access le permertant
 -dans le cas d'un ref[] , rule:[{ alien:true}] > addId ou addNew ; rule:[{ strictAlien:true}] > addId ; rule:[{..}] > addNew  
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-SQUERY Client
+//////////////////************************** SQUERY Client Utilisation ******************************  //
 
 SQuery.socket
+
 SQuery.emit('event',data,callBack)
+
 SQuery.emitNow('event',data,callBack) // if server conected
-.. les methodes suivante suivante renvoie une instance si les information rentrer sont bonne, sinon renvoie null
+
 .. pour gerer les error => await SQuery.<methode>(...methodArg , (error,instance)=>{})
-const lolModel = await SQuery.model('lolModelPath');
-const lolInstance = await lolModel.create(lolCreationData);
-const lolInstance = await lolModel.instance({id: lolId });
-TODO: const lolInstance = await lolModel.update(aUpdateData);
+const lolModel = await SQuery.model('lolModelPath');   
+const lolInstance = await lolModel.create(lolCreationData);   renvoie une instance si les information rentrer sont bonne, sinon renvoie null
+const lolInstance = await lolModel.instance({id: lolId });    renvoie une instance si les information rentrer sont bonne, sinon renvoie null
+TODO: const lolInstance = await lolModel.update(aUpdateData); renvoie une instance si les information rentrer sont bonne, sinon renvoie null
 TODO: const isDeleted = lolModel.delete({id: lolId });
 
+TODO: const profile = await user['/account/profile']
+TODO: const building = await address['../../building']
+TODO: condt fileInstance = await profile['imgProfile];
+fileInstance.urls
+fileInstance.update({
+    addFile:[{
+        filedata
+    }],
+    remove:["url"] // server file access
+})
 */

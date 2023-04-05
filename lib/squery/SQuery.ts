@@ -6,7 +6,7 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
 import { AuthManager } from "./AuthManager";
 import { ContextSchema, authDataOptionSchema, authDataSchema } from "./Context";
-import { Controllers, DescriptionSchema, GlobalMiddlewares, ModelControllers, ResultSchema, SQueryMongooseSchema } from "./Initialize";
+import { Controllers, DescriptionSchema, GlobalMiddlewares, ListenerPreSchema, ModelControllers, ResultSchema, SQueryMongooseSchema } from "./Initialize";
 
 export type FirstDataSchema = {
   __action: "create" | "read" | "list" | "update" | "delete";
@@ -18,7 +18,8 @@ type CallBack = (...arg: any) => any;
 type SQuerySchema = Function & {
   io: (server: any) => Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
   Schema: (description: DescriptionSchema) => any,
-  auth: (authData: authDataOptionSchema) => void
+  auth: (authData: authDataOptionSchema) => void,
+  cookies(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, key?: string, value?: any): any
 }
 const SQuery: SQuerySchema = function (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
@@ -84,6 +85,10 @@ export const Global: GlobalSchema = {
   io: null,
 }
 
+SQuery.cookies = () => {
+
+}
+
 SQuery.io = (server: any) => {
   /********************    Cookies   *********************** */
 
@@ -93,13 +98,44 @@ SQuery.io = (server: any) => {
       path: "/",
       httpOnly: false,
       sameSite: "lax",
-      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      maxAge: Date.now() + 24 * 60 * 60 * 1000,
     }
   });
   Global.io = io;
-
+  const setPermission: ListenerPreSchema = async ({ ctx }) => {
+    ctx.data = {
+      ...ctx.data,
+      __permission: ctx.__permission
+    }
+  }
+  const setAuthValues = (authData: authDataSchema) => {
+    const preCreateSignupListener: ListenerPreSchema = async ({ ctx }) => {
+      ctx.__permission = authData.__permission
+      ctx.__key = new mongoose.Types.ObjectId().toString(); ///// cle d'auth
+      await AuthManager.cookiesInSocket({
+        __key: ctx.__key,
+        __permission: ctx.__permission,
+      }, ctx.socket);
+    }
+    return preCreateSignupListener
+  }
+  let firstConnection = true;
   io.on("connection", async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
+    if (firstConnection) {
+      firstConnection = false;
+      const readylist = []
+      for (const key in AuthDataMap) {
+        if (Object.prototype.hasOwnProperty.call(AuthDataMap, key)) {
+          const authData = AuthDataMap[key];
+          ModelControllers[authData.signup].pre('create', setAuthValues(authData));
+          ModelControllers[authData.signup].pre('store', setAuthValues(authData));
+          if (readylist.includes(authData.login)) continue;
+          Log('init_Model_' + authData.login, authData);
+          ModelControllers[authData.login].pre('create', setPermission);
+          ModelControllers[authData.login].pre('store', setPermission);
+          readylist.push(authData.login);
+        }
+      }
+    }
     /********************    Models  *********************** */
     socket.onAny((event, ...args) => {
       //Log('any', { event }, ...args)
@@ -129,46 +165,40 @@ SQuery.io = (server: any) => {
   Global.io = io;
   return io;
 };
-
+export const AuthDataMap: { [p: string]: authDataSchema } = {}
+/*
+NB: authDataMap contient les differente auth data,
+NB: dans SQuery.schema : pour chaque authdata.signup on ajout un pre/create||store pour donner une nouvelle __key
+ et une permission dans le ctx sauvegarder le cookies che le client ;
+NB: dans SQuery.schema : pour chaque modelPath on ajout un pre/create||store pour permettre de stoker le authData.__permission
+NB: 1 -au lance de l'app le le cookies est passer dans le header, un user deja loger peut faure des requetes pour priver
+    2 -au login, le cookies est passer au client, mais ne passe pas automatiquement dans le header du socket,
+    3 - le cookies est aussi mis dans le header lors du login.
+    4 - la lecture du cookies provient de ce qui est ajouter par le server;
+NB:  *** ajout une nouveau cookies dans le header;
+socket.request.headers["set-cookie"] = serialize("token", JSON.stringify(token), {
+      maxAge: Date.now() + 24 * 60 * 60 * 1000,
+    });
+socket.request.headers.cookie = ..... // ecrase le cookies du header;
+*/
 SQuery.auth = (authDataOption: authDataOptionSchema) => {
   const authData: authDataSchema = {
     ...authDataOption,
     __permission: "user:" + authDataOption.signup
   };
   authData.match.push("__permission");
-  Log("authData", authData, ModelControllers[authData.login]);
+  AuthDataMap[authData.signup] = authData;
 
 
-  let firstConnection = true;
-
-  const initAuthPermission = () => {
-    const schema: SQueryMongooseSchema = ModelControllers[authData.login]?.option.schema;
-    const description = schema.description
-    description.__permission = {
-      type: String,
-      access: "secret",
-    }
-    schema.pre('save', async function () {
-      this.__permission = authData.__permission;
-    });
-  }
   Global.io.on("connection", (socket: any) => {
-    if (firstConnection) {
-      firstConnection = false;
-      initAuthPermission();
-    }
-    Log('********************************************************')
     socket.on("login:" + authData.signup, async (data, cb) => {
       data.__permission = authData.__permission;
-      Log('wertyuiopoiuytrtyuio', { authData }, { data });
-
-      /// authData.login = 'model_' + authData.signup;
       const authCtrl = new AuthManager();
       const res = await authCtrl.login({
         ctrlName: 'login',
         data,
         __key: "",
-        __permission: "any",
+        __permission: authData.__permission,
         action: "read",
         socket,
         authData
@@ -176,16 +206,15 @@ SQuery.auth = (authDataOption: authDataOptionSchema) => {
       cb(res);
     });
     socket.on("signup:" + authData.signup, async (data, cb) => {
-      Log('wertyuiopoiuytrtyuio', authData);
-      // authData.signup = 'model_' + authData.signup;
+
       let __key = new mongoose.Types.ObjectId().toString();
       const authCtrl = new AuthManager();
       const res = await authCtrl.signup({
-        ctrlName: 'login',
+        ctrlName: 'signup',
         action: "create",
         data,
         __key,
-        __permission: "any",
+        __permission: authData.__permission,
         socket,
         authData
       });
@@ -206,6 +235,11 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
     required: true,
     access: "secret",
   };
+  description.__permission = {
+    type: String,
+    access: "secret",
+  };
+
   description.createdAt = {
     type: Date,
     default: Date.now(),
@@ -214,11 +248,13 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
   description.updatedAt = {
     type: Date,
     default: Date.now(),
+    access: 'admin',
   }
   description.updatedProperty = [{
     type: String,
     access: 'secret',
   }];
+
 
   const schema = new Schema(description as any);
   schema.plugin(mongoosePaginate);
@@ -228,6 +264,7 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
     this.updatedAt = Date.now();
     this.modifiedPaths();
     this.updatedProperty = this.modifiedPaths();
+
   });
 
   schema.post('save', async function (doc: any) {

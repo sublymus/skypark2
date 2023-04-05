@@ -49,7 +49,7 @@ export default class PageInfoCode extends BaseComponent {
                 alert(data.message)
                 return this.parent.emit('@left:click', $(this.parent.view, 'left-button'))
               };
-              ////console.log("** all ok **", { data });
+              ////*console.log("** all ok **", { data });
               cb(data);
             }
           })

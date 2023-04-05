@@ -1,12 +1,23 @@
 import mongoose from "mongoose";
-import Log from "sublymus_logger";
 let uri = "mongodb://localhost:27017/skypark";
 
 mongoose.set("strictQuery", false);
-mongoose.connect(uri, (error) => {
-  if (error) {
-    return Log("mongoose_error", "successfully mongodb connection.....");
-  }
-  Log("_mongoose_error_connect", "successfully mongodb connection.....");
+(async () => {
+  const db = await mongoose.connect(uri);
+  //initialData(db);
+})()
 
-});
+function initialData(db: any) {
+
+  db.getCollection('').insertMany([
+    { 'item': 'abc', 'price': 10, 'quantity': 2, 'date': new Date('2014-03-01T08:00:00Z') },
+    { 'item': 'jkl', 'price': 20, 'quantity': 1, 'date': new Date('2014-03-01T09:00:00Z') },
+    { 'item': 'xyz', 'price': 5, 'quantity': 10, 'date': new Date('2014-03-15T09:00:00Z') },
+    { 'item': 'xyz', 'price': 5, 'quantity': 20, 'date': new Date('2014-04-04T11:21:39.736Z') },
+    { 'item': 'abc', 'price': 10, 'quantity': 10, 'date': new Date('2014-04-04T21:23:13.331Z') },
+    { 'item': 'def', 'price': 7.5, 'quantity': 5, 'date': new Date('2015-06-04T05:08:13Z') },
+    { 'item': 'def', 'price': 7.5, 'quantity': 10, 'date': new Date('2015-09-10T08:43:00Z') },
+    { 'item': 'abc', 'price': 10, 'quantity': 5, 'date': new Date('2016-02-06T20:20:13Z') },
+  ]);
+
+}

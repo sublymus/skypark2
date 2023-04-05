@@ -63,8 +63,8 @@ export class Deep extends BaseComponent {
                     /*************************** Mise En Cache ********************** */
                     this.model = await SQuery.Model(modelPath);
                     this.instance = await this.model.newInstance({ id: this.id });
-                    //console.log('model : ', this.model);
-                    //console.log('instance : ', this.instance);
+                    console.log('model : ', this.model);
+                    console.log('instance : ', this.instance);
 
                     const description = this.description = this.model.description;
                     /***************************   Mise en Correspondance ********************** */
@@ -84,7 +84,7 @@ export class Deep extends BaseComponent {
                                     cb: (elem) => $('.container').append(elem),
                                 })
                             } else if (rule[0] && rule[0].ref) {
-                                ////console.log('createListBtn');
+                                ////*console.log('createListBtn');
                                 this.emit('createListBtn', {
                                     data: {
                                         modelPath: this.modelPath,
@@ -103,7 +103,7 @@ export class Deep extends BaseComponent {
                                     cb: (elem) => $('.container').append(elem),
                                 })
                             } else if (Array.isArray(rule)) {
-                                ////console.log('***********   Array.isArray(rule)  **************', rule);
+                                ////*console.log('***********   Array.isArray(rule)  **************', rule);
                             } else {
                                 // //console.log('********', rule, property, this.instance);
                                 this.emit('createInput', {
@@ -177,7 +177,7 @@ export class Deep extends BaseComponent {
                 this.when('createInput', ({ data, cb }) => {
                     const input = _('input', ['type:text', `value:${data.value}`, 'placeholder:' + data.property])
                     input.addEventListener('blur', async () => {
-                        ////console.log(this.instance[data.property]);
+                        ////*console.log(this.instance[data.property]);
                         this.instance[data.property] = input.value;
                         // input.value = await this.instance[data.property]
                     });

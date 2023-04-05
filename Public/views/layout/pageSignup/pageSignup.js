@@ -119,7 +119,7 @@ export default class PageSignup extends BaseComponent {
         ////////////////////////////////////////////////////////////////////////////////
 
         pages[this.selectedIndex].component.emit(right.textContent.toLowerCase(), (data_p) => {
-          ////console.log({data});
+          ////*console.log({data});
           nextAnim.start();
           data = data_p;
           pages[this.selectedIndex + 1].component.inputsData = data;

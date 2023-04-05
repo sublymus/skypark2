@@ -7,12 +7,13 @@ const socket = io(null, {
     extraHeaders: {},
 });
 
-socket.on("storeCookie", (cookie) => {
-    //console.log('receed  cookies', cookie);
+socket.on("storeCookie", (cookie, cb) => {
     document.cookie = cookie;
+    console.log('document.cookie :  ', document.cookie);
+    cb(document.cookie)
 });
 
-//console.log('available - cookies', document.cookie);
+console.log('available cookies:  ', document.cookie);
 SQuery.socket = socket;
 
 SQuery.Model = async (modelPath) => {
@@ -243,7 +244,7 @@ SQuery.Validatior = async (rule, value) => {
     //console.log('rule : ', rule, 'value : ', value, 'res: ', res);
     if (!res.isValide) return {
         message: res.message,
-       // e: //console.log('res: ', { res })
+        // e: //console.log('res: ', { res })
     };
 
     if (ValidationMap[rule.type]) {

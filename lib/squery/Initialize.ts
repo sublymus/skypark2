@@ -98,20 +98,20 @@ export type ModelControllersStorage = {
 export type ControllersStorage = {
   [p: string]: CtrlMakerSchema;
 };
-export type SQuerySchemaType = {
-  paths: {
-    [p: string]: {
-      instance: string;
-      options?: {
-        ref?: string;
-      };
-    };
-  };
-  obj: {
-    [p: string]: any
-  },
-  description?: DescriptionSchema
-};
+//  type SQuerySchemaType = {
+//   paths: {
+//     [p: string]: {
+//       instance: string;
+//       options?: {
+//         ref?: string;
+//       };
+//     };
+//   };
+//   obj: {
+//     [p: string]: any
+//   },
+//   description?: DescriptionSchema
+// };
 export type ModelFrom_optionSchema = {
   schema: SQueryMongooseSchema;
   model: any;
@@ -157,8 +157,8 @@ export type ModelInstanceSchema = {
 export const GlobalMiddlewares: GlobalMiddlewareSchema = [];
 export const ModelControllers: ModelControllersStorage = {};
 export const Controllers: ControllersStorage = {};
-export type SQueryMongooseSchema = Schema & { description: DescriptionSchema }
-type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId;
+export type SQueryMongooseSchema = Schema & { description: DescriptionSchema , model:any }
+export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId;
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
 export type TypeRuleSchema = {
   //TODO: valuePath // ./_id  ; ../../fileType;

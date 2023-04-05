@@ -3,13 +3,15 @@ import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import BuildingModel from "./BuildingModel";
-import ConstructionManagerModel from "./ConstructionManagerModel";
+import ConstructionManagerModel from "./EntrepriseManagerModel";
 import ProfileModel from "./ProfileModel";
+import ManagerModel from "./ManagerModel";
 
 let EntrepiseSchema = SQuery.Schema({
   managers: [{
     type: Schema.Types.ObjectId,
-    ref: ConstructionManagerModel.modelName,
+    //ref: ConstructionManagerModel.modelName,
+    ref: ManagerModel.modelName,
     strictAlien: true,
   }],
   buildings: [{

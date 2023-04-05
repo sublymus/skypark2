@@ -36,7 +36,7 @@ export type ContextSchema = {
     any
   >,
   __key: string, /// pour le moment data.__key = cookies[__key]
-  __permission: 'user' | 'admin' | 'any'
+  __permission: string
 } & MoreProperty;
 
 

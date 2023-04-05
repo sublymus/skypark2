@@ -1,32 +1,37 @@
 import mongoose from "mongoose";
 import { ContextSchema } from "../../lib/squery/Context";
 import { SaveCtrl } from "../../lib/squery/CtrlManager";
-import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema } from "../../lib/squery/Initialize";
+import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema, RuleSchema } from "../../lib/squery/Initialize";
+import Log from "sublymus_logger";
 
 const Server: ControllerSchema = {
 
 
     description: async (ctx: ContextSchema): ResponseSchema => {
         try {
-            const description: DescriptionSchema = { ...(ModelControllers[ctx.data.modelPath]?.option.schema as any).description };
+            const description = { ...ModelControllers[ctx.data.modelPath]?.option.schema.description };
 
             for (const key in description) {
-                if (key == '__key') {
-                    delete description["__key"];
-                    continue
-                };
-                if (key == 'updatedProperty') {
-                    delete description["updatedProperty"];
-                    continue
-                };
+
                 if (Object.prototype.hasOwnProperty.call(description, key)) {
-                    const rule = description[key] = { ...description[key] };
+                    const rule = { ...description[key] };
+
                     if (Array.isArray(rule)) {
+                        
+                        if (rule[0].access == 'secret') {
+                            delete description[key];
+                            continue;
+                        }
+                        Log('key',key, '  access',rule[0].access);
                         (rule[0] as any).type = rule[0].type?.name
                         if (rule[0].match) {
                             (rule[0] as any).match = rule[0].match.toString()
                         }
                     } else if (!Array.isArray(rule)) {
+                        if (rule.access == 'secret') {
+                            delete description[key];
+                            continue;
+                        }
                         (rule as any).type = rule.type?.name
                         if (rule.match) {
                             const s = rule.match.toString();
@@ -92,6 +97,29 @@ const Server: ControllerSchema = {
                 };
             }
             throw new Error("ID is not valid");
+
+        } catch (error) {
+            return {
+                error: "BAD_ARGUMENT",
+                status: 404,
+                code: "BAD_ARGUMENT",
+                message: error.message,
+            };
+        }
+    },
+    extractor: async (ctx: ContextSchema): ResponseSchema => {
+        try {
+            const { modelPath, id, extractorPath } = ctx.data as { modelPath: string, id: string, extractorPath: string };
+
+            let sendTarget = extractorPath == './';
+            let sendTargetParent = extractorPath == '../';
+            let currentModelPath = modelPath;
+            let currentId = id;
+            let currentModelInstance = null;
+            let properties = [];
+
+
+
 
         } catch (error) {
             return {

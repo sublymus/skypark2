@@ -89,10 +89,6 @@ export const load = {
         status: 'property',
         address: {
           location: "l:567455;h45678654",
-          building: {
-            name: 'Sublymus E45',
-            city: 'Rostov-On-Don',
-          },
           room: 45,
           door: 296,
           etage: 4,
@@ -127,30 +123,6 @@ export const load = {
         },
         //createdDate: Date.now() - 1_000_000_000 + parseInt(Math.random() * 1_000_000_000),
       },
-      building: {
-        name: "skypark Center",
-        city: "Rostov on don",
-        community: {
-          name: "Together Group",
-          activities: [{
-            poster: {
-              //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
-              //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
-              message: "*** BEST ****",
-            },
-            channel: {
-              name: "Sport_Channel",
-              firstWatcher: "",
-              description: "more description about sport channel",
-              vectors: [],
-              watcher: []
-            },
-            name: "Sport",
-            description: "we love sport"
-          }]
-        },
-      }
-
     },
     read: {
       id: ""
@@ -335,3 +307,9 @@ load.manager = {
     entreprise: '',
   },
 };
+load.entreprisemanager = {
+  create: {
+    ...load['user'].create,
+    entreprise: '',
+  },
+}

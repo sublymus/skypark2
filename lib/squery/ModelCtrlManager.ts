@@ -13,6 +13,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
         ...options,
         modelPath: options.model.modelName,
     }
+    option.schema.model = option.model;
     const EventManager: {
         [p: string]: {
             pre: ListenerPreSchema[];
@@ -29,7 +30,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
         }
     };
     const callPost: (e: EventPostSchema) => ResponseSchema = async (e: EventPostSchema) => {
-        Log("post", option.modelPath, e.res);
+        // Log("post", option.modelPath, e.res);
         if (!(EventManager[e.action]?.post)) return e.res;
 
         for (const listener of EventManager[e.action].post) {
@@ -89,7 +90,17 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
 
             const accu = {};
             let modelInstance: ModelInstanceSchema;
-            if (!ctx.__key) ctx.__key = new mongoose.Types.ObjectId().toString(); ///// cle d'auth
+            if (!ctx.__key) return callPost({
+                ctx,
+                more: { ...more },
+                action,
+                res: {
+                    error: "ILLEGAL_ARGUMENT",
+                    status: 404,
+                    code: "ILLEGAL_ARGUMENT",
+                    message: '__key missing',
+                },
+            })
             for (const property in description) {
                 if (Object.prototype.hasOwnProperty.call(description, property) && ctx.data[property] != undefined) {
                     const rule = description[property];
@@ -844,7 +855,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             }
                         } else {
                             const access = accessValidator(ctx, 'update', rule.access, "property", ctx.__key == modelInstance.__key._id.toString())
-                            Log('AboutUpdateAccess', 'ctx:', ctx, '<update>', 'access:', rule.access, "<property>", "user: ", ctx.__key == modelInstance.__key._id.toString());
+                            Log('AboutUpdateAccess', '<update>', 'access:', rule.access, "<property>", "user: ", ctx.__key == modelInstance.__key._id.toString());
                             if (!access) continue;
                             modelInstance[p] = ctx.data[p];
                         }
@@ -1130,7 +1141,7 @@ function deepPopulate(
                 }
                 exec(rule[0]);
             }
-            ////console.log(info.select);
+            ////*console.log(info.select);
 
         }
     }

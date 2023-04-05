@@ -86,7 +86,7 @@ class Anim extends EventEmiter {
         }
     }
     #progress() {
-        ////console.log('progress');
+        ////*console.log('progress');
         this.emit("progress", this.#accu / this.duration);
     }
 

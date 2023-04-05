@@ -97,7 +97,7 @@ export class List extends BaseComponent {
 
                     this.arrayInstance.when('dataAvalaible', (data) => {
                         this.emit('createList', data)
-                    })
+                    });
                     await this.arrayInstance.update({
                         paging: {
                             limit: 3
