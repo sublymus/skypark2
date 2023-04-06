@@ -74,6 +74,9 @@ export class Home extends BaseComponent {
                     $('.deep-ctn').childNodes.forEach(deepElem => {
                         deepElem.remove();
                     });
+                    $('.deep-ctn').childNodes.forEach(deepElem => {
+                        deepElem.remove();
+                    });
                     $('.deep-ctn').append(_('Deep', {
                         id,
                         modelPath,

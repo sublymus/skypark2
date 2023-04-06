@@ -20,23 +20,33 @@ export class Login extends BaseComponent {
                 _('input', ['type:text', 'class:password', 'placeholder:password'])
             ),
             _('div@submit', 'submit', 'SUBMIT'),
+            _('div@current', 'submit', 'Current User'),
         );
-
         this.controller = {
             ['@type:change']: (select) => {
                 this.type = select.value;
+            },
+            //NEW_ADD
+            ['@current:click']: async () => {
+                const userInstance = await SQuery.CurrentUserInstance();
+                console.log({ userInstance });
+                this.emit('success', {
+                    modelPath: userInstance.$modelPath,//this.type,
+                    id: userInstance.$id,
+                })
             },
             ['@submit:click']: async () => {
                 const data = {};
                 $All('input').forEach((input) => {
                     data[input.className] = input.value;
                 })
-                console.log("login:" + this.type,data);
+                console.log("login:" + this.type, data);
                 SQuery.emit("login:" + this.type, data, res => {
                     if (res.error) return this.emit('error', JSON.stringify(res));
+                    //NEW_ADD
                     this.emit('success', {
-                        modelPath: 'account',//this.type,
-                        id: res.response.loginId,
+                        modelPath: res.response.login.modelPath,//this.type,
+                        id: res.response.login.id,
                     })
                 });
             },

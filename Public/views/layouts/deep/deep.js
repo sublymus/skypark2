@@ -46,7 +46,7 @@ export class Deep extends BaseComponent {
                 /***************************     Init    ********************** */
                 this.when('modelPath', async (modelPath) => {
                     /*************************** Mise En Cache ********************** */
-                    const description = this.description = await SQuery.getDesription(modelPath);
+                    const description = this.description = await SQuery.Description(modelPath);
                     await new Promise((rev) => {
                         SQuery.socket.emit(modelPath, {
                             __action: 'read',

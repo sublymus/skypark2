@@ -62,10 +62,15 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             more: MoreSchema
         ): ResponseSchema => {
             const action = option.volatile ? "create" : "store";
+
+            if (!more) more = {};
+            if (!more.savedlist) more.savedlist = [];
+            if (!more.__parentModel) more.__parentModel = '';
+
             if (!accessValidator(ctx, action, option.access, "controller")) {
                 return await callPost({
                     ctx,
-                    more: { ...more },
+                    more,
                     action,
                     res: {
                         error: "BAD_AUTH_CONTROLLER",
@@ -75,24 +80,26 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     },
                 });
             }
-            await callPre({
-                ctx,
-                more: { ...more },
-                action,
-            });
+
+
             const modelId = new mongoose.Types.ObjectId().toString();
             const description: DescriptionSchema = option.schema.description;
-            if (!more) {
-                more = {};
-                more.savedlist = [];
-                more.__parentModel = '';
-            }
+            more.modelId = modelId;
+            more.modelPath = option.modelPath;
+
+            await callPre({
+                ctx,
+                more,
+                action,
+            });
+
 
             const accu = {};
             let modelInstance: ModelInstanceSchema;
+          
             if (!ctx.__key) return callPost({
                 ctx,
-                more: { ...more },
+                more,
                 action,
                 res: {
                     error: "ILLEGAL_ARGUMENT",
@@ -112,7 +119,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         if (!isAlien && isStr) {
                             return await callPost({
                                 ctx,
-                                more: { ...more },
+                                more,
                                 action,
                                 res: {
                                     error: "ILLEGAL_ARGUMENT",
@@ -133,7 +140,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             } catch (error) {
                                 return await callPost({
                                     ctx,
-                                    more: { ...more },
+                                    more,
                                     action,
                                     res: {
                                         error: "ILLEGAL_ARGUMENT",
@@ -147,7 +154,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         } else if ((!!rule.strictAlien) && !isStr) {
                             return await callPost({
                                 ctx,
-                                more: { ...more },
+                                more,
                                 action,
                                 res: {
                                     error: "ILLEGAL_ARGUMENT",
@@ -173,12 +180,12 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         );
                         if (!res) {
                             // Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
-                            more.modelPath = option.modelPath;
+
                             await backDestroy(ctx, more);
                             // Log('log', { res })
                             return await callPost({
                                 ctx,
-                                more: { ...more },
+                                more,
                                 action,
                                 res: {
                                     error: "ACCESS_NOT_FOUND",
@@ -189,11 +196,10 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             });
                         }
                         if (res.error) {
-                            more.modelPath = option.modelPath;
                             await backDestroy(ctx, more);
                             return await callPost({
                                 ctx,
-                                more: { ...more },
+                                more,
                                 action,
                                 res,
                             });
@@ -214,7 +220,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             if (!isAlien && isStr) {
                                 return await callPost({
                                     ctx,
-                                    more: { ...more },
+                                    more,
                                     action,
                                     res: {
                                         error: "ILLEGAL_ARGUMENT",
@@ -235,7 +241,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                 } catch (error) {
                                     return await callPost({
                                         ctx,
-                                        more: { ...more },
+                                        more,
                                         action,
                                         res: {
                                             error: "ILLEGAL_ARGUMENT",
@@ -249,7 +255,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             } else if ((!!rule[0].strictAlien) && !isStr) {
                                 return await callPost({
                                     ctx,
-                                    more: { ...more },
+                                    more,
                                     action,
                                     res: {
                                         error: "ILLEGAL_ARGUMENT",
@@ -273,22 +279,20 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             );
                             // Log('log', { res, property, value: ctx.data[property][i], modelPath: option.modelPath })
                             if (!res) {
-                                more.modelPath = option.modelPath;
                                 await backDestroy(ctx, more);
                                 //Log('log', { res })
                                 return await callPost({
                                     ctx,
-                                    more: { ...more },
+                                    more,
                                     action,
                                     res,
                                 });
                             }
                             if (res.error) {
-                                more.modelPath = option.modelPath;
                                 await backDestroy(ctx, more);
                                 return await callPost({
                                     ctx,
-                                    more: { ...more },
+                                    more,
                                     action,
                                     res,
                                 });
@@ -309,7 +313,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             await backDestroy(ctx, more);
                             return await callPost({
                                 ctx,
-                                more: { ...more },
+                                more,
                                 action,
                                 res: {
                                     error: "NOT_CREATED",
@@ -342,11 +346,10 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 });
             } catch (error) {
                 //Log('error', error);
-                more.modelPath = option.modelPath;
                 await backDestroy(ctx, more);
                 return await callPost({
                     ctx,
-                    more: { ...more },
+                    more,
                     action,
                     res: {
                         error: "NOT_CREATED",
@@ -383,7 +386,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             if (!accessValidator(ctx, action, option.access, "controller")) {
                 return await callPost({
                     ctx,
-                    more: { ...more },
+                    more,
                     action,
                     res: {
                         error: "BAD_AUTH_CONTROLLER",
@@ -395,7 +398,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             await callPre({
                 ctx,
-                more: { ...more },
+                more,
                 action,
             });
             let modelInstance: ModelInstanceSchema;
@@ -456,7 +459,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             if (!accessValidator(ctx, action, option.access, "controller")) {
                 return await callPost({
                     ctx,
-                    more: { ...more },
+                    more,
                     action,
                     res: {
                         error: "BAD_AUTH_CONTROLLER",
@@ -468,7 +471,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             await callPre({
                 ctx,
-                more: { ...more },
+                more,
                 action,
             });
             const { paging, addNew, addId, remove, property } = ctx.data;
@@ -486,7 +489,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             if (!more.__parentModel || !parentModelPath || !parentId || !parentProperty) {
                 return await callPost({
                     ctx,
-                    more: { ...more },
+                    more,
                     action,
                     res: {
                         error: "ILLEGAL_ARGUMENT",
@@ -508,7 +511,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             } catch (error) {
                 return await callPost({
                     ctx,
-                    more: { ...more },
+                    more,
                     action,
                     res: {
                         error: "NOT_FOUND",
@@ -620,7 +623,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     await backDestroy(ctx, more);
                     return await callPost({
                         ctx,
-                        more: { ...more },
+                        more,
                         action,
                         res: {
                             error: "OPERATION_FAILED",
@@ -639,7 +642,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         await backDestroy(ctx, more);
                         return await callPost({
                             ctx,
-                            more: { ...more },
+                            more,
                             action,
                             res: {
                                 error: "OPERATION_FAILED",
@@ -737,7 +740,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             if (!accessValidator(ctx, action, option.access, "controller")) {
                 return await callPost({
                     ctx,
-                    more: { ...more },
+                    more,
                     action,
                     res: {
                         error: "BAD_AUTH_CONTROLLER",
@@ -749,7 +752,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             await callPre({
                 ctx,
-                more: { ...more },
+                more,
                 action,
             });
 
@@ -922,7 +925,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             if (!accessValidator(ctx, action, option.access, "controller")) {
                 return await callPost({
                     ctx,
-                    more: { ...more },
+                    more,
                     action,
                     res: {
                         error: "BAD_AUTH_CONTROLLER",
@@ -934,7 +937,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             await callPre({
                 ctx,
-                more: { ...more },
+                more,
                 action,
             });
             let modelInstance: ModelInstanceSchema;
@@ -1444,5 +1447,23 @@ async function backDestroy(ctx: ContextSchema, more: MoreSchema) {
     return;
 }
 
-export { MakeModelCtlForm, accessValidator, backDestroy, FileValidator, formatModelInstance };
+function parentInfo(parentModel: string): {
+    __parentModel: string,
+    parentModelPath: string,
+    parentId: string,
+    parentProperty: string
+} {
+    const parts = parentModel?.split('_');
+    const parentModelPath = parts?.[0];
+    const parentId = parts?.[1];
+    const parentProperty = parts?.[2];
+    return {
+        __parentModel: parentModel,
+        parentModelPath,
+        parentId,
+        parentProperty
+    }
+}
+
+export { MakeModelCtlForm, accessValidator, backDestroy, FileValidator, formatModelInstance, parentInfo };
 

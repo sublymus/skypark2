@@ -66,6 +66,10 @@
     color: #fff;
     font-size: 1.3em;
 }
+.deep .top-ctn input {
+    color: #ffee00;
+    font-size: 1.3em;
+}
 
 .deep .container {
     padding: 30px;

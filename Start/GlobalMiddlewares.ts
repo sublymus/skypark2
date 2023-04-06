@@ -1,22 +1,17 @@
-import { parse } from "cookie";
-import jwt from "jsonwebtoken";
 import Log from "sublymus_logger";
 import { ContextSchema } from "../lib/squery/Context";
 import { GlobalMiddlewares } from "../lib/squery/Initialize";
+import { SQuery } from "../lib/squery/SQuery";
 
 GlobalMiddlewares.push(async (ctx: ContextSchema) => {
 
   try {
-    let cookie = ctx.socket.request.headers.cookie;
-    let decoded: any = {};
-    const token = JSON.parse(parse(cookie).token);
-    //let token = c?.token;
-    decoded = jwt.verify(token, "a") || {};
-    ctx.__key = decoded.__key;
-    ctx.__permission = decoded.__permission || 'any';
-    Log('decoded', { decoded })
+    const token = await SQuery.cookies(ctx.socket, 'token');
+    Log('GlobalMiddlewares', { token })
+    ctx.__key = token.__key;
+    ctx.__permission = token.__permission || 'any';
   } catch (error) {
-    Log("jwtError", error);
+    Log("GlobalMiddlewares_jwtError", error.message);
   }
 
 });

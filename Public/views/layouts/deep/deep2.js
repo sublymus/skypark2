@@ -14,16 +14,31 @@ export class Deep extends BaseComponent {
         }, data);
         const { _, $, $All, viewName } = this.mvc;
         this.view = _('div', viewName,
+
             _('div', 'top-ctn',
                 _('div@back', 'back', 'BACK'),
                 _('div@rest', 'rest', 'REFRESH'),
                 _('h1', 'title'),
+                _('input', 'extarctorPath')
             ),
             _('div', 'container'),
         );
         this.controller = {
             ['.title']: (title) => {
                 title.textContent = this.modelPath;
+            },
+            ['.extarctorPath']: (input) => {
+                input.addEventListener('blur', async () => {
+                    const extracted = await this.instance.extractInstanceFrom(input.value);
+                    if (!extracted) alert('the following extraction path is not avalaible. path:' + input.value);
+                    this.emit('hide');
+                    this.container.append(_('Deep', {
+                        modelPath: extracted.$modelPath,
+                        id: extracted.$id,
+                        parentCpn: this,
+                        container: this.container,
+                    }));
+                })
             },
             ['@back:click']: async () => {
                 if (!this.parentCpn) {

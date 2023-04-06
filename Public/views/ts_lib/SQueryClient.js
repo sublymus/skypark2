@@ -6,7 +6,7 @@ const SQuery = {};
 const socket = io(null, {
     extraHeaders: {},
 });
-
+//NEW_ADD
 socket.on("storeCookie", (cookie, cb) => {
     document.cookie = cookie;
     console.log('document.cookie :  ', document.cookie);
@@ -18,6 +18,21 @@ SQuery.socket = socket;
 
 SQuery.Model = async (modelPath) => {
     return await createModelFrom(modelPath)
+}
+SQuery.Authentification = async (modelPath) => {
+    return await createModelFrom(modelPath)
+}
+//NEW_ADD
+SQuery.CurrentUserInstance = async () => {
+    return await new Promise((rev) => {
+        SQuery.emit('server:currentUser', {}, async (res) => {
+            if (res.error) throw new Error(JSON.stringify(res));
+            const userModel = await SQuery.Model(res.response.signup.modelPath);
+            if (!userModel) throw new Error("Model is null for modelPath : " + res.modelPath);
+            const userInstance = await userModel.newInstance({ id: res.response.signup.id });
+            rev(userInstance);
+        });
+    })
 }
 SQuery.emitNow = (event, ...arg) => {
     if (typeof event != 'string') throw new Error('cannot emit with following event : ' + event + '; event value must be string');
@@ -36,8 +51,8 @@ SQuery.on = (event, ...arg) => {
     if (typeof event != 'string') throw new Error('cannot emit with following event : ' + event + '; event value must be string');
     socket.on(event, ...arg);
 }
-SQuery.getDesription = getDesription;
-SQuery.getDesriptions = getDesriptions;
+SQuery.Desription = getDesription;
+SQuery.Desriptions = getDesriptions;
 
 // const ActionsMap = {
 //     String: {

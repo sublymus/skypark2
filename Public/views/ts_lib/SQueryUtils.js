@@ -317,6 +317,25 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
     instance.when = (...arg) => {
         emiter.when(...arg);
     };
+    //NEW_ADD
+    instance.extractInstanceFrom = async (extractorPath) => {
+        if (extractorPath == './') return this;
+        if (extractorPath == '../') return await instance.newParentInstance()
+        return await new Promise((rev) => {
+            SQuery.emit('server:extractor', {
+                modelPath,
+                id,
+                extractorPath
+            }, async (res) => {
+                if (res.error) throw new Error(JSON.stringify(res));
+                console.log(res);
+                const extractedModel = await SQuery.Model(res.response.modelPath);
+                if (!extractedModel) throw new Error("extractedModel is null for modelPath : " + res.response.modelPath);
+                const extractedInstance = await extractedModel.newInstance({ id: res.response.id });
+                rev(extractedInstance);
+            });
+        })
+    }
     const parts = (await instance.__parentModel).split('_');
     instance.$modelPath = modelPath;
     instance.$parentModelPath = parts[0];
@@ -366,7 +385,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                 ert: 'pagin'
             }
             //console.log(paging);
-     //console       emiter.emit('paging', paging);
+            //console       emiter.emit('paging', paging);
         } else {
             options.paging = paging;
             options.opi = 'node p'

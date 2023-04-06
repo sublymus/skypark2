@@ -5,4 +5,5 @@ export const Config = {
     afterExec: [],
     beforeExec: [],
     rootDir: __dirname,
+    KEY: 'a',
 }

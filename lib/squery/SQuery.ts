@@ -1,12 +1,16 @@
+import { parse, serialize } from "cookie";
+import jwt from "jsonwebtoken";
+
 import mongoose, { Schema } from "mongoose";
 import mongoosePaginate from "mongoose-paginate-v2";
 import mongoose_unique_validator from "mongoose-unique-validator";
 import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
+import { Config } from "../../squeryconfig";
 import { AuthManager } from "./AuthManager";
 import { ContextSchema, authDataOptionSchema, authDataSchema } from "./Context";
-import { Controllers, DescriptionSchema, GlobalMiddlewares, ListenerPreSchema, ModelControllers, ResultSchema, SQueryMongooseSchema } from "./Initialize";
+import { Controllers, DescriptionSchema, GlobalMiddlewares, ListenerPostSchema, ListenerPreSchema, ModelControllers, ResultSchema, SQueryMongooseSchema } from "./Initialize";
 
 export type FirstDataSchema = {
   __action: "create" | "read" | "list" | "update" | "delete";
@@ -19,7 +23,7 @@ type SQuerySchema = Function & {
   io: (server: any) => Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
   Schema: (description: DescriptionSchema) => any,
   auth: (authData: authDataOptionSchema) => void,
-  cookies(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, key?: string, value?: any): any
+  cookies(socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>, key?: string, value?: any): Promise<any>
 }
 const SQuery: SQuerySchema = function (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
@@ -58,10 +62,14 @@ const SQuery: SQuerySchema = function (
       }
 
       let res: ResultSchema = null;
-      if (modelRequest) {
-        res = await ModelControllers[ctrlName.replace('model_', '')]?.()[action]?.(ctx);
-      } else {
-        res = await Controllers[ctrlName]?.()[action]?.(ctx);
+      try {
+        if (modelRequest) {
+          res = await ModelControllers[ctrlName.replace('model_', '')]?.()[action]?.(ctx);
+        } else {
+          res = await Controllers[ctrlName]?.()[action]?.(ctx);
+        }
+      } catch (error) {
+        Log('ERROR_Controller', error.message)
       }
 
       if (res === undefined) {
@@ -72,6 +80,7 @@ const SQuery: SQuerySchema = function (
           message: "access not found for Path: " + ctrlName + '.' + action,
         });
       }
+      // Log('res', res)
       cb?.(res);
     };
   };
@@ -85,8 +94,50 @@ export const Global: GlobalSchema = {
   io: null,
 }
 
-SQuery.cookies = () => {
+SQuery.cookies = async (socket, key: string, value?: any) => {
 
+  let decoded: any = {};
+  try {
+    let cookie = socket.request.headers.cookie;
+    Log('SQuery.cookies_parse', JSON.parse(parse(cookie).squery_session));
+    Log('SQuery.cookies_parse', parse(cookie));
+    Log('SQuery.cookies_parse', cookie);
+    const squery_session = JSON.parse(parse(cookie).squery_session);
+    decoded = jwt.verify(squery_session, Config.KEY) || {};
+  } catch (error) {
+    Log("jwtError", error.message);
+  }
+  Log('decoded', { decoded });
+  if (key && value) decoded[key] = value;
+  if (!value) return decoded[key];
+  if (!key && !value) return decoded;
+
+  const generateToken = (payload: { [property: string]: any }) => {
+    return jwt.sign({
+      ...payload,
+      //iat: Date.now(),
+      exp: Date.now() + 24 * 60 * 60 * 1000,
+    }, Config.KEY);
+  };
+
+  let token = generateToken(decoded);
+
+  const cookieToken = serialize('squery_session', JSON.stringify(token), {
+    maxAge: Date.now() + 24 * 60 * 60 * 1000,
+  });
+
+  return await new Promise((rev) => {
+    socket.emit("storeCookie", cookieToken, (DOMCookie: string) => {
+      const domCookie = parse(DOMCookie);
+
+      Log('DOMCookie', domCookie);
+      socket.request.headers.cookie = (socket.request.headers.cookie as string).split(';').filter((part: string) => {
+        part = part.trim();
+        return !part.startsWith('squery_session');
+      }).join('; ') + "; " + cookieToken;
+      rev(domCookie);
+    });
+  })
 }
 
 SQuery.io = (server: any) => {
@@ -101,23 +152,42 @@ SQuery.io = (server: any) => {
     }
   });
   Global.io = io;
-  const setPermission: ListenerPreSchema = async ({ ctx }) => {
+  const setPermission: ListenerPreSchema = async ({ ctx, more }) => {
     ctx.data = {
       ...ctx.data,
-      __permission: ctx.__permission
+      __permission: ctx.__permission,
+      __signupId: more.__signupId
     }
+    Log('setPermission', { data: ctx.data });
   }
   const setAuthValues = (authData: authDataSchema) => {
-    const preCreateSignupListener: ListenerPreSchema = async ({ ctx }) => {
+    const preCreateSignupListener: ListenerPreSchema = async ({ ctx, more }) => {
       ctx.__permission = authData.__permission
       ctx.__key = new mongoose.Types.ObjectId().toString(); ///// cle d'auth
-      await AuthManager.cookiesInSocket({
-        __key: ctx.__key,
-        __permission: ctx.__permission,
-      }, ctx.socket);
+      more.__signupId = more.modelId;
+      Log('preCreateSignupListener', ctx.data);
     }
-    return preCreateSignupListener
+    return preCreateSignupListener;
   }
+
+  const setLoginCookie = (authData: authDataSchema) => {
+    const postCreateLoginListener: ListenerPostSchema = async ({ ctx, more, res }) => {
+      if (res.error) return Log('Giga_ERROR', res);
+      const token = {
+        __key: ctx.__key,
+        __permission: authData.__permission, // any non loguer, user loguer , admin loguer admin
+        __signupId: more.__signupId,
+        __signupModelPath: authData.signup,
+        __email: more.modelInstance.email,
+        __loginId: res.response,
+        __loginModelPath: authData.login
+      };
+      Log('postCreateLoginListener', { token });
+      await SQuery.cookies(ctx.socket, 'token', token);
+    }
+    return postCreateLoginListener;
+  }
+
   let firstConnection = true;
   io.on("connection", async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
     if (firstConnection) {
@@ -132,6 +202,8 @@ SQuery.io = (server: any) => {
           Log('init_Model_' + authData.login, authData);
           ModelControllers[authData.login].pre('create', setPermission);
           ModelControllers[authData.login].pre('store', setPermission);
+          ModelControllers[authData.login].post('create', setLoginCookie(authData));
+          ModelControllers[authData.login].post('store', setLoginCookie(authData));
           readylist.push(authData.login);
         }
       }
@@ -239,6 +311,10 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
     type: String,
     access: "secret",
   };
+  description.__signupId = {
+    type: String,
+    access: "secret",
+  };
 
   description.createdAt = {
     type: Date,
@@ -269,7 +345,7 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
 
   schema.post('save', async function (doc: any) {
     //emettre dans  les room dedier
-    Log('cache', doc)
+    //Log('cache', doc)
     Global.io.emit('update:' + doc._id.toString(), {
 
       id: doc._id.toString(),

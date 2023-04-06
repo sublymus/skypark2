@@ -31,6 +31,8 @@ export type MoreSchema = {
   savedlist?: savedSchema[];
   modelPath?: string;
   modelInstance?: any,
+  modelId?: string,
+  signupId?: string,
   __parentModel?: string,
 };
 export type ControlSchema = (
@@ -56,8 +58,8 @@ export type ModelActionAllowed = "create" | "read" | "list" | "update" | "delete
 export type ModelActionAvailable = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
 export type ControllerAccesSchema = "public" | "share" | "admin" | "secret";
 export type EventPreSchema = {
-  ctx: ContextSchema; more?:
-  MoreSchema;
+  ctx: ContextSchema;
+  more?: MoreSchema;
   action?: string
 };
 export type EventPostSchema = {
@@ -157,7 +159,7 @@ export type ModelInstanceSchema = {
 export const GlobalMiddlewares: GlobalMiddlewareSchema = [];
 export const ModelControllers: ModelControllersStorage = {};
 export const Controllers: ControllersStorage = {};
-export type SQueryMongooseSchema = Schema & { description: DescriptionSchema , model:any }
+export type SQueryMongooseSchema = Schema & { description: DescriptionSchema, model: any }
 export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId;
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
 export type TypeRuleSchema = {

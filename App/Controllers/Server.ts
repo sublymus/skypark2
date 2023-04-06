@@ -1,15 +1,34 @@
 import mongoose from "mongoose";
+import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
 import { SaveCtrl } from "../../lib/squery/CtrlManager";
-import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema, RuleSchema } from "../../lib/squery/Initialize";
-import Log from "sublymus_logger";
+import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema } from "../../lib/squery/Initialize";
+import { parentInfo } from "../../lib/squery/ModelCtrlManager";
+import { SQuery } from "../../lib/squery/SQuery";
 
 const Server: ControllerSchema = {
 
-
+    currentUser: async (ctx: ContextSchema): ResponseSchema => {
+        const token = await SQuery.cookies(ctx.socket, 'token');
+        return {
+            response: {
+                login: {
+                    modelPath: token.__loginModelPath,
+                    id: token.__loginId,
+                },
+                signup: {
+                    modelPath: token.__signupModelPath,
+                    id: token.__signupId
+                }
+            },
+            status: 202,
+            code: "OPERATION_SUCCESS",
+            message: ''
+        }
+    },
     description: async (ctx: ContextSchema): ResponseSchema => {
         try {
-            const description = { ...ModelControllers[ctx.data.modelPath]?.option.schema.description };
+            const description: DescriptionSchema = { ...ModelControllers[ctx.data.modelPath]?.option.schema.description };
 
             for (const key in description) {
 
@@ -17,12 +36,12 @@ const Server: ControllerSchema = {
                     const rule = { ...description[key] };
 
                     if (Array.isArray(rule)) {
-                        
+
                         if (rule[0].access == 'secret') {
                             delete description[key];
                             continue;
                         }
-                        Log('key',key, '  access',rule[0].access);
+                        Log('key', key, '  access', rule[0].access);
                         (rule[0] as any).type = rule[0].type?.name
                         if (rule[0].match) {
                             (rule[0] as any).match = rule[0].match.toString()
@@ -110,22 +129,115 @@ const Server: ControllerSchema = {
     extractor: async (ctx: ContextSchema): ResponseSchema => {
         try {
             const { modelPath, id, extractorPath } = ctx.data as { modelPath: string, id: string, extractorPath: string };
+            const parts = extractorPath.split('/');
+            const illegalMessage = "illegal argument : " + extractorPath + " ; Example : './' , './account' , '../' , '../../account/profile' ,  ";
 
-            let sendTarget = extractorPath == './';
-            let sendTargetParent = extractorPath == '../';
+            if (parts[0] != '.' && parts[0] != '..') throw new Error(illegalMessage);
+            let canStart = true;
+            let canUpToParent = true;
+            let accu = '';
+
+            const isValidProperty = (part: string) => {
+                return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(part);
+            }
+            // //let current:any = ModelControllers[]
+            // const isValidArrayProperty = (part: string) => {
+            //     return /^[a-zA-Z_][a-zA-Z0-9_]*\[([0-9]{1,4})\]$/.test(part);
+            // }
+
+            let res = await ModelControllers[modelPath]().read({
+                ...ctx,
+                data: { id }
+            });
+            if (!res || res.error) {
+                return {
+                    error: "OPERATION_FAILED",
+                    status: 404,
+                    code: "OPERATION_FAILED",
+                    message: "modelPath = " + modelPath + " ; id = " + id + " is not found; serverMessage = " + + JSON.stringify(res),
+                }
+            }
+            let currentDoc = res.response;
             let currentModelPath = modelPath;
-            let currentId = id;
-            let currentModelInstance = null;
-            let properties = [];
+            let currentDescription: DescriptionSchema = ModelControllers[modelPath].option.schema.description;
+            for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                accu += part + '/'
+                if (part == '') continue;
+                else if (part == '.') {
+                    if (!canStart) throw new Error("< . >  is only use to start the path, Example: ./p1/p2 , currentPath:" + accu + " <-- is not correct;   " + illegalMessage);
+                    canStart = false;
+                    canUpToParent = false;
 
+                } else if (part == '..') {
+                    if (!canUpToParent) throw new Error("< .. >  is Only use at the start of the path, Example: ../../../p1/p2 , currentPath:" + accu + " <-- is not correct;   " + illegalMessage);
 
-
-
+                    const info = parentInfo(currentDoc.__parentModel)
+                    res = await ModelControllers[info.parentModelPath]().read({
+                        ...ctx,
+                        data: { id: info.parentId }
+                    });
+                    if (!res || res.error) {
+                        return {
+                            error: "OPERATION_FAILED",
+                            status: 404,
+                            code: "OPERATION_FAILED",
+                            message: "currentPath : " + accu + " <-- is not found; modelPath = " + modelPath + " ; id = " + id + " is not found; serverMessage = " + res,
+                        }
+                    }
+                    currentDoc = res.response;
+                    currentModelPath = info.parentModelPath;
+                    currentDescription = ModelControllers[info.parentModelPath].option.schema.description;
+                } else if (isValidProperty(part)) {
+                    canUpToParent = false;
+                    const rule = currentDescription[part];
+                    if (!rule) {
+                        throw new Error("currentPath : " + accu + " <-- is not found;   ");
+                    }
+                    else if (Array.isArray(rule) && rule[0].ref) {
+                        throw new Error("currentPath : " + accu + " <-- is ObjectId array property ; You must recover his parent  ");
+                    }
+                    else if (Array.isArray(rule)) {
+                        throw new Error("currentPath : " + accu + " <-- is array property ; You must recover his parent  ");
+                    }
+                    else if (!Array.isArray(rule) && !rule.ref) {
+                        throw new Error("currentPath : " + accu + " <-- is not a ObjectId property ; ; You must recover his parent  ");
+                    }
+                    let res = await ModelControllers[rule.ref]().read({
+                        ...ctx,
+                        data: { id: currentDoc[part] }
+                    });
+                    if (!res || res.error) {
+                        return {
+                            error: "OPERATION_FAILED",
+                            status: 404,
+                            code: "OPERATION_FAILED",
+                            message: "modelPath = " + rule.ref + " ; id = " + currentDoc[part] + " is not found; serverMessage = " + JSON.stringify(res),
+                        }
+                    }
+                    currentDoc = res.response;
+                    currentModelPath = rule.ref;
+                    currentDescription = ModelControllers[rule.ref].option.schema.description;
+                } else {
+                    throw new Error(illegalMessage);
+                }
+            }
+            const result = {
+                modelPath: currentModelPath,
+                id: currentDoc._id.toString()
+            };
+            Log('result', { result });
+            return {
+                response: result,
+                status: 200,
+                code: "OPERATION_SUCCESS",
+                message: 'OPERATION_SUCCESS',
+            }
         } catch (error) {
             return {
-                error: "BAD_ARGUMENT",
-                status: 404,
-                code: "BAD_ARGUMENT",
+                error: "ILLEGAL_ARGUMENT",
+                status: 407,
+                code: "ILLEGAL_ARGUMENT",
                 message: error.message,
             };
         }
@@ -150,7 +262,7 @@ ctrlMaker.pre('description', async (e) => {
             }
             setTimeout(t, 10)
         }
-        t()
+        t();
     }))
 })
 ctrlMaker.post('description', async (e) => {

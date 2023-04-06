@@ -1,15 +1,11 @@
-import { parse, serialize } from "cookie";
 
-import jwt from "jsonwebtoken";
 import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { ContextSchema, authDataSchema } from "./Context";
 import { ModelControllers, ResponseSchema } from "./Initialize";
+import { SQuery } from "./SQuery";
 
-const secret = "a";
-const generateToken = (payload) => {
-  return jwt.sign(payload, secret, { expiresIn: "19h" });
-};
+
 
 export class AuthManager {
 
@@ -47,14 +43,28 @@ export class AuthManager {
       };
     }
 
-    const info = {
+    const token = {
       __key: loginModelInstance.__key,
       __permission: authData.__permission,
+      __loginId: loginModelInstance._id.toString(),
+      __loginModelPath: authData.login,
+      __email: loginModelInstance.email,
+      __signupModelPath: authData.signup,
+      __signupId: loginModelInstance.__signupId.toString(),
     };
 
-    await AuthManager.cookiesInSocket(info, socket);
+    await SQuery.cookies(socket, 'token', token);
     return {
-      response: { loginId: loginModelInstance.id, modelPath: authData.login },
+      response: {
+        login: {
+          modelPath: token.__loginModelPath,
+          id: token.__loginId,
+        },
+        signup: {
+          modelPath: token.__signupModelPath,
+          id: token.__signupId
+        }
+      },
       ...(await STATUS.OPERATION_SUCCESS(ctx, {
         target: authData.login.toLocaleUpperCase(),
       })),
@@ -84,44 +94,22 @@ export class AuthManager {
         })),
       };
     }
-    const result = await ModelControllers[authData.signup]()["create"](ctx);
-    Log("ici", result)
-    if (result.error) {
+    const more: any = {};
+    const res = await ModelControllers[authData.signup]()["create"](ctx, more);
+    Log("ici", res)
+    if (res.error) {
       return {
         error: "OPERATION_FAILED",
         ...(await STATUS.OPERATION_FAILED(ctx, {
           target: authData.signup.toLocaleUpperCase(),
-          message: result.error
+          message: res.error
         })),
       };
     }
-    const info = {
-      __key: ctx.__key,
-      __permission: authData.__permission, // any non logue, user logue , admin logue admin
-    };
-    AuthManager.cookiesInSocket(info, socket);
 
-    return result
+    //AuthManager.cookiesInSocket(info, socket);
+
+    return res
   };
 
-  static async cookiesInSocket(info: { __key: string, __permission: string }, socket) {
-    //let cookies = {};
-    let token = generateToken(info);
-
-    socket.request.headers["set-cookie"] = serialize("token", JSON.stringify(token), {
-      maxAge: Date.now() + 24 * 60 * 60 * 1000,
-    });
-
-    console.log(socket.request.headers.cookie);
-
-    await new Promise((rev, rej) => {
-      socket.emit("storeCookie", socket.request.headers.cookie, (cookie: string) => {
-        const token = JSON.parse(parse(cookie).token);
-        //let token = c?.token;
-        const decoded = jwt.verify(token, "a");
-        Log("storeCookie", { decoded })
-        rev(true);
-      });
-    })
-  }
 }

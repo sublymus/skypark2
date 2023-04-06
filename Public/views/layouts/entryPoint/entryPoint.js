@@ -47,7 +47,7 @@ export class EntryPoint extends BaseComponent {
                     alert(error);
                 });
 
-                this.descriptions = await SQuery.getDesriptions();
+                this.descriptions = await SQuery.Descriptions();
 
             }
         }

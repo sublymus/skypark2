@@ -25,7 +25,7 @@ TODO: community{
 }
 =======================================  access  ==================================================
 -access:property {ref:modelPath,access:private} il est mieux de definir en plus les property du ref comme etant private
-TODO: {login:account ,signup:user, extension:confirmIt,match:['p1','p2'], }
+-le header contient le { __key , __permission , signupId , signupModelPath , loginId , loginModelPath} 
 =======================================   populate  ==================================================
 =======================================   file  ==================================================
 *****delete 
@@ -34,10 +34,10 @@ TODO: {login:account ,signup:user, extension:confirmIt,match:['p1','p2'], }
 =======================================   SQuery.Auth  ==================================================
 - on ne peut pas creat un signupMode en avec le __key du ctx, tout creation d'un signupModel entre la creation d'un __key unique pour ce dernier;
 - on peut ajouter un cookis dans le socket partout dans le code
-AuthManager.cookiesInSocket({
-        __key: ctx.__key,
-        __permission: ctx.__permission,
-      }, ctx.socket); 
+SQuery.cookies(socket , 'property', value ); //DOMCookies
+SQuery.cookies(socket , 'property'); //value
+SQuery.cookies(socket  ); // { property:value , ...}
+
 =======================================   SQuery.View  ==================================================
 =======================================   SQuery.io  ==================================================
 =======================================   SQuery.Schema  ==================================================
@@ -56,10 +56,56 @@ AuthManager.cookiesInSocket({
 -file: on suprime tous les fichier dont on dispose de l'url
 =======================================   GlobalMiddleware ==================================================
 =======================================   ServerCtrl  ==================================================
+----- currentUser :  
+response: {
+                login: {
+                    modelPath: token.__loginModelPath,
+                    id: token.__loginId,
+                },
+                signup: {
+                    modelPath: token.__signupModelPath,
+                    id: token.__signupId
+                }
+            }
+
+----- description: 
+response:  DescriptionSchema,
+
+----- descriptions : 
+response: { modelPath : DescriptionSchema ,...}
+
+----- extractor : 
+ctx.data = {
+     modelPath, id,
+    extractorPath : 
+    './'
+    './ref/ref/ref'
+    '../../'
+    '../../ref/ref/ref'
+}
+response :{
+    modelPath: currentModelPath,
+    id: currentDoc._id.toString();
+};
 =======================================   AuthManager  ==================================================
-=======================================   invalidation ==================================================
+----- login :
+ ctx.data = {
+    match1 : "matchValue1"
+    match2 : "matchValue2"
+    ...
+}
+ response: {
+    login: {
+        modelPath: token.__loginModelPath,
+        id: token.__loginId,
+    },
+    signup: {
+        modelPath: token.__signupModelPath,
+        id: token.__signupId
+    }
+},
 =======================================   __key  ==================================================
-=======================================   permission ==================================================
+=======================================   __permission ==================================================
 =======================================  invalidation  ==================================================
 =======================================   Alien  -   StrictAlien ==================================================
 -on peut modifier l'id d'une property si ce dernier est alien ou strictAlien;
@@ -85,9 +131,9 @@ const lolInstance = await lolModel.instance({id: lolId });    renvoie une instan
 TODO: const lolInstance = await lolModel.update(aUpdateData); renvoie une instance si les information rentrer sont bonne, sinon renvoie null
 TODO: const isDeleted = lolModel.delete({id: lolId });
 
-TODO: const profile = await user['/account/profile']
-TODO: const building = await address['../../building']
-TODO: condt fileInstance = await profile['imgProfile];
+ const profile = await user['/account/profile']
+ const building = await address['../../building']
+ condt fileInstance = await profile['imgProfile];
 fileInstance.urls
 fileInstance.update({
     addFile:[{
