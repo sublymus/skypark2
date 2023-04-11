@@ -29,15 +29,22 @@ export class Deep extends BaseComponent {
             },
             ['.extarctorPath']: (input) => {
                 input.addEventListener('blur', async () => {
-                    const extracted = await this.instance.extractInstanceFrom(input.value);
+                    const extracted = await this.instance.extractor(input.value);
                     if (!extracted) alert('the following extraction path is not avalaible. path:' + input.value);
-                    this.emit('hide');
-                    this.container.append(_('Deep', {
-                        modelPath: extracted.$modelPath,
-                        id: extracted.$id,
-                        parentCpn: this,
-                        container: this.container,
-                    }));
+                    if (await SQuery.isInstance(extracted)) {
+                        this.emit('hide');
+                        this.container.append(_('Deep', {
+                            modelPath: extracted.$modelPath,
+                            id: extracted.$id,
+                            parentCpn: this,
+                            container: this.container,
+                        }));
+                    } else if (await SQuery.isArrayInstance(extracted)) {
+
+                    } else if (await SQuery.isFileInstance(extracted)) {
+
+                    }
+
                 })
             },
             ['@back:click']: async () => {
@@ -151,7 +158,7 @@ export class Deep extends BaseComponent {
                     );
                     this.instance.when('refresh:' + data.property, async () => {
                         //console.log('*******************************', this.instance, data.property, $(btn, 'input').value);
-                        this.wait($(btn, 'input'), 'value', (await this.instance[data.property]).$id)
+                        this.waitAnim($(btn, 'input'), 'value', (await this.instance[data.property]).$id)
                     })
                     $(btn, 'input').addEventListener('blur', async () => {
 
@@ -201,36 +208,43 @@ export class Deep extends BaseComponent {
                         let i = 0;
                         const v = await this.instance[data.property];
                         input.value = '';
-                        this.wait(input, 'value', v)
+                        this.waitAnim(input, 'value', v)
 
                     })
                     const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), input)
                     cb(inputCtn);
                 });
                 this.when('createFile', async ({ data, cb }) => {
+                    let list_a = [];
                     const fileElm = _('input', ['multiple', 'type:file', 'class:file']);
                     fileElm.addEventListener("change", async () => {
+                        let d = fileElm.files
+                        console.log(await d[0].arrayBuffer());
                         this.instance[data.property] = fileElm.files;
                     });
                     const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), fileElm, _('br'));
-                    const list_a = [];
-                    const make = async () => {
+
+                    const make = async (property) => {
                         list_a.forEach(e => {
+                            console.log(e);
+                            inputCtn.removeChild(e)
                             e.remove();
                         });
-                        (await this.instance[data.property]).forEach(filePath => {
-                            list_a.push(_('a', ['target:_blank', 'href:' + filePath], filePath.substring(filePath.lastIndexOf('/'))), _('br'));
+                        property.forEach(filePath => {
+                            list_a = [];
+                            list_a.push(_('a', ['target:_blank', 'href:' + filePath], filePath.substring(filePath.lastIndexOf('/'))));
+                            list_a.push(_('br'))
                         });
-                        inputCtn.append(...list_a)
+                        inputCtn.append(...list_a);
                     }
                     this.instance.when('refresh:' + data.property, make)
-                    make();
+                    make(await this.instance[data.property]);
                     cb(inputCtn)
                 })
             }
         }
     }
-    wait(input, property, value, time) {
+    waitAnim(input, property, value, time) {
         const d = Date.now();
         input[property] = "";
         const id = setInterval(() => {

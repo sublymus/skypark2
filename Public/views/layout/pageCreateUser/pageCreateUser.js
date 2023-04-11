@@ -167,11 +167,6 @@ export default class PageCreateUser extends BaseComponent {
           function validatePhone() {
             return userPhone !== "";
           }
-          //console.log(
-          validateEmail(),
-            validateName(),
-            validatePhone(),
-          );
           return (
             validateEmail() &&
             validateName() &&

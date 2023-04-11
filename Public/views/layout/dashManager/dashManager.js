@@ -1,23 +1,5 @@
 import BaseComponent, { Components } from "../../ts_lib/baseComponent/baseComponent.js";
 
-import '../pageInfoCode/pageInfoCode.js';
-import '../pageInfoPerso/pageInfoPerso.js';
-import '../pageInfoProfile/pageInfoProfile.js';
-import '../pageInfoSuccess/pageInfoSuccess.js';
-import '../pageLogin/pageLogin.js';
-import '../pageSignup/pageSignup.js';
-import '../pageSwitchLogin/pageSwitchLogin.js';
-
-import '../../component/infoBull/infoBull.js';
-import '../../component/inputUi/inputUi.js';
-import '../../component/item/item.js';
-import '../../component/itemList/itemList.js';
-
-import '../page404/page404.js';
-import '../pageProfile/pageProfile.js';
-import '../pageStatistic/pageStatistic.js';
-import '../pageSwitchLogin/pageSwitchLogin.js';
-import '../pageTrafic/pageTrafic.js';
 
 export default class DashManager extends BaseComponent {
 
@@ -48,7 +30,7 @@ export default class DashManager extends BaseComponent {
                     ),
                 ),
                 _('div@profile=profile', 'home-profile',
-                    _('div', 'icon'),
+                    
                 ),
             ),
             _('div', 'page-container',
@@ -60,7 +42,6 @@ export default class DashManager extends BaseComponent {
             )
         );
         this.controller = {
-
             ['@ert:click']: (label) => {
                 label.style.background = '#345'
             },
@@ -85,7 +66,7 @@ export default class DashManager extends BaseComponent {
             },
             [viewName]: (page, all) => {
                 //console.log($('.agenda'));
-                this.emit('@page:changeBye', $('.page-trafic'))
+                this.emit('@page:changeBye', $('.page-trafic'));
             },
         }
     }

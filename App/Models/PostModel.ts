@@ -14,16 +14,13 @@ let PostSchema = SQuery.Schema({
         type: Number,
         default: 0,
     },
+    comments: [{
+        type: Schema.Types.ObjectId,
+        ref: 'post',
+    }]
 });
 
 const PostModel = mongoose.model("post", PostSchema);
-
-PostSchema.add(new Schema({
-    comments: [{
-        type: Schema.Types.ObjectId,
-        ref: PostModel.modelName,
-    }]
-}))
 
 const maker = MakeModelCtlForm({
     schema: PostSchema,

@@ -1,10 +1,16 @@
 import mongoose from "mongoose";
-let uri = "mongodb://localhost:27017/skypark";
+let uri = "mongodb://127.0.0.1:27017/skypark";
 
 mongoose.set("strictQuery", false);
 (async () => {
-  const db = await mongoose.connect(uri);
-  //initialData(db);
+  try {
+    const db = await mongoose.connect('mongodb://127.0.0.1:27017/skypark');
+    console.log('mongoose connect Models Count = '+db.modelNames.length);
+    
+    //initialData(db);
+  } catch (error) {
+    console.log(error);
+  }
 })()
 
 function initialData(db: any) {

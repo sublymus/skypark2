@@ -1,10 +1,10 @@
 import EventEmiter from './event/eventEmiter.js';
-import SQuery from './SQueryClient.js';
+import SQuery, { Validator } from './SQueryClient.js';
 
 export const Descriptions = {}
 
-export async function getDesription(modelPath) {
-    if (typeof modelPath != 'string') throw new Error('getDesription(' + modelPath + ') is not permit, parameter must be string');
+export async function getDescription(modelPath) {
+    if (typeof modelPath != 'string') throw new Error('getDescription(' + modelPath + ') is not permit, parameter must be string');
     if (Descriptions[modelPath]) {
         return Descriptions[modelPath]
     }
@@ -21,7 +21,7 @@ export async function getDesription(modelPath) {
         })
     })
 }
-export async function getDesriptions() {
+export async function getDescriptions() {
 
     const descriptions = await new Promise((rev) => {
         SQuery.socket.emit('server:descriptions', {}, (res) => {
@@ -40,12 +40,13 @@ export async function getDesriptions() {
 }
 export async function createModelFrom(modelPath) {
     const Model = {}
-    const description = await getDesription(modelPath);
+    const description = await getDescription(modelPath);
     Model.description = description;
     Model.create = async (data, errorCb) => {    ///// verifier si chaque donner est bien rentrer
 
         if (!errorCb) errorCb = (e) => console.error(e);
-        const validation = await SQuery.Validatior(description, data);
+        //NEW_ADD
+        const validation = await Validator(description, data);
         if (validation.message) {
             // console.error(validation);
             errorCb({
@@ -158,7 +159,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
         console.error('id = ' + id, 'modelPath = ' + modelPath);
         return null
     }
-    const description = await getDesription(modelPath);
+    const description = await getDescription(modelPath);
     description._id = {
         type: 'String'
     };
@@ -282,7 +283,8 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                             console.log(files);
                             value = files;
                         }
-                        const result = await SQuery.Validatior(description[property], value);
+                        //NEW_ADD
+                        const result = await Validator(description[property], value);
                         if (result.value == undefined) {
                             await emitRefresh([property])
                             throw new Error('Invalide Value :' + value + ' \n because : ' + result.message);
@@ -318,8 +320,8 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
         emiter.when(...arg);
     };
     //NEW_ADD
-    instance.extractInstanceFrom = async (extractorPath) => {
-        if (extractorPath == './') return this;
+    instance.extractor = async (extractorPath) => {
+        if (extractorPath == './') return instance;
         if (extractorPath == '../') return await instance.newParentInstance()
         return await new Promise((rev) => {
             SQuery.emit('server:extractor', {
@@ -332,6 +334,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                 const extractedModel = await SQuery.Model(res.response.modelPath);
                 if (!extractedModel) throw new Error("extractedModel is null for modelPath : " + res.response.modelPath);
                 const extractedInstance = await extractedModel.newInstance({ id: res.response.id });
+                if (res.response.property) return rev(await extractedInstance[res.response.property]);
                 rev(extractedInstance);
             });
         })
@@ -477,7 +480,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
             throw new Error("page(" + page + ") == null; page interval = [ 1 ; " + currentData.totalPages + " ]");
         }
     }
-    arrayInstance.__itemModelPath = Promise.resolve(itemModelPath);
+    arrayInstance.$itemModelPath = itemModelPath;
     arrayInstance.last = async () => {
         if (paging.page == currentData.totalPages) {
             emiter.emit('dataAvalaible', currentData);

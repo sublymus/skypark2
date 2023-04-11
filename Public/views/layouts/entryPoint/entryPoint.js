@@ -46,7 +46,6 @@ export class EntryPoint extends BaseComponent {
                 this.when('error', (error) => {
                     alert(error);
                 });
-
                 this.descriptions = await SQuery.Descriptions();
 
             }

@@ -15,6 +15,7 @@ export class CreationPage extends BaseComponent {
             _('div', 'input-ctn',
                 _("textarea", ["rows:100", "cols:450"])
             ),
+            _('input', ['multiple', 'type:file', 'class:file']),
             _('div@create', 'create', 'Create'),
         );
         this.controller = {
@@ -44,7 +45,63 @@ export class CreationPage extends BaseComponent {
                 try {
                     if (!(this.modelPath && this.action)) return this.emit('error', 'input is empty');
                     const Model = await SQuery.Model(this.modelPath);
-                    const instance = await Model.create(JSON.parse($('textarea').value));
+                    const files = []; 
+                    for (const i in $('.file').files) {
+                        if (Object.hasOwnProperty.call($('.file').files, i)) {
+                            const file = $('.file').files[i];
+                            files.push({
+                                fileName: file.name || file.fileName,
+                                size: file.size,
+                                type: file.type || file.mime,
+                                buffer: await file.arrayBuffer(),
+                            });
+                        }
+                    }
+                    
+                    const instance = await Model.create({
+                        account: {
+                            name: 'baron',
+                            email: $("textarea").value,
+                            password: "azert",
+                            telephone: "12345678",
+                            status: 'property',
+                            address: {
+                                location: "l:567455;h45678654",
+                                room: 45,
+                                door: 296,
+                                etage: 4,
+                                description: "je suis ici",
+                            },
+                            favorites: {
+                                folders: [
+                                    {
+                                        folderName: "wena0",
+                                    },
+                                    {
+                                        folderName: "wena1",
+                                    },
+                                    {
+                                        folderName: "wena2",
+                                    },
+                                    {
+                                        folderName: "wena3",
+                                    },
+                                    {
+                                        folderName: "wena4",
+                                    },
+                                    {
+                                        folderName: "wena5",
+                                    },
+                                ],
+                            },
+                            profile: {
+                                imgProfile: files,
+                                banner: files,
+                                message: "*** BEST ****",
+                            },
+                            //createdDate: Date.now() - 1_000_000_000 + parseInt(Math.random() * 1_000_000_000),
+                        }
+                    });
                     //console.log({ instance });
                     this.emit('next', {
                         modelPath: this.modelPath,//this.type,
@@ -56,7 +113,8 @@ export class CreationPage extends BaseComponent {
             },
             [viewName]: () => {
                 $('.model-input').value = this.modelPath + '.' + this.action;
-                this.emit('@modelInput:change', $('.model-input'))
+                $("textarea").value = 's@gmail.com'
+                //  this.emit('@modelInput:change', $('.model-input'))
                 this.when('error', (error) => {
                     alert(error);
                 });

@@ -93,10 +93,10 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 action,
             });
 
-
+            Log('ctx', ctx.data?.account?.profile);
             const accu = {};
             let modelInstance: ModelInstanceSchema;
-          
+
             if (!ctx.__key) return callPost({
                 ctx,
                 more,
@@ -115,7 +115,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     if (!Array.isArray(rule) && rule.ref) {
                         const isStr = typeof ctx.data[property] == 'string';
                         const isAlien = !!(rule.alien || rule.strictAlien);
-                        Log('alien', 'strictAlien: ', !!rule.strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule.strictAlien) && !isStr)
+                        // Log('alien', 'strictAlien: ', !!rule.strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule.strictAlien) && !isStr)
                         if (!isAlien && isStr) {
                             return await callPost({
                                 ctx,
@@ -169,9 +169,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         const res = await (ctrl.create || ctrl.store)(
                             {
                                 ...ctx,
-                                data: {
-                                    ...ctx.data[property],
-                                },
+                                data: ctx.data[property],
                             },
                             {
                                 ...more,
@@ -216,7 +214,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             // Log('info', 'alien = ', rule[0].alien, ' if ', (rule[0].alien && typeof ctx.data[property][i] == 'string'))
                             const isStr = typeof ctx.data[property][i] == 'string';
                             const isAlien = !!(rule[0].alien || rule[0].strictAlien);
-                            Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
+                            //Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
                             if (!isAlien && isStr) {
                                 return await callPost({
                                     ctx,
@@ -268,9 +266,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             const res = await (ctrl.create || ctrl.store)(
                                 {
                                     ...ctx,
-                                    data: {
-                                        ...ctx.data[property][i],
-                                    },
+                                    data: ctx.data[property][i],
                                 },
                                 {
                                     ...more,
@@ -299,7 +295,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             }
                             accu[property][i] = res.response;
                         }
-                    } else if (Array.isArray(rule) && rule[0].file && ctx.data[property]) {
+                    } else if (Array.isArray(rule) && rule[0].file) {
                         // accu[property] = await FileValidator(ctx, action, rule[0], ctx.data[property])
                         Log('File', ctx.data[property])
                         try {
@@ -308,6 +304,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                 action,
                                 rule[0],
                                 ctx.data[property],
+                                [],
                             );
                         } catch (error) {
                             await backDestroy(ctx, more);
@@ -331,7 +328,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             }
             accu["__key"] = ctx.__key;
             accu["__parentModel"] = more.__parentModel;
-            // Log('logAccu', { accu });
+            Log('logAccu', { accu });
             try {
                 modelInstance = new option.model({
                     ...accu,
@@ -537,10 +534,11 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             });
             parentPropertyRule = parentPropertyRule[0];
 
-            const isParentUser = parentModelInstance.__key._id.toString() == ctx.__key
+            const isParentUser = parentModelInstance.__key._id.toString() == ctx.__key;
+            let validAddId = []
+            let validAddNew = []
             if (accessValidator(ctx, 'update', parentPropertyRule.access, "property", isParentUser)) {
-                let validAddId = []
-                let validAddNew = []
+
                 /***********************  AddId  ****************** */
                 const isAlien = !!(parentPropertyRule.alien || parentPropertyRule.strictAlien);
                 Log("isAlien", isAlien)
@@ -634,9 +632,9 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         },
                     });
                 }
-                if (validAddNew.length > 0 || (Array.isArray(remove) && remove.length > 0)) {
+                if (validAddNew.length > 0 || validAddId.length > 0 || (Array.isArray(remove) && remove.length > 0)) {
                     try {
-                        parentModelInstance[property].push(...validAddNew);
+                        parentModelInstance[property].push(...validAddNew, ...validAddId);
                         await parentModelInstance.save();
                     } catch (error) {
                         await backDestroy(ctx, more);
@@ -692,17 +690,18 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 customLabels: myCustomLabels,
             };
 
-            let result = null;
+            let pagingData = null;
             try {
-                result = await ModelControllers[option.modelPath].option.model.paginate({
+                pagingData = await ModelControllers[option.modelPath].option.model.paginate({
                     '_id': {
                         '$in': parentModelInstance[parentProperty],
                     }
                 }, options);
-                if (!result) {
+                pagingData.added = [...validAddNew, ...validAddId]
+                if (!pagingData) {
 
                 }
-                const promise = result.items.map((item) => {
+                const promise = pagingData.items.map((item) => {
                     return formatModelInstance(ctx, action, option, item);
                 });
                 await Promise.allSettled(promise)
@@ -724,7 +723,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 more: { ...more, },
                 action,
                 res: {
-                    response: result,
+                    response: pagingData,
                     ...(await STATUS.OPERATION_SUCCESS(ctx, {
                         target: option.modelPath.toLocaleUpperCase(),
                     })),
@@ -992,7 +991,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                     "remove": modelInstance[p] || []
                                 }
                             })
-                            Log('DELET_REF[]_LIST_RES', res);
+                            Log('DELETE_REF[]_LIST_RES', res);
                         } else if (Array.isArray(rule) && rule[0].file) {
                             //await FileValidator(ctx, action, rule[0], ctx.data[p], modelInstance[p])
                             try {
@@ -1152,7 +1151,7 @@ function deepPopulate(
 }
 
 function isValideType(ruleTypes: string[], type: string): boolean {
-    const typeSide = type.split("/");
+    const typeSide = (type || '').split("/");
 
     let valide = false;
     Log("type!!", { ruleTypes }, { typeSide });
@@ -1182,6 +1181,8 @@ async function FileValidator(
     actualPaths?: string[]
 ): Promise<string[]> {
     if (["create", "store", "update"].includes(action)) {
+        console.log(files);
+
         if (!files) return;
         rule.file.type = rule.file.type || ["*/*"];
         rule.file.type = rule.file.type.length == 0 ? ["*/*"] : rule.file.type;
@@ -1221,26 +1222,31 @@ async function FileValidator(
                 "]"
             );
 
-        files.forEach((file) => {
-            if (file.size < sizeMin || file.size > sizeMax)
-                throw new Error(
-                    "file.size = " +
-                    file.size +
-                    "; but must be beetwen [" +
-                    sizeMin +
-                    "," +
-                    sizeMax +
-                    "]"
-                );
-            if (!isValideType(rule.file.type, file.type))
-                throw new Error(
-                    "file.type = " +
-                    file.type +
-                    "; but is not valide: [" +
-                    rule.file.type.toString() +
-                    "]"
-                );
-        });
+        for (const i in files) {
+            if (Object.prototype.hasOwnProperty.call(files, i)) {
+                const file = files[i];
+                if (file.size < sizeMin || file.size > sizeMax)
+                    throw new Error(
+                        "file.size = " +
+                        file.size +
+                        "; but must be beetwen [" +
+                        sizeMin +
+                        "," +
+                        sizeMax +
+                        "]"
+                    );
+                if (!isValideType(rule.file.type, file.type))
+                    throw new Error(
+                        "file.type = " +
+                        file.type +
+                        "; but is not valide: [" +
+                        rule.file.type.toString() +
+                        "]"
+                    );
+
+            }
+        }
+
     }
 
     await new Promise((res, rej) => {
@@ -1267,20 +1273,18 @@ async function FileValidator(
     const Map = {
         create: async () => {
             const paths: string[] = [];
-            files.forEach((file) => {
-                const extension = file.type.substring(file.type.indexOf("/") + 1);
-                const path =
-                    rule.file.dir +
-                    "/" +
-                    Date.now() +
-                    "_" +
-                    new mongoose.Types.ObjectId()._id.toString() +
-                    "." +
-                    extension;
-                fs.writeFileSync(path, file.buffer, "binary");
-
-                paths.push(path.replace(Config.rootDir, ''));
-            });
+            for (const i in files) {
+                if (Object.prototype.hasOwnProperty.call(files, i)) {
+                    const file = files[i];
+                    const extension = file.type.substring(file.type.indexOf("/") + 1);
+                    const path =
+                        rule.file.dir + "/" + Date.now() + "_" +
+                        new mongoose.Types.ObjectId()._id.toString() +
+                        "." + extension;
+                    fs.writeFileSync(path, file.buffer, file.encoding || 'binary');
+                    paths.push(path.replace(Config.rootDir, ''));
+                }
+            }
             Log("paths", "created", paths);
             return paths;
         },
@@ -1289,19 +1293,23 @@ async function FileValidator(
         },
         update: async () => {
             const paths: string[] = [];
-            files.forEach((file) => {
-                const extension = file.type.substring(file.type.indexOf("/") + 1);
-                const path =
-                    rule.file.dir +
-                    "/" +
-                    Date.now() +
-                    "_" +
-                    new mongoose.Types.ObjectId()._id.toString() +
-                    "." +
-                    extension;
-                fs.writeFileSync(path, file.buffer, "binary");
-                paths.push(path.replace(Config.rootDir, ''));
-            });
+            for (const i in files) {
+                if (Object.prototype.hasOwnProperty.call(files, i)) {
+                    const file = files[i];
+                    const extension = file.type.substring(file.type.indexOf("/") + 1);
+                    const path =
+                        rule.file.dir +
+                        "/" +
+                        Date.now() +
+                        "_" +
+                        new mongoose.Types.ObjectId()._id.toString() +
+                        "." +
+                        extension;
+                    fs.writeFileSync(path, file.buffer, file.encoding || 'binary');
+                    paths.push(path.replace(Config.rootDir, ''));
+
+                }
+            }
             Log("paths", "created", paths);
             actualPaths.forEach((actualPath) => {
                 if (fs.existsSync(Config.rootDir + actualPath)) {

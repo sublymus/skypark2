@@ -69,7 +69,13 @@ const SQuery: SQuerySchema = function (
           res = await Controllers[ctrlName]?.()[action]?.(ctx);
         }
       } catch (error) {
-        Log('ERROR_Controller', error.message)
+        Log('ERROR_Controller', error.message);
+        return cb?.({
+          error: "CURRENT_USER_UNDEFINED",
+          status: 404,
+          code: "CURRENT_USER_UNDEFINED",
+          message: "CURRENT_USER_UNDEFINED",
+        });
       }
 
       if (res === undefined) {
@@ -99,15 +105,15 @@ SQuery.cookies = async (socket, key: string, value?: any) => {
   let decoded: any = {};
   try {
     let cookie = socket.request.headers.cookie;
-    Log('SQuery.cookies_parse', JSON.parse(parse(cookie).squery_session));
-    Log('SQuery.cookies_parse', parse(cookie));
-    Log('SQuery.cookies_parse', cookie);
+    //Log('SQuery.cookies_parse', JSON.parse(parse(cookie).squery_session));
+    // Log('SQuery.cookies_parse', parse(cookie));
+    // Log('SQuery.cookies_parse', cookie);
     const squery_session = JSON.parse(parse(cookie).squery_session);
     decoded = jwt.verify(squery_session, Config.KEY) || {};
   } catch (error) {
     Log("jwtError", error.message);
   }
-  Log('decoded', { decoded });
+  // /Log('decoded', { decoded });
   if (key && value) decoded[key] = value;
   if (!value) return decoded[key];
   if (!key && !value) return decoded;
@@ -127,15 +133,12 @@ SQuery.cookies = async (socket, key: string, value?: any) => {
   });
 
   return await new Promise((rev) => {
-    socket.emit("storeCookie", cookieToken, (DOMCookie: string) => {
-      const domCookie = parse(DOMCookie);
-
-      Log('DOMCookie', domCookie);
-      socket.request.headers.cookie = (socket.request.headers.cookie as string).split(';').filter((part: string) => {
+    socket.emit("storeCookie", cookieToken, (clientCookie: string) => {
+      socket.request.headers.cookie = ((socket.request.headers.cookie as string) || '').split(';').filter((part: string) => {
         part = part.trim();
         return !part.startsWith('squery_session');
       }).join('; ') + "; " + cookieToken;
-      rev(domCookie);
+      rev(clientCookie);
     });
   })
 }
@@ -153,11 +156,8 @@ SQuery.io = (server: any) => {
   });
   Global.io = io;
   const setPermission: ListenerPreSchema = async ({ ctx, more }) => {
-    ctx.data = {
-      ...ctx.data,
-      __permission: ctx.__permission,
-      __signupId: more.__signupId
-    }
+    ctx.data.__permission = ctx.__permission;
+    ctx.data.__signupId = more.__signupId;
     Log('setPermission', { data: ctx.data });
   }
   const setAuthValues = (authData: authDataSchema) => {

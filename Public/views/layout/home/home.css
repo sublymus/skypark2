@@ -63,6 +63,31 @@ body {
   gap: 4px;
 }
 
+.main .home-profile {
+
+  display: flex;
+  align-items: center;
+}
+
+.main .home-profile .icon {
+  width: 40px;
+  height: 40px;
+  /* background: no-repeat center/contain url(/img/user.png); */
+}
+
+.main .home-profile .dash {
+  background: #acd5f3;
+  box-shadow: 0px 10px 15px -3px rgb(0 0 0 / 10%);
+  padding: 10px 30px;
+  border-radius: 10px;
+  transition: 100ms;
+}
+
+.main .home-profile .dash:hover {
+  background: #54aeee;
+  transition: 100ms;
+}
+
 
 .main .home-logo {
   display: flex;

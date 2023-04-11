@@ -20,6 +20,7 @@ import '../../component/inputUi/inputUi.js';
 import '../../component/item/item.js';
 import '../../component/itemList/itemList.js';
 
+import SQuery from "../../ts_lib/SQueryClient.js";
 import '../dashManager/dashManager.js';
 import '../pageAgenda/pageAgenda.js';
 import '../pageCreateUser/pageCreateUser.js';
@@ -39,8 +40,7 @@ export default class Home extends BaseComponent {
       "div", viewName,
       _('div@mainpage', 'main',
 
-        _(
-          "div", "top-bar",
+        _("div", "top-bar",
           _(
             "div", "home-logo",
             _("div", "icon"),
@@ -70,10 +70,7 @@ export default class Home extends BaseComponent {
             )
           ),
           _(
-            "div", "home-profile",
-            _("div@Login", "connexion", "Login ", _("div", "icon")),
-            _("div@Signup", "inscription", "Signup", _("div", "icon"))
-          )
+            "div", "home-profile")
         ),
         _(
           "div", "page-container",
@@ -87,6 +84,18 @@ export default class Home extends BaseComponent {
       _('PageSwitchLogin', {}),
     );
     this.controller = {
+      [".home-profile"]: async (div) => {
+        const currentUser = await SQuery.CurrentUserInstance();
+        if (!currentUser) {
+          div.append(
+            _("div@Login", "connexion", "Login ", _("div", "icon")),
+            _("div@Signup", "inscription", "Signup", _("div", "icon"))
+          )
+        } else {
+          this.emit("user-connected", "");
+        }
+
+      },
       ["@ert:click"]: (label) => {
         label.style.background = "#fff111";
       },
@@ -119,11 +128,35 @@ export default class Home extends BaseComponent {
         }
       },
       [viewName]: (page, all) => {
+        this.when('user-connected', async () => {
+          $(".home-profile .connexion")?.remove();
+          $(".home-profile .inscription")?.remove();
+          const currentUser = await SQuery.CurrentUserInstance();
+          const account = await currentUser['account'];
+          const profile = await account['profile'];
+          const imgProfile = await profile['imgProfile'];
+          const name = await account['name'];
+          $('.home-profile').append(
+            _('div', 'name', name),
+            _('div', 'icon'),
+            _('div', 'dash', 'Dashboard')
+          )
+          const icon = $($('.home-profile'), '.icon');
+          const dash = $($('.home-profile'), '.dash');
+          dash.addEventListener('click', () => {
+            const dash = _('DashManager@mainpage', {
+              modelPath: currentUser.$modelPath,
+              id: currentUser.$id,
+            });
+            this.view.append(dash);
+            this.emit('@mainpage:change', dash);
+          })
+          icon.style.background = "no-repeat center/contain url('" + (imgProfile[0] || '/img/user.png') + "')";
+          console.log(icon, imgProfile[0]);
+        })
         this.emit("@menu:click", $(".label.welcome"));
-        $('.page-switch-login').component.when('success', (data) => {
-          const dash = _('DashManager@mainpage', data);
-          this.view.append(dash);
-          this.emit('@mainpage:change', dash);
+        $('.page-switch-login').component.when('success', () => {
+          this.emit("user-connected", "");
         })
         this.emit('@mainpage:change', $('.main'));
         // //console.log(document.cookie);

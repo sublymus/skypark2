@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import ActivityModel from "./ActivityModel";
-let ComunytySchema = SQuery.Schema({
+let CommunitySchema = SQuery.Schema({
     name: {
         type: String,
     },
@@ -17,10 +17,10 @@ let ComunytySchema = SQuery.Schema({
     }]
 });
 
-const ComunytyModel = mongoose.model('community', ComunytySchema)
+const ComunytyModel = mongoose.model('community', CommunitySchema)
 
 MakeModelCtlForm({
-    schema: ComunytySchema,
+    schema: CommunitySchema,
     model: ComunytyModel,
     volatile: true
 })

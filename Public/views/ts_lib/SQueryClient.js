@@ -1,4 +1,4 @@
-import { createModelFrom, getDesription, getDesriptions } from './SQueryUtils.js';
+import { createModelFrom, getDescription, getDescriptions } from './SQueryUtils.js';
 const SQuery = {};
 
 
@@ -19,17 +19,44 @@ SQuery.socket = socket;
 SQuery.Model = async (modelPath) => {
     return await createModelFrom(modelPath)
 }
+//NEW_ADD
 SQuery.Authentification = async (modelPath) => {
     return await createModelFrom(modelPath)
 }
 //NEW_ADD
+SQuery.isInstance = async (instance) => {
+    return instance.$modelPath &&
+        instance.$id &&
+        instance.newParentInstance &&
+        instance.update &&
+        instance.when
+
+}
+//NEW_ADD
+SQuery.isArrayInstance = async (arrayInstance) => {
+    return arrayInstance.back &&
+        arrayInstance.next &&
+        arrayInstance.page &&
+        arrayInstance.$itemModelPath &&
+        arrayInstance.last &&
+        arrayInstance.update &&
+        arrayInstance.when
+}
+//NEW_ADD
+SQuery.isFileInstance = async (fileInstance) => {
+    return false;
+}
+//NEW_ADD
+export const Global = {}
 SQuery.CurrentUserInstance = async () => {
+    if (Global.userInstance) return Global.userInstance;
     return await new Promise((rev) => {
         SQuery.emit('server:currentUser', {}, async (res) => {
-            if (res.error) throw new Error(JSON.stringify(res));
+            if (res.error) rev(null)//throw new Error(JSON.stringify(res));
             const userModel = await SQuery.Model(res.response.signup.modelPath);
-            if (!userModel) throw new Error("Model is null for modelPath : " + res.modelPath);
+            if (!userModel) rev(null)//throw new Error("Model is null for modelPath : " + res.modelPath);
             const userInstance = await userModel.newInstance({ id: res.response.signup.id });
+            Global.userInstance = userInstance;
             rev(userInstance);
         });
     })
@@ -51,8 +78,8 @@ SQuery.on = (event, ...arg) => {
     if (typeof event != 'string') throw new Error('cannot emit with following event : ' + event + '; event value must be string');
     socket.on(event, ...arg);
 }
-SQuery.Desription = getDesription;
-SQuery.Desriptions = getDesriptions;
+SQuery.Description = getDescription;
+SQuery.Descriptions = getDescriptions;
 
 // const ActionsMap = {
 //     String: {
@@ -253,8 +280,8 @@ const validations = {
         }
     }
 }
-
-SQuery.Validatior = async (rule, value) => {
+// NEW_ADD
+export const Validator = async (rule, value) => {
     let res = await validations.type(value, rule.type);
     //console.log('rule : ', rule, 'value : ', value, 'res: ', res);
     if (!res.isValide) return {

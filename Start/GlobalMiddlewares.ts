@@ -7,7 +7,7 @@ GlobalMiddlewares.push(async (ctx: ContextSchema) => {
 
   try {
     const token = await SQuery.cookies(ctx.socket, 'token');
-    Log('GlobalMiddlewares', { token })
+    //Log('GlobalMiddlewares', { token })
     ctx.__key = token.__key;
     ctx.__permission = token.__permission || 'any';
   } catch (error) {

@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import ComunytyModel from "./ComunytyModel";
+import ComunytyModel from "./CommunityModel";
 
 let QuarterSchema = SQuery.Schema({
 
@@ -26,6 +26,6 @@ const QuarterModel = mongoose.model("quarter", QuarterSchema);
 MakeModelCtlForm({
     schema: QuarterSchema,
     model: QuarterModel,
-    volatile: false,
+    volatile: true,
 });
 export default QuarterModel;

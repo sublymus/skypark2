@@ -1,5 +1,5 @@
 /*
-
+TODO: treminal=> npm squery create:controller
 TODO: folder:{
     parentAccess:true,
     access:private,
@@ -34,7 +34,7 @@ TODO: community{
 =======================================   SQuery.Auth  ==================================================
 - on ne peut pas creat un signupMode en avec le __key du ctx, tout creation d'un signupModel entre la creation d'un __key unique pour ce dernier;
 - on peut ajouter un cookis dans le socket partout dans le code
-SQuery.cookies(socket , 'property', value ); //DOMCookies
+SQuery.cookies(socket , 'property', value ); //clientCookies
 SQuery.cookies(socket , 'property'); //value
 SQuery.cookies(socket  ); // { property:value , ...}
 
@@ -47,7 +47,9 @@ SQuery.cookies(socket  ); // { property:value , ...}
 *****create - store
 
 *****read -show
-*****list
+*****list : 
+arrayData.added
+
 *****update
 *****delete - destroy
 -ref: s'il ya impact on peut tenter de suprimer.

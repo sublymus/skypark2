@@ -8,7 +8,8 @@ export type FileSchema = {
   type: string;
   size: number;
   fileName: string;
-  buffer: NodeJS.ArrayBufferView;
+  buffer: any;
+  encoding: 'binary' | 'base64' | 'ascii' | 'hex'|'base64url'|'latin1'|'ucs-2'|'ucs2'|'utf-8'|'utf16le'|'utf8'
 };
 export type ErrorCaseSchema = {
   response?: any;
@@ -163,7 +164,11 @@ export type SQueryMongooseSchema = Schema & { description: DescriptionSchema, mo
 export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId;
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
 export type TypeRuleSchema = {
-  //TODO: valuePath // ./_id  ; ../../fileType;
+  //TODO: bind bindbidirectional // ./_id  ; ../../fileType;
+  //
+  // TODO: {
+  // get:(v)=> value
+  //}
   //TODO: checkout?:true,
   type: TypeSchema//TypeSchema;
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 

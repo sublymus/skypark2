@@ -128,7 +128,7 @@ export class Deep extends BaseComponent {
                     input.addEventListener('blur', () => {
                         //if (!verif) return verif = true;
                         if (input.value == this.cache[data.property]) return;
-                        const result = SQuery.Validatior(this.description[data.property], input.value);
+                        const result = SQuery.Validator(this.description[data.property], input.value);
                         if (result.value == undefined) {
                             verif = false;
                             return alert('Invalide Value :' + input.value + ' \n because : ' + result.message);
@@ -162,7 +162,7 @@ export class Deep extends BaseComponent {
                                 files.push(fileData);
                             }
                         }
-                        const result = SQuery.Validatior(this.description[data.property], files);
+                        const result = SQuery.Validator(this.description[data.property], files);
                         if (result.value == undefined) {
                             return alert('Invalide Value :' + input.value + ' \n because : ' + result.message);
                         }
