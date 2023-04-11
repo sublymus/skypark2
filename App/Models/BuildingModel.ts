@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import ComunytyModel from "./CommunityModel";
+import CommunityModel from "./CommunityModel";
 
 let buildingSchema = SQuery.Schema({
 
@@ -15,7 +15,7 @@ let buildingSchema = SQuery.Schema({
     },
     community: {
         type: Schema.Types.ObjectId,
-        ref: ComunytyModel.modelName,
+        ref: CommunityModel.modelName,
     },
 
 });

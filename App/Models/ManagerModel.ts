@@ -11,7 +11,6 @@ const managerSchema = SQuery.Schema({
     ref: 'entrepise',
   }
 });
-//Log('managerSchema',managerSchema.description);
 export const ManagerModel = mongoose.model("manager", managerSchema);
 
 const maker = MakeModelCtlForm({

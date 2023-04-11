@@ -4,8 +4,8 @@ import path from "path";
 import { SQuery } from "./lib/squery/SQuery";
 
 const app = express();
-const server = app.listen(3500, () => {
-  console.log('Server running at http://localhost:3500/');
+const server = app.listen(3501, () => {
+  console.log('Server running at http://localhost:3501/');
 });
 
 app.get("/", (req, res) => {

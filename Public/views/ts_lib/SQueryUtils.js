@@ -414,7 +414,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                     if (canRefresh) emiter.emit('refresh', currentData);
 
                     Object.defineProperties(currentData, {
-                        ['itemsitemsInstance']: {
+                        ['itemsInstance']: {
                             get: async () => {
                                 if (currentData['#itemsInstance']) {
                                     return currentData['#itemsInstance'];

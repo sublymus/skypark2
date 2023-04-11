@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import ActivityModel from "./ActivityModel";
+import ChannelModel from "./ChannelModel";
 let CommunitySchema = SQuery.Schema({
     name: {
         type: String,
@@ -11,18 +12,22 @@ let CommunitySchema = SQuery.Schema({
       ref: 'user',
       strictAlien: true,
     }],
+    Thread: {
+        type: Schema.Types.ObjectId,
+        ref: ChannelModel.modelName,
+      },
     activities: [{
         type: Schema.Types.ObjectId,
         ref: ActivityModel.modelName,
     }]
 });
 
-const ComunytyModel = mongoose.model('community', CommunitySchema)
+const CommunityModel = mongoose.model('community', CommunitySchema)
 
 MakeModelCtlForm({
     schema: CommunitySchema,
-    model: ComunytyModel,
-    volatile: true
+    model: CommunityModel,
+    volatile: false
 })
 
-export default ComunytyModel
+export default CommunityModel

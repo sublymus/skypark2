@@ -21,6 +21,11 @@ let accountSchema = SQuery.Schema({
     unique: true,
     required: true,
   },
+  userTarg :{
+    type: String,
+    unique: true,
+    required: true,
+  },
   password: {
     type: String,
     required: true,
@@ -36,7 +41,6 @@ let accountSchema = SQuery.Schema({
   address: {
     type: Schema.Types.ObjectId,
     ref: AddressModel.modelName,
-    //required: true,
   },
   favorites: {
     type: Schema.Types.ObjectId,
@@ -46,7 +50,6 @@ let accountSchema = SQuery.Schema({
   profile: {
     type: Schema.Types.ObjectId,
     ref: ProfileModel.modelName,
-    required: true,
   },
 });
 
@@ -59,7 +62,7 @@ const ctrlMaker = MakeModelCtlForm({
 });
 
 ctrlMaker.pre('store', async ({ ctx }) => {
-
+ //  TODO  user targ ctx.data.
 })
 
 

@@ -9,12 +9,7 @@ let fileSchema = SQuery.Schema({
     required: true,
     file:{}
   }],
-  typeMIME: {
-    type: String,
-  },
-  size: {
-    type: String,
-  },
+
 
 });
 

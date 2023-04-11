@@ -1,7 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import WatcherModel from "./WatcherModel";
 
 let ChannelSchema = SQuery.Schema({
     name: {
@@ -13,7 +12,7 @@ let ChannelSchema = SQuery.Schema({
         access: 'public',
     },  
     
-    firstWatcher: {
+    firstUser: {
         type: Schema.Types.ObjectId,
         ref: 'user',
         strictAlien: true,
@@ -30,9 +29,9 @@ let ChannelSchema = SQuery.Schema({
         access: 'public',
         impact:true,
     }],
-    watcher:[{
+    users:[{
         type: Schema.Types.ObjectId,
-        ref: WatcherModel.modelName,
+        ref: 'user',
         impact:true,
         access: 'public',
     }]

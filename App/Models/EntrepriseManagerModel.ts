@@ -27,16 +27,7 @@ const ctrlMaker = MakeModelCtlForm({
 });
 
 ctrlMaker.pre('store', async ({ ctx }) => {
-    //console.log('********************#################################*********', ctx.data);
-
-    ctx.data = {
-        ...ctx.data,
-        profile: {
-            /// imgProfile: ['/temp/1677915905612_6402f701d7944fff36120416.png'],
-            // banner: ['/temp/1677915905612_6402f701d7944fff36120416.png'],
-            message: "*** BEST ****",
-        },
-    }
+   
 })
 
 
