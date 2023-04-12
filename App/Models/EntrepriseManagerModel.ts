@@ -13,7 +13,7 @@ let EntrepriseManagerSchema = SQuery.Schema({
     },
     entreprise: {
         type: Schema.Types.ObjectId,
-        ref: 'entrepise',
+        ref: 'entreprise',
         strictAlien: true,
     }
 });

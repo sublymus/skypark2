@@ -62,24 +62,8 @@ export const load = {
   },
   user: {
     create: {
-
-      my_article: {
-        name: 'Salade',
-        stock: 2,
-        description: 'Plante cultivée dont on fait la salade (surtout laitues; batavias; scaroles; chicorées). Repiquer des salades.',
-        views: [],
-        price: 5,
-        folders: [
-          {
-            folderName: "wena0",
-          },
-          {
-            folderName: "wena1",
-          },
-          {
-            folderName: "wena2",
-          },
-        ]
+      messenger: {
+        discussions: []
       },
       account: {
         name: 'baron',
@@ -93,6 +77,7 @@ export const load = {
           door: 296,
           etage: 4,
           description: "je suis ici",
+          city: "Rostov on don",
         },
         favorites: {
           folders: [
@@ -158,12 +143,53 @@ export const load = {
       creationDate: Date.now(),
     }
   },
+  quarter: {
+    create: {
+
+      name: "noga Buidl",
+      city: "agvhb",
+      community: {
+        Thread: {
+          name: "Sport_Channel",
+          description: "more description about sport channel",
+          vectors: [],
+          users: []
+        },
+        name: "Together Group",
+        activities: [{
+          poster: {
+            message: "*** BEST ****"
+          },
+          channel: {
+            name: "Sport_Channel",
+            firstWatcher: "",
+            description: "more description about sport channel",
+            vectors: [],
+            users: []
+          },
+          name: "Sport",
+          description: "we love sport"
+        }]
+      },
+      buildings: []
+
+    },
+    read: { id: "" },
+
+
+  },
   building: {
     create: {
       name: "skypark Center",
       city: "Rostov on don",
       community: {
         name: "Together Group",
+        Thread: {
+          name: "Building_Thread",
+          description: "thread_main",
+          vectors: [],
+          watcher: []
+        },
         activities: [{
           poster: {
             //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
@@ -172,7 +198,6 @@ export const load = {
           },
           channel: {
             name: "Sport_Channel",
-            firstWatcher: "",
             description: "more description about sport channel",
             vectors: [],
             watcher: []
@@ -182,38 +207,11 @@ export const load = {
         }]
       },
     },
-    read: { id: "" },
-    update: {
-      id: "",
-      name: "skypark Center",
-      city: "Rostov on don",
-      community: {
-        name: "Together Group",
-        activities: [{
-          poster: {
-            //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
-            //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
-            message: "*** BEST ****",
-          },
-          channel: {
-            name: "Sport_Channel",
-            firstWatcher: "",
-            description: "more description about sport channel",
-            vectors: [],
-            watcher: []
-          },
-          name: "Sport",
-          description: "we love sport"
-        }]
-      },
-    },
-    delete: { id: "" },
   },
   account: {
     read: { id: "" },
     update: {
       id: "",
-
       name: "baron",
       email: "sublymus@gmail.com",
       password: "azert",

@@ -2,25 +2,18 @@ import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AccountModel from "./AccountModel";
-import ArticlModel from "./ArticleModel";
-import BuildingModel from "./BuildingModel";
-import QuarterModel from "./Quarter";
+import MessengerModel from "./MessengerModel";
 
 let userSchema = SQuery.Schema({
   account: {
     type: Schema.Types.ObjectId,
     ref: AccountModel.modelName,
-  //  required: true,
+    //  required: true,
   },
-
-  building: {
+  messenger: {
     type: Schema.Types.ObjectId,
-    ref: BuildingModel.modelName,
-    alien:true,
-  },
-  quarter: {
-    type: Schema.Types.ObjectId,
-    ref: QuarterModel.modelName
+    ref: MessengerModel.modelName,
+    //strictAlien: true,//TODO retirer
   }
 });
 

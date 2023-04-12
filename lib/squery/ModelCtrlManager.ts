@@ -43,12 +43,12 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
         const controller: ModelControllerSchema = {};
 
         const validId = async ({ id, modelPath }) => {
-
+            Log('modelPath:', modelPath , ModelControllers[modelPath]);
             const local_modelInstance = await ModelControllers[modelPath].option.model.findOne({
                 _id: id
             });
             if (!local_modelInstance) {
-                Log('local_modelInstance : ', local_modelInstance)
+                Log('local_modelInstancl',local_modelInstance)
                 throw new Error("Id not found; modePath:" + option.modelPath + "; alienId:" + id + "; alienModelPath:" + modelPath);
             }
             return true;
@@ -117,6 +117,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                         const isAlien = !!(rule.alien || rule.strictAlien);
                         // Log('alien', 'strictAlien: ', !!rule.strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule.strictAlien) && !isStr)
                         if (!isAlien && isStr) {
+                            await backDestroy(ctx, more);
                             return await callPost({
                                 ctx,
                                 more,
@@ -138,6 +139,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                     accu[property] = alienId;
                                 }
                             } catch (error) {
+                                await backDestroy(ctx, more);
                                 return await callPost({
                                     ctx,
                                     more,
@@ -152,6 +154,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             }
                             continue
                         } else if ((!!rule.strictAlien) && !isStr) {
+                            await backDestroy(ctx, more);
                             return await callPost({
                                 ctx,
                                 more,
@@ -216,6 +219,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             const isAlien = !!(rule[0].alien || rule[0].strictAlien);
                             //Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
                             if (!isAlien && isStr) {
+                                await backDestroy(ctx, more);
                                 return await callPost({
                                     ctx,
                                     more,
@@ -237,6 +241,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                         accu[property][i] = alienId;
                                     }
                                 } catch (error) {
+                                    await backDestroy(ctx, more);
                                     return await callPost({
                                         ctx,
                                         more,
@@ -251,6 +256,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                                 }
                                 continue
                             } else if ((!!rule[0].strictAlien) && !isStr) {
+                                await backDestroy(ctx, more);
                                 return await callPost({
                                     ctx,
                                     more,

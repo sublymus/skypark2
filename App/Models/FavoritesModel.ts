@@ -2,7 +2,6 @@ import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FolderModel from "./FolderModel";
-import RefIdModel from "./RefId";
 
 let favoritesSchema = SQuery.Schema({
 
@@ -13,10 +12,10 @@ let favoritesSchema = SQuery.Schema({
     //access: "public",
     //: true,
   }],
-  likeList: {
+  likeList: [{
     type: Schema.Types.ObjectId,
-    ref: RefIdModel.modelName,
-  }
+    ref: 'user',
+  }]
 
 });
 const FavoritesModel = mongoose.model("favorites", favoritesSchema);

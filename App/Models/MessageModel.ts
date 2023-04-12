@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import FileListModel from "./FileListModel";
+import FileModel from "./FileModel";
 
 let MessageSchema = SQuery.Schema({
     user: {
@@ -12,15 +13,15 @@ let MessageSchema = SQuery.Schema({
     text: {
         type: String
     },
-    fileList: [{
+    file: {
         type: Schema.Types.ObjectId,
-        ref: FileListModel.modelName,
+        ref: FileModel.modelName,
         //checkout:true,
-    }],
-    targets: {
+    },
+    targets: [{
         type: Schema.Types.ObjectId,
         ref: 'user',/////
-    }
+    }]
 });
 
 const MessageModel = mongoose.model("message", MessageSchema);

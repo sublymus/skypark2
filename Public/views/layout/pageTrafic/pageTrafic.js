@@ -5,26 +5,7 @@ export default class PageTrafic extends BaseComponent {
         super({
             childrens: [],
         })
-        const data = {
-            //info perso
-            name: 'Kouassi Noga Wilfred Lemuel',
-            phone: '+7(999)862-74-41',
-            email: 'a@gmail.com',
-            status: 'property',
-
-            // home
-            building: 'Sublymus Building E45 ; ',
-            city: 'Rostov on don',
-            room: '453',
-            etage: '12',
-            door: '3',
-
-            //profile
-            bainner: 'img/download.jpeg',
-            imgProfile: '/img/infographic',
-            message: 'I\' the best '
-        }
-
+        
         const { _, viewName, $, $All } = this.mvc;
 
         this.view = _('div', viewName,
@@ -54,7 +35,7 @@ export default class PageTrafic extends BaseComponent {
             _('div', 'container',
                 _('div@page', 'list-container',
                     _('ItemList', {
-                        itemsData: [data, data, data, data, , data, data, data, data, data, data, data, data, data, data, data, data, data, data, data],
+                        itemsData: [],
                         class: 'Item',
                         columns: ['date', 'profile', 'status', 'phone']
                     }),
@@ -95,6 +76,7 @@ export default class PageTrafic extends BaseComponent {
                 this.emit('@page:change', $('.page-singup-user'))
             },
             [viewName]: (view) => {
+                
                 $('.item-list').component.when('selected', item => {
                     $('.info-bull').component.item = item
                     $('.info-bull').className = 'info-bull'
@@ -103,6 +85,7 @@ export default class PageTrafic extends BaseComponent {
                 })
                 $('.info-bull').classList.add('exite')
                 $('.info-bull').style.display = 'none';
+
                 //console.log($('.page-singup-user'));
 
                 // this.emit('@page:change',$('.page-singup-user'))

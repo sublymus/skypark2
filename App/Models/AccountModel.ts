@@ -24,7 +24,6 @@ let accountSchema = SQuery.Schema({
   userTarg :{
     type: String,
     unique: true,
-    required: true,
   },
   password: {
     type: String,
@@ -63,6 +62,7 @@ const ctrlMaker = MakeModelCtlForm({
 
 ctrlMaker.pre('store', async ({ ctx }) => {
  //  TODO  user targ ctx.data.
+ ctx.data.userTarg = ctx.data.email+ parseInt(Number(Math.random()*1000).toString(36),36)
 })
 
 

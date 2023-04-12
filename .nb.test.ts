@@ -1,4 +1,5 @@
 /*
+TODO: SQuery file
 TODO: treminal=> npm squery create:controller
 TODO: folder:{
     parentAccess:true,

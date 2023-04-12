@@ -385,13 +385,11 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
             options.paging = paging = {
                 ...paging,
                 ...options.paging,
-                ert: 'pagin'
             }
             //console.log(paging);
             //console       emiter.emit('paging', paging);
         } else {
             options.paging = paging;
-            options.opi = 'node p'
 
         }
         //console.log('@@@@@@@@@@@@@@@@@@@@@@@option : ', options);

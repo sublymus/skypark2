@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import CommunityModel from "./CommunityModel";
+import BuildingModel from "./BuildingModel";
 
 let QuarterSchema = SQuery.Schema({
 
@@ -13,6 +14,13 @@ let QuarterSchema = SQuery.Schema({
         type: String,
         required: true,
     },
+    buildings: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: BuildingModel.modelName,
+          strictAlien: true,
+        },
+      ],
     community: {
         type: Schema.Types.ObjectId,
         ref: CommunityModel.modelName,

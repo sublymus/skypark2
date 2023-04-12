@@ -1,20 +1,13 @@
+import SQuery from "../../ts_lib/SQueryClient.js";
 import BaseComponent, { Components } from "../../ts_lib/baseComponent/baseComponent.js";
 
 export default class Item extends BaseComponent {
 
     constructor(data) {
         super({
-            createdDate: Date.now() - 1_000_000_000 + parseInt(Math.random() * 1_000_000_000),
-            name: '',
-            building: '',
-            imgProfile: '',
-            bainner: '',
-            phone: '',
-            city: '',
-            status: '',
-            room: '',
-            etage: '',
-            door: '',
+            modePath: '',
+            id: '',
+            instance: null,
         }, data)
 
         const { _, viewName, $, $All } = this.mvc;
@@ -38,31 +31,37 @@ export default class Item extends BaseComponent {
             _('div', 'phone'),
         );
         this.controller = {
-            ['.date']: (date) => {
-                this.when('createdDate', date => {
+            ['.date']: async (date) => {
+
+                user.when('refresh:createdAt', (createdAt) => {
                     const d = new Date(date);
                     $('.date-label').textContent = d.toLocaleDateString()
                     const t = d.toLocaleTimeString();
                     $('.time-label').textContent = t.substring(0, t.lastIndexOf(':'))
                 })
             },
-            ['.name']: (nameElem) => {
-                this.when('name', name => {
+            ['.name']: async (nameElem) => {
+
+                const account = await (await this.getInstance())['account']
+                account.when('refresh:name', name => {
                     nameElem.textContent = name;
                 })
             },
-            ['.status']: (statusElem) => {
-                this.when('status', status => {
+            ['.status']: async (statusElem) => {
+                const account = await (await this.getInstance())['account']
+                account.when('refresh:status', status => {
                     $(statusElem, '.label').textContent = status;
                 })
             },
-            ['.phone']: (phoneElem) => {
-                this.when('phone', phone => {
+            ['.phone']: async (phoneElem) => {
+                const account = await (await this.getInstance())['account']
+                account.when('refresh:phone', phone => {
                     phoneElem.textContent = phone;
                 })
             },
-            ['.img-profile']: (imgProfile_v) => {
-                this.when('imgProfile', imgProfile => {
+            ['.img-profile']: async (imgProfile_v) => {
+                const profile = await (await this.getInstance())['./account/profile']
+                profile.when('refresh:imgProfile', imgProfile => {
                     imgProfile_v.style.background = 'no-repeat center/60% url(' + imgProfile + '.png)';
                 })
             },
@@ -72,22 +71,21 @@ export default class Item extends BaseComponent {
             ['@img:mouseout']: (imgProfile_v) => {
                 imgProfile_v.style.background = 'no-repeat center/60% url(' + this.imgProfile + '.png)';
             },
-            ['.phone']: (phoneElem) => {
-                this.when('phone', phone => {
-                    phoneElem.textContent = phone;
+            ['.building']: async (buildingElem) => {
+                const address = await (await this.getInstance())['./account/address'];
+                const building = await address['building'];
+                building.when('refresh:name', name => {
+                    buildingElem.textContent = name;
                 })
             },
-            ['.building']: (buildingElem) => {
-                this.when('building', building => {
-                    buildingElem.textContent = building;
-                })
-            },
-            ['.city']: (cityElem) => {
-                this.when('city', city => {
+            ['.city']: async (cityElem) => {
+                const address = await (await this.getInstance())['./account/address'];
+                address.when('refresh:city', city => {
                     cityElem.textContent = city;
                 })
             },
-            [viewName]: () => {
+            [viewName]: async () => {
+
                 this.when('mouseout', isSelected => {
                     this.view.classList.remove('over')
                 })
@@ -105,6 +103,11 @@ export default class Item extends BaseComponent {
                 })
             }
         }
+    }
+    async getInstance() {
+        if (this.instance) return this.instance;
+        const model = await SQuery.Model(this.modePath);
+        return this.instance = await model.newInstance({ id: this.id })
     }
 }
 Components.Item = Item;

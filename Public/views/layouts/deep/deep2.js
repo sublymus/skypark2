@@ -219,7 +219,6 @@ export class Deep extends BaseComponent {
                     const fileElm = _('input', ['multiple', 'type:file', 'class:file']);
                     fileElm.addEventListener("change", async () => {
                         let d = fileElm.files
-                        console.log(await d[0].arrayBuffer());
                         this.instance[data.property] = fileElm.files;
                     });
                     const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), fileElm, _('br'));
