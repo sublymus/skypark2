@@ -2,6 +2,7 @@
 import mongoose, { Schema } from 'mongoose';
 import { StatusSchema } from "../../App/Errors/STATUS";
 import { ContextSchema } from "./Context";
+import EventEmiter from './event/eventEmiter';
 import './execAuto';
 
 export type FileSchema = {
@@ -9,7 +10,7 @@ export type FileSchema = {
   size: number;
   fileName: string;
   buffer: any;
-  encoding: 'binary' | 'base64' | 'ascii' | 'hex'|'base64url'|'latin1'|'ucs-2'|'ucs2'|'utf-8'|'utf16le'|'utf8'
+  encoding: 'binary' | 'base64' | 'ascii' | 'hex' | 'base64url' | 'latin1' | 'ucs-2' | 'ucs2' | 'utf-8' | 'utf16le' | 'utf8'
 };
 export type ErrorCaseSchema = {
   response?: any;
@@ -101,26 +102,34 @@ export type ModelControllersStorage = {
 export type ControllersStorage = {
   [p: string]: CtrlMakerSchema;
 };
-//  type SQuerySchemaType = {
-//   paths: {
-//     [p: string]: {
-//       instance: string;
-//       options?: {
-//         ref?: string;
-//       };
-//     };
-//   };
-//   obj: {
-//     [p: string]: any
-//   },
-//   description?: DescriptionSchema
-// };
+export type bindData = {
+  pattern: string,
+  map?: {
+    toLeft(v: any): any,
+    toRight(v: any): any
+  },
+  rootParts?: string[];
+  rootIdParts?: {
+    [p: string]: {
+      parts: string[]
+    }
+  },
+  mode?: "bidirectional" | "unidirectional",
+  emiter?: EventEmiter
+}
 export type ModelFrom_optionSchema = {
   schema: SQueryMongooseSchema;
   model: any;
   volatile: boolean;
   access?: ControllerAccesSchema;
+  bind?: bindData[],
+  query?: {
+    [q: string]: {
+      [p: string]: any
+    }
+  }
 };
+
 export type savedSchema = {
   modelId: string;
   __key: string;

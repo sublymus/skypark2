@@ -2,61 +2,83 @@ import { load } from '../../p.js';
 import BaseComponent, { Components } from '../../ts_lib/baseComponent/baseComponent.js';
 import SQuery from '../../ts_lib/SQueryClient.js';
 
-export class CreationPage extends BaseComponent {
+const inspectorIsOpen = function() {
+    let isOpen = false;
+    
+    if ((window.outerWidth - window.innerWidth) > 100) {
+        isOpen = true;
+    }
+    
+    return isOpen;
+  }
+  
+export class ServicePage extends BaseComponent {
     constructor(data) {
         super({
-            modelPath: 'user',
-            action: 'create',
+            ctrl: 'server',
+            service: 'validId',
         }, data);
         const { _, $, $All, viewName } = this.mvc;
         this.view = _('div', viewName,
-            _('h1', 'title', 'Creation'),
+            _('h1', 'title', 'Service'),
             _('input@modelInput', ['type:text', 'class:model-input', 'placeholder:model path']),
             _('div', 'input-ctn',
-                _("textarea", ["rows:100", "cols:450"])
+                _("textarea@area", ["rows:100", "cols:450"])
             ),
-            _('div@create', 'create', 'Send'),
+            _('div@send', 'send', 'Send'),
         );
         this.controller = {
+            ['@area:change']: (area) => {
+                console.log('ATRAYTUYIAOP{A',area.value);
+                localStorage.setItem('servicePage:textArea', area.value);
+
+                console.log('Valuejhgach_____{A',area.value);
+            },
             ['@modelInput:change']: (input) => {
                 try {
                     if (input.value.includes('.')) {
                         const parts = input.value.split('.');
-                        this.modelPath = parts[0];
-                        this.action = parts[1];
+                        this.ctrl = parts[0];
+                        this.service = parts[1];
                         //console.log('input.value : ', input.value, parts);
                     } else {
-                        this.modelPath = input.value;
+                        this.ctrl = input.value;
                         //console.log('input.value : ', input.value);
                     }
-                    const data = this.action ? load[this.modelPath][this.action] : load[this.modelPath]
-                    $("textarea").value = JSON.stringify(data)
+                    const data =  load[this.ctrl]?.[this.service];
+                    localStorage.setItem('servicePage:input', input.value)
+                    localStorage.setItem('servicePage:textArea', $("textarea").value)
+                    if(data){
+                        $("textarea").value = localStorage.getItem('servicePage:textArea') || JSON.stringify(data)
                         .split("")
                         .map((c) => {
                             return c == "}" ? "\n}" : c == "{" ? "{\n" : c == "," ? ",\n" : c;
-                        })
-                        .join("");
+                        }).join("");
+                    }
                 } catch (error) {
                     alert('Not found : ' + input.value)
                 }
             },
-            ['@create:click']: async () => {
+            ['@send:click']: async () => {
+                console.log('wertyuioiuytrertyui');
                 try {
-                    if (!(this.modelPath && this.action)) return this.emit('error', 'input is empty');
-                    const Model = await SQuery.Model(this.modelPath);
-                    const instance = await Model.create(JSON.parse($('textarea').value));
-                    //console.log({ instance });
-                    this.emit('next', {
-                        modelPath: this.modelPath,//this.type,
-                        id: instance.$id,
+                    console.log(this.ctrl+":"+this.service);
+                    SQuery.emit(this.ctrl+":"+this.service,JSON.parse($('textarea').value),(res)=>{
+                       
+                        console.log(res)
+                        if(!inspectorIsOpen()) alert('Open Your Inspector to see the result')
+                        $('.title').textContent = window.outerWidth +"<-outer   inner->"+ window.innerWidth+" = "+inspectorIsOpen()
                     })
                 } catch (error) {
-                    alert(JSON.stringify(error))
+                    alert('ERROR_SEND')
                 }
             },
             [viewName]: () => {
-                $('.model-input').value = this.modelPath + '.' + this.action;
+                window.onresize = inspectorIsOpen;
+                $("textarea").value =  localStorage.getItem('servicePage:textArea');
+                $("input").value = localStorage.getItem('servicePage:input');
                 this.emit('@modelInput:change', $('.model-input'))
+                
                 this.when('error', (error) => {
                     alert(error);
                 });
@@ -65,7 +87,7 @@ export class CreationPage extends BaseComponent {
         }
     }
 }
-Components.CreationPage = CreationPage;
+Components.ServicePage = ServicePage;
 
 
 

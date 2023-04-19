@@ -4,6 +4,7 @@ import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
+import { ContextSchema } from "../../lib/squery/Context";
 
 let accountSchema = SQuery.Schema({
 
@@ -21,7 +22,7 @@ let accountSchema = SQuery.Schema({
     unique: true,
     required: true,
   },
-  userTarg :{
+  userTarg: {
     type: String,
     unique: true,
   },
@@ -61,9 +62,20 @@ const ctrlMaker = MakeModelCtlForm({
 });
 
 ctrlMaker.pre('store', async ({ ctx }) => {
- //  TODO  user targ ctx.data.
- ctx.data.userTarg = ctx.data.email+ parseInt(Number(Math.random()*1000).toString(36),36)
+  const userTarg = getTarg(ctx);
+  const account = await AccountModel.findOne({
+    userTarg: userTarg,
+  })
+  if (account) {
+    ctx.data.userTarg = getTarg(ctx)
+  } else {
+    ctx.data.userTarg = userTarg;
+  }
 })
 
+function getTarg(ctx:ContextSchema) {
+  const targ = ctx.data?.email?.substring(0, ctx.data?.email?.indexOf('@') || 0)
+  return targ || Math.round(Math.random() * 1000000).toString(32);
+}
 
 export default AccountModel;

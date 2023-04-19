@@ -9,17 +9,52 @@ import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
 import { Config } from "../../squeryconfig";
 import { AuthManager } from "./AuthManager";
-import { ContextSchema, authDataOptionSchema, authDataSchema } from "./Context";
+import { ContextSchema, DataSchema, authDataOptionSchema, authDataSchema } from "./Context";
 import { Controllers, DescriptionSchema, GlobalMiddlewares, ListenerPostSchema, ListenerPreSchema, ModelControllers, ResultSchema, SQueryMongooseSchema } from "./Initialize";
+import EventEmiter from "./event/eventEmiter";
+type MapUserCtxSchema = {
+  [p: string]: {
+    exp: number,
+    ctx: any,
+    isAvalaibleCtx: boolean,
+  }
+};
+export const MapUserCtx: MapUserCtxSchema = {};
 
 export type FirstDataSchema = {
   __action: "create" | "read" | "list" | "update" | "delete";
   [p: string]: any;
 };
 const avalaibleModelAction = ['create', 'read', 'list', 'update', 'delete']
-type CallBack = (...arg: any) => any;
-
+type CallBack = (result: ResultSchema | void) => any;
+async function defineContext(socket: Socket, ctrlName: string, action: string, data: DataSchema): Promise<ContextSchema> {
+  const decoded = await SQuery.cookies(socket);
+  const token = decoded.token;
+  const ctx: ContextSchema = {
+    signup: {
+      id: token.__signupId,
+      modelPath: token.__signupModelPath
+    },
+    login: {
+      id: token.__loginId,
+      modelPath: token.__loginModelPath
+    },
+    ctrlName,
+    action,
+    data,
+    socket,
+    __key: token.__key, /// pour le moment data.__key = cookies[__key]
+    __permission: token.__permission || 'any', ///  data.__permission = undefined
+  };
+  MapUserCtx[token.__key] = {
+    ctx: ctx.socket.id,
+    exp: decoded.exp,
+    isAvalaibleCtx: true,
+  };
+  return ctx;
+}
 type SQuerySchema = Function & {
+  emiter: EventEmiter,
   io: (server: any) => Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
   Schema: (description: DescriptionSchema) => any,
   auth: (authData: authDataOptionSchema) => void,
@@ -44,14 +79,7 @@ const SQuery: SQuerySchema = function (
           });
         }
       }
-      const ctx: ContextSchema = {
-        ctrlName,
-        action,
-        data,
-        socket,
-        __key: "", /// pour le moment data.__key = cookies[__key]
-        __permission: "any", ///  data.__permission = undefined
-      };
+      const ctx: ContextSchema = await defineContext(socket, ctrlName, action, data);
 
       const midList = [...GlobalMiddlewares];
 
@@ -60,7 +88,6 @@ const SQuery: SQuerySchema = function (
 
         if (res !== undefined) return cb?.(res);
       }
-
       let res: ResultSchema = null;
       try {
         if (modelRequest) {
@@ -68,16 +95,19 @@ const SQuery: SQuerySchema = function (
         } else {
           res = await Controllers[ctrlName]?.()[action]?.(ctx);
         }
+
       } catch (error) {
         Log('ERROR_Controller', error.message);
+        if (MapUserCtx[ctx.__key]) MapUserCtx[ctx.__key].isAvalaibleCtx = false;
         return cb?.({
-          error: "CURRENT_USER_UNDEFINED",
+          error: "ERROR_CTRL_UNDEFINED",
           status: 404,
-          code: "CURRENT_USER_UNDEFINED",
-          message: "CURRENT_USER_UNDEFINED",
+          code: "ERROR_CTRL_UNDEFINED",
+          message: "ERROR_CTRL_UNDEFINED",
         });
       }
 
+      if (MapUserCtx[ctx.__key]) MapUserCtx[ctx.__key].isAvalaibleCtx = false;
       if (res === undefined) {
         return cb?.({
           error: "NOT_FOUND",
@@ -113,15 +143,15 @@ SQuery.cookies = async (socket, key: string, value?: any) => {
   } catch (error) {
     Log("jwtError", error.message);
   }
-  // /Log('decoded', { decoded });
+  Log('decoded', { decoded });
   if (key && value) decoded[key] = value;
-  if (!value) return decoded[key];
   if (!key && !value) return decoded;
+  if (!value) return decoded[key];
 
   const generateToken = (payload: { [property: string]: any }) => {
     return jwt.sign({
       ...payload,
-      //iat: Date.now(),
+      iat: Date.now(),
       exp: Date.now() + 24 * 60 * 60 * 1000,
     }, Config.KEY);
   };
@@ -143,6 +173,8 @@ SQuery.cookies = async (socket, key: string, value?: any) => {
   })
 }
 
+SQuery.emiter = new EventEmiter();
+
 SQuery.io = (server: any) => {
   /********************    Cookies   *********************** */
 
@@ -158,18 +190,15 @@ SQuery.io = (server: any) => {
   const setPermission: ListenerPreSchema = async ({ ctx, more }) => {
     ctx.data.__permission = ctx.__permission;
     ctx.data.__signupId = more.__signupId;
-    Log('setPermission', { data: ctx.data });
   }
   const setAuthValues = (authData: authDataSchema) => {
     const preCreateSignupListener: ListenerPreSchema = async ({ ctx, more }) => {
       ctx.__permission = authData.__permission
       ctx.__key = new mongoose.Types.ObjectId().toString(); ///// cle d'auth
       more.__signupId = more.modelId;
-      Log('preCreateSignupListener', ctx.data);
     }
     return preCreateSignupListener;
   }
-
   const setLoginCookie = (authData: authDataSchema) => {
     const postCreateLoginListener: ListenerPostSchema = async ({ ctx, more, res }) => {
       if (res.error) return Log('Giga_ERROR', res);
@@ -182,7 +211,6 @@ SQuery.io = (server: any) => {
         __loginId: res.response,
         __loginModelPath: authData.login
       };
-      Log('postCreateLoginListener', { token });
       await SQuery.cookies(ctx.socket, 'token', token);
     }
     return postCreateLoginListener;
@@ -190,6 +218,7 @@ SQuery.io = (server: any) => {
 
   let firstConnection = true;
   io.on("connection", async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
+
     if (firstConnection) {
       firstConnection = false;
       const readylist = []
@@ -207,11 +236,29 @@ SQuery.io = (server: any) => {
           readylist.push(authData.login);
         }
       }
+
+      new Promise(() => {
+        setInterval(() => {
+          for (const key in MapUserCtx) {
+            if (Object.prototype.hasOwnProperty.call(MapUserCtx, key)) {
+              const ctxData = MapUserCtx[key];
+              if (ctxData.exp - Date.now() <= 0) {
+                Log('delete_data', key)
+                delete MapUserCtx[key];
+              }
+            }
+          }
+        }, 10_000);
+      })
     }
-    /********************    Models  *********************** */
-    socket.onAny((event, ...args) => {
-      //Log('any', { event }, ...args)
+    /********************    All  *********************** */
+    socket.onAny((event, data, cb: CallBack) => {
+
     });
+    /********************    MapUserCtx  *********************** */
+
+    /********************    Models  *********************** */
+
     const squery = SQuery(socket);
     for (const ctrlName in ModelControllers) {
       if (Object.prototype.hasOwnProperty.call(ModelControllers, ctrlName)) {
@@ -261,41 +308,22 @@ SQuery.auth = (authDataOption: authDataOptionSchema) => {
   authData.match.push("__permission");
   AuthDataMap[authData.signup] = authData;
 
-
   Global.io.on("connection", (socket: any) => {
-    socket.on("login:" + authData.signup, async (data, cb) => {
+    socket.on("login:" + authData.signup, async (data: DataSchema, cb: CallBack) => {
       data.__permission = authData.__permission;
       const authCtrl = new AuthManager();
-      const res = await authCtrl.login({
-        ctrlName: 'login',
-        data,
-        __key: "",
-        __permission: authData.__permission,
-        action: "read",
-        socket,
-        authData
-      });
+      const res = await authCtrl.login({ ...await defineContext(socket, 'login', 'read', data), authData });
       cb(res);
     });
-    socket.on("signup:" + authData.signup, async (data, cb) => {
+    socket.on("signup:" + authData.signup, async (data: DataSchema, cb: CallBack) => {
 
       let __key = new mongoose.Types.ObjectId().toString();
       const authCtrl = new AuthManager();
-      const res = await authCtrl.signup({
-        ctrlName: 'signup',
-        action: "create",
-        data,
-        __key,
-        __permission: authData.__permission,
-        socket,
-        authData
-      });
+      const res = await authCtrl.signup({ ...await defineContext(socket, 'signup', 'create', data), authData });
       cb(res);
     });
   });
 };
-
-
 
 SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
   description.__parentModel = {
@@ -304,9 +332,9 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
   }
   description.__key = {
     type: Schema.Types.ObjectId,
-    required: true,
     access: "secret",
   };
+
   description.__permission = {
     type: String,
     access: "secret",
@@ -318,12 +346,10 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
 
   description.createdAt = {
     type: Date,
-    default: Date.now(),
     access: 'admin'
   }
   description.updatedAt = {
     type: Date,
-    default: Date.now(),
     access: 'admin',
   }
   description.updatedProperty = [{
@@ -340,14 +366,15 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
     this.updatedAt = Date.now();
     this.modifiedPaths();
     this.updatedProperty = this.modifiedPaths();
-
   });
 
   schema.post('save', async function (doc: any) {
-    //emettre dans  les room dedier
-    //Log('cache', doc)
-    Global.io.emit('update:' + doc._id.toString(), {
+    //Log('save+++++++', doc.__parentModel,);
+    // SQuery.emiter.when('update:' + doc._id.toString(), (val) => {
+    //   Log('update:' + doc._id.toString(), val);
+    // })
 
+    Global.io.emit('update:' + doc._id.toString(), {
       id: doc._id.toString(),
       doc,
       properties: doc.updatedProperty,
@@ -357,4 +384,5 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
   (schema as any).description = description;
   return schema as SQueryMongooseSchema;
 }
+
 export { SQuery };

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
+import { ModelControllers } from "../../lib/squery/Initialize";
 
 let SuperAdminSchema = SQuery.Schema({
 
@@ -38,11 +39,13 @@ const ctrlMaker = MakeModelCtlForm({
   schema: SuperAdminSchema,
   model: SuperAdminModel,
   volatile: true,
+  access: "admin"
 });
 
 ctrlMaker.pre('store', async ({ ctx }) => {
-  
+
 })
+
 
 
 export default SuperAdminModel;

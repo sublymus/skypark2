@@ -248,23 +248,7 @@ const validations = {
                 };
             }
         }
-        else if (requirement == 'ObjectId') {
-            try {
-                return {
-                    isValide: await new Promise(rev => {
-                        SQuery.socket.emit('server:valideId', { id: value }, (res) => {
-                            rev(!!res.response);
-                        })
-                    }),
-                    message: 'the type of value bust be : ' + requirement,
-                };
-            } catch (error) {
-                return {
-                    isValide: false,
-                    message: 'the type of value bust be : ' + requirement,
-                };
-            }
-        }
+       
         return {
             isValide: true,
         };

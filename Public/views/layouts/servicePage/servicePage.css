@@ -1,0 +1,38 @@
+.service-page {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.service-page .title {
+    font-size: 3em;
+}
+
+.service-page>* {
+    margin: 20px 0;
+}
+
+.service-page .input-ctn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.service-page .input-ctn input {
+    margin: 20px 0;
+}
+
+.service-page .create {
+    padding: 10px 25px;
+    color: aliceblue;
+    border-radius: 10px;
+    background: #41a05f;
+}
+
+.service-page .create:hover {
+    background: #41a05f90;
+}

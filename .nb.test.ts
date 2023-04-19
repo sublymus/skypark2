@@ -1,11 +1,13 @@
 /*
-TODO: SQuery file
+
+socket map 
+
 TODO: treminal=> npm squery create:controller
 TODO: folder:{
     parentAccess:true,
     access:private,
 }
-TODO: arborescense des models grace a la description;
+
 TODO: rule:{
     wacth:"pour suivre si une instance est suprimer on la suprime de la liste ou on rend le property undefined"
     observator:"/address/building => ../building" //
@@ -15,15 +17,8 @@ TODO: rule:{
 }
 TODO: befor after autoexecute ,
 TODO: access permission shared  niveau Model et niveau Instance
-TODO: access au fichier..
-TODO: community{
-    user:{
-        ref:'user',
-        filter:{
-            'building.community':'./_id'
-        }
-    }
-}
+TODO:  SQuery file access au fichier..
+
 =======================================  access  ==================================================
 -access:property {ref:modelPath,access:private} il est mieux de definir en plus les property du ref comme etant private
 -le header contient le { __key , __permission , signupId , signupModelPath , loginId , loginModelPath} 
@@ -40,6 +35,7 @@ SQuery.cookies(socket , 'property'); //value
 SQuery.cookies(socket  ); // { property:value , ...}
 
 =======================================   SQuery.View  ==================================================
+=======================================   context  ==================================================
 =======================================   SQuery.io  ==================================================
 =======================================   SQuery.Schema  ==================================================
 =======================================   SqueryConfig ==================================================
@@ -134,7 +130,7 @@ const lolInstance = await lolModel.instance({id: lolId });    renvoie une instan
 TODO: const lolInstance = await lolModel.update(aUpdateData); renvoie une instance si les information rentrer sont bonne, sinon renvoie null
 TODO: const isDeleted = lolModel.delete({id: lolId });
 
- const profile = await user['/account/profile']
+ const profile = await user['./account/profile']
  const building = await address['../../building']
  condt fileInstance = await profile['imgProfile];
 fileInstance.urls

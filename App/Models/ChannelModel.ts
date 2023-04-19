@@ -42,7 +42,7 @@ const ChannelModel = mongoose.model("channel", ChannelSchema);
 const ctrlMaker = MakeModelCtlForm({
     schema: ChannelSchema,
     model: ChannelModel,
-    volatile: false,
+    volatile: true,
 });
 
 ctrlMaker.pre('read', async (e) => {
