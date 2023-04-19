@@ -6,7 +6,6 @@ import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
 
 let accountSchema = SQuery.Schema({
-
   name: {
     type: String,
     trim: true,
@@ -21,7 +20,7 @@ let accountSchema = SQuery.Schema({
     unique: true,
     required: true,
   },
-  userTarg :{
+  userTarg: {
     type: String,
     unique: true,
   },
@@ -35,7 +34,7 @@ let accountSchema = SQuery.Schema({
   telephone: {
     type: String,
     required: true,
-    access: 'private',
+    access: "private",
   },
   address: {
     type: Schema.Types.ObjectId,
@@ -60,10 +59,9 @@ const ctrlMaker = MakeModelCtlForm({
   volatile: false,
 });
 
-ctrlMaker.pre('store', async ({ ctx }) => {
- //  TODO  user targ ctx.data.
- ctx.data.userTarg = ctx.data.email+ parseInt(Number(Math.random()*1000).toString(36),36)
-})
-
+ctrlMaker.pre("store", async ({ ctx }) => {
+  //  TODO  user targ ctx.data.
+  ctx.data.userTarg = ctx.data.email;
+});
 
 export default AccountModel;

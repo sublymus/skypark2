@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
-import { genereCodePhone } from "./SendPhoneCode";
+// import { genereCodePhone } from "./SendPhoneCode";
 import { sendWithClickatail } from "./SendPhoneCode2";
 import { genereCodeEmail, sendEmail } from "./sendEmailCode";
 
@@ -60,43 +60,43 @@ export type ContextSchema = {
   __permission: 'user' | 'admin' | 'any'
 } & MoreProperty;
 
-export class PhoneConfirmartion {
-  #msgError: string;
-  async confirm(ctx: ContextSchema): Promise<boolean> {
-    let { data, socket } = ctx;
-    const code = genereCodePhone();
-    if (!(await sendWithClickatail(data.account.telephone, code))) {
-      this.#msgError = "code n'a pa pu etre envoye";
-      return false;
-    }
-    const expireAt = Date.now() + 1000 * 60;
-    Log("code", { code })
-    return await new Promise<boolean>((res) => {
-      socket.emit(
-        "signup:user/config",
-        { expireAt },
-        (codeuser: string) => {
-          if (Date.now() > expireAt) {
-            Log('time', expireAt, Date.now())
-            this.#msgError = "expiration du code";
-            res(false);
-          }
-          if (!(codeuser === code)) {
+// export class PhoneConfirmartion {
+//   #msgError: string;
+//   async confirm(ctx: ContextSchema): Promise<boolean> {
+//     let { data, socket } = ctx;
+//     const code = genereCodePhone();
+//     if (!(await sendWithClickatail(data.account.telephone, code))) {
+//       this.#msgError = "code n'a pa pu etre envoye";
+//       return false;
+//     }
+//     const expireAt = Date.now() + 1000 * 60;
+//     Log("code", { code })
+//     return await new Promise<boolean>((res) => {
+//       socket.emit(
+//         "signup:user/config",
+//         { expireAt },
+//         (codeuser: string) => {
+//           if (Date.now() > expireAt) {
+//             Log('time', expireAt, Date.now())
+//             this.#msgError = "expiration du code";
+//             res(false);
+//           }
+//           if (!(codeuser === code)) {
 
-            this.#msgError = "code invalide";
-            res(false);
-          } else {
-            res(true)
-          }
-        }
-      );
+//             this.#msgError = "code invalide";
+//             res(false);
+//           } else {
+//             res(true)
+//           }
+//         }
+//       );
 
-    });
-  }
-  error() {
-    return this.#msgError;
-  }
-}
+//     });
+//   }
+//   error() {
+//     return this.#msgError;
+//   }
+// }
 
 export class EmailConfirmartion {
   #msgError = "";

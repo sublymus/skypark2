@@ -43,7 +43,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
         const controller: ModelControllerSchema = {};
 
         const validId = async ({ id, modelPath }) => {
-            Log('modelPath:', modelPath , ModelControllers[modelPath]);
+            // Log('modelPath:', modelPath , ModelControllers[modelPath]);
             const local_modelInstance = await ModelControllers[modelPath].option.model.findOne({
                 _id: id
             });
@@ -92,8 +92,6 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                 more,
                 action,
             });
-
-            Log('ctx', ctx.data?.account?.profile);
             const accu = {};
             let modelInstance: ModelInstanceSchema;
 
@@ -115,7 +113,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                     if (!Array.isArray(rule) && rule.ref) {
                         const isStr = typeof ctx.data[property] == 'string';
                         const isAlien = !!(rule.alien || rule.strictAlien);
-                        // Log('alien', 'strictAlien: ', !!rule.strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule.strictAlien) && !isStr)
+                        Log('alien', 'strictAlien: ', !!rule.strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule.strictAlien) && !isStr)
                         if (!isAlien && isStr) {
                             await backDestroy(ctx, more);
                             return await callPost({
@@ -168,7 +166,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             });
                         }
                         const ctrl = ModelControllers[rule.ref]();
-                        // Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
+                        Log('log', { property, value: ctx.data[property], modelPath: option.modelPath })
                         const res = await (ctrl.create || ctrl.store)(
                             {
                                 ...ctx,
@@ -217,7 +215,7 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
                             // Log('info', 'alien = ', rule[0].alien, ' if ', (rule[0].alien && typeof ctx.data[property][i] == 'string'))
                             const isStr = typeof ctx.data[property][i] == 'string';
                             const isAlien = !!(rule[0].alien || rule[0].strictAlien);
-                            //Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
+                            // Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
                             if (!isAlien && isStr) {
                                 await backDestroy(ctx, more);
                                 return await callPost({
@@ -541,10 +539,13 @@ const MakeModelCtlForm: (options: ModelFrom_optionSchema) => CtrlModelMakerSchem
             parentPropertyRule = parentPropertyRule[0];
 
             const isParentUser = parentModelInstance.__key._id.toString() == ctx.__key;
+            Log('PARENTMODEL',parentModelInstance.__key._id.toString());
+            
             let validAddId = []
             let validAddNew = []
+            Log('ACEES_AUTHARIZES',{parentModel :parentPropertyRule.access ,isParentUser ,key :  ctx.__key , permission : ctx.__permission} );
+            
             if (accessValidator(ctx, 'update', parentPropertyRule.access, "property", isParentUser)) {
-
                 /***********************  AddId  ****************** */
                 const isAlien = !!(parentPropertyRule.alien || parentPropertyRule.strictAlien);
                 Log("isAlien", isAlien)
