@@ -1,13 +1,12 @@
 import mongoose, { Schema } from "mongoose";
+import { ContextSchema } from "../../lib/squery/Context";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
-import { ContextSchema } from "../../lib/squery/Context";
 
 let accountSchema = SQuery.Schema({
-
   name: {
     type: String,
     trim: true,
@@ -36,7 +35,7 @@ let accountSchema = SQuery.Schema({
   telephone: {
     type: String,
     required: true,
-    access: 'private',
+    access: "private",
   },
   address: {
     type: Schema.Types.ObjectId,
@@ -61,20 +60,23 @@ const ctrlMaker = MakeModelCtlForm({
   volatile: false,
 });
 
-ctrlMaker.pre('store', async ({ ctx }) => {
+ctrlMaker.pre("store", async ({ ctx }) => {
   const userTarg = getTarg(ctx);
   const account = await AccountModel.findOne({
     userTarg: userTarg,
-  })
+  });
   if (account) {
-    ctx.data.userTarg = getTarg(ctx)
+    ctx.data.userTarg = getTarg(ctx);
   } else {
     ctx.data.userTarg = userTarg;
   }
-})
+});
 
-function getTarg(ctx:ContextSchema) {
-  const targ = ctx.data?.email?.substring(0, ctx.data?.email?.indexOf('@') || 0)
+function getTarg(ctx: ContextSchema) {
+  const targ = ctx.data?.email?.substring(
+    0,
+    ctx.data?.email?.indexOf("@") || 0
+  );
   return targ || Math.round(Math.random() * 1000000).toString(32);
 }
 

@@ -5,23 +5,27 @@ import ChannelModel from "./ChannelModel";
 import DiscussionModel from "./DiscussionModel";
 
 let MessengerSchema = SQuery.Schema({
-    listDiscussion: [{
-        type: Schema.Types.ObjectId,
-        ref: DiscussionModel.modelName,
-        access: 'public',
-    }],
-    archives: [{
-        type: Schema.Types.ObjectId,
-        ref: ChannelModel.modelName,
-    }],
+  listDiscussion: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: DiscussionModel.modelName,
+      access: "public",
+    },
+  ],
+  archives: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: ChannelModel.modelName,
+    },
+  ],
 });
 
 const MessengerModel = mongoose.model("messenger", MessengerSchema);
 
 MakeModelCtlForm({
-    schema: MessengerSchema,
-    model: MessengerModel,
-    volatile: false,
+  schema: MessengerSchema,
+  model: MessengerModel,
+  volatile: false,
 });
 
 export default MessengerModel;
