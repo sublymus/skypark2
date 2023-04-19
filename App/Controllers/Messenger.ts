@@ -129,7 +129,7 @@ const Messenger: ControllerSchema = {
 
     removeDiscussion: async (ctx: ContextSchema): ResponseSchema => {
         try {
-
+            
             return {
                 code: "OPERATION_SUCCESS",
                 message: "OPERATION_SUCCESS",
