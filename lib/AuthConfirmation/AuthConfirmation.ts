@@ -1,8 +1,6 @@
 import { Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import Log from "sublymus_logger";
-// import { genereCodePhone } from "./SendPhoneCode";
-import { sendWithClickatail } from "./SendPhoneCode2";
+//import { genereCodePhone } from "./SendPhoneCode";
 import { genereCodeEmail, sendEmail } from "./sendEmailCode";
 
 /* 
@@ -34,7 +32,7 @@ type DataSchema = {
 };
 
 export type AuthExtensionSchema = {
-  new(): {
+  new (): {
     [str: string]: any;
     confirm: (ctx: ContextSchema) => Promise<boolean>;
     error: () => string;
@@ -47,17 +45,20 @@ export type authDataSchema = {
   extension?: AuthExtensionSchema[];
 };
 export type ContextSchema = {
-  ctrlName: string,
-  action: string,
-  data: DataSchema,
-  socket: Socket<
-    DefaultEventsMap,
-    DefaultEventsMap,
-    DefaultEventsMap,
-    any
-  >,
-  __key: string, /// pour le moment data.__key = cookies[__key]
-  __permission: 'user' | 'admin' | 'any'
+  ctrlName: string;
+  action: string;
+  data: DataSchema;
+  socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
+  signup: {
+    modelPath: string;
+    id: string;
+  };
+  login: {
+    modelPath: string;
+    id: string;
+  };
+  __key: string; /// pour le moment data.__key = cookies[__key]
+  __permission: "user" | "admin" | "any";
 } & MoreProperty;
 
 // export class PhoneConfirmartion {
@@ -113,24 +114,19 @@ export class EmailConfirmartion {
     const expireAt = Date.now() + 1000 * 60 * 2;
 
     return await new Promise<boolean>((res) => {
-      socket.emit(
-        "signup:user/config",
-        { expireAt },
-        (codeuser: string) => {
-          if (Date.now() > expireAt) {
-            this.#msgError = "expiration du code";
-            res(false);
-          }
-          console.log({ code }, { codeuser });
-          if (!(codeuser === code)) {
-            this.#msgError = "code invalide";
-            res(false);
-          } else {
-            res(true)
-          }
+      socket.emit("signup:user/config", { expireAt }, (codeuser: string) => {
+        if (Date.now() > expireAt) {
+          this.#msgError = "expiration du code";
+          res(false);
         }
-      );
-
+        console.log({ code }, { codeuser });
+        if (!(codeuser === code)) {
+          this.#msgError = "code invalide";
+          res(false);
+        } else {
+          res(true);
+        }
+      });
     });
   }
   error() {

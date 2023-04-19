@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 
+import { Socket } from "socket.io";
 import { SQuery } from "./lib/squery/SQuery";
 
 const app = express();
@@ -24,10 +25,17 @@ app.get("*", (req, res) => {
 });
 
 const io = SQuery.io(server);
+SQuery.emiter.when('ert', (val) => {
+  console.log(val);
 
-io.on("connection", (socket: any) => {
+})
+io.on("connection", (socket: Socket) => {
+  SQuery.emiter.emit('ert', socket.id)
   console.log("user is connect");
   socket.on("disconnect", () => {
     console.log("user is disconnect");
   });
 });
+
+
+

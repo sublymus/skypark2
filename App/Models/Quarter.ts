@@ -1,8 +1,9 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import CommunityModel from "./CommunityModel";
+import ActivityModel from "./ActivityModel";
 import BuildingModel from "./BuildingModel";
+import ChannelModel from "./ChannelModel";
 
 let QuarterSchema = SQuery.Schema({
 
@@ -16,16 +17,19 @@ let QuarterSchema = SQuery.Schema({
     },
     buildings: [
         {
-          type: Schema.Types.ObjectId,
-          ref: BuildingModel.modelName,
-          strictAlien: true,
+            type: Schema.Types.ObjectId,
+            ref: BuildingModel.modelName,
+            strictAlien: true,
         },
-      ],
-    community: {
+    ],
+    Thread: {
         type: Schema.Types.ObjectId,
-        ref: CommunityModel.modelName,
+        ref: ChannelModel.modelName,
     },
-
+    activities: [{
+        type: Schema.Types.ObjectId,
+        ref: ActivityModel.modelName,
+    }]
 });
 
 
@@ -35,5 +39,11 @@ MakeModelCtlForm({
     schema: QuarterSchema,
     model: QuarterModel,
     volatile: true,
+    bind: [{
+        pattern: './prof/dress/color -> ./buildings[my_query]/city',
+    }, {
+        pattern: './_id -> ./buildings[filtre]/quarter', 
+    }],
+
 });
 export default QuarterModel;

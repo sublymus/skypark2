@@ -293,6 +293,12 @@ export const load = {
     email: "sublymus@gmail.com",
     password: "azert",
   },
+  server: {
+    validId:{
+      "id":" I'm a valid ID \\(^-^)/ ",
+      "modelPath":"user"
+      },
+  },
   ["server-model"]: {
     create: {
       modelPath: "account",

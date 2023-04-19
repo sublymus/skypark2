@@ -4,6 +4,7 @@ import '../deep/deep2.js';
 import '../entryPoint/entryPoint.js';
 import '../list/list.js';
 import '../login/login.js';
+import '../servicePage/servicePage.js';
 import '../signup/signup.js';
 import '../welcome/welcome.js';
 
@@ -25,6 +26,7 @@ export class Home extends BaseComponent {
                     _('div@btn=login', 'btn', 'LOGIN'),
                     _('div@btn=entry-point', 'btn', 'ENTRY POINT'),
                     _('div@btn=creation-page', 'btn', 'Creation'),
+                    _('div@btn=service-page', 'btn', 'Service'),
                     _('div@btn=deep-ctn', 'btn', 'DEEP'),
                 )
             ),
@@ -34,6 +36,7 @@ export class Home extends BaseComponent {
                 _('Signup@page', {}),
                 _('EntryPoint@page', {}),
                 _('CreationPage@page', {}),
+                _('ServicePage@page', {}),
                 _('div@page', 'deep-ctn'),
             )
         );

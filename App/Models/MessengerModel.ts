@@ -25,7 +25,7 @@ const MessengerModel = mongoose.model("messenger", MessengerSchema);
 MakeModelCtlForm({
   schema: MessengerSchema,
   model: MessengerModel,
-  volatile: true,
+  volatile: false,
 });
 
 export default MessengerModel;

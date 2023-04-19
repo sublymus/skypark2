@@ -1,7 +1,9 @@
 import mongoose, { Schema } from "mongoose";
+import Log from "sublymus_logger";
+import { Controllers } from "../../lib/squery/Initialize";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import CommunityModel from "./CommunityModel";
+import ChannelModel from "./ChannelModel";
 
 let buildingSchema = SQuery.Schema({
 
@@ -13,18 +15,42 @@ let buildingSchema = SQuery.Schema({
         type: String,
         required: true,
     },
-    community: {
+    users: [{
         type: Schema.Types.ObjectId,
-        ref: CommunityModel.modelName,
+        ref: 'user',
+        strictAlien: true,
+        impact:false,
+    }],
+    Thread: {
+        type: Schema.Types.ObjectId,
+        ref: ChannelModel.modelName,
     },
+    // activities: [{
+    //     type: Schema.Types.ObjectId,
+    //     ref: ActivityModel.modelName,
+    // }]
 
 });
 
 const BuildingModel = mongoose.model("building", buildingSchema);
 
-MakeModelCtlForm({
+const maker = MakeModelCtlForm({
     schema: buildingSchema,
     model: BuildingModel,
     volatile: true,
+
+    bind: [{
+        pattern: './name -> ./Thread/name',
+    }],
+    query: {
+        my_query: {
+            // les users dans la list qui respect cette condition..
+        }
+    }
+
 });
+
+
 export default BuildingModel;
+
+

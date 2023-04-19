@@ -3,7 +3,7 @@ import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { ContextSchema, authDataSchema } from "./Context";
 import { ModelControllers, ResponseSchema } from "./Initialize";
-import { SQuery } from "./SQuery";
+import { MapUserCtx, SQuery } from "./SQuery";
 
 
 

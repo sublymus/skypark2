@@ -6,23 +6,24 @@ import AccountModel from "./AccountModel";
 import ChannelModel from "./ChannelModel";
 
 let DiscussionSchema = SQuery.Schema({
-  sender: {
-    type: Schema.Types.ObjectId,
-    ref: AccountModel.modelName,
-    strictAlien: true,
-    required: true,
-  },
   receiver: {
     type: Schema.Types.ObjectId,
     ref: AccountModel.modelName,
     strictAlien: true,
-    required: true,
+    impact: false,
+  },
+  sender: {
+    type: Schema.Types.ObjectId,
+    ref: AccountModel.modelName,
+    strictAlien: true,
+    impact: false,
   },
   channel: {
     type: Schema.Types.ObjectId,
     ref: ChannelModel.modelName,
-    required: true,
-    alien: true,
+    //access: 'admin',
+    strictAlien: true,
+    impact: false,
   },
 });
 

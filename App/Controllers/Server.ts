@@ -3,7 +3,7 @@ import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
 import { SaveCtrl } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema } from "../../lib/squery/Initialize";
-import { parentInfo } from "../../lib/squery/ModelCtrlManager";
+import { accessValidator, parentInfo } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 const Server: ControllerSchema = {
@@ -28,6 +28,11 @@ const Server: ControllerSchema = {
     },
     description: async (ctx: ContextSchema): ResponseSchema => {
         try {
+            const valid = accessValidator(ctx, 'read', ModelControllers[ctx.data.modelPath]?.option.access, 'controller');
+            //Log('Description_valid_access:', valid, '; ctrlAccess:', ModelControllers[ctx.data.modelPath]?.option.access, '; __permission =', ctx.__permission, '; modelPath:',ctx.data.modelPath)
+
+            if (!valid) throw new Error("ACCESS_REFUSED");
+
             const description: DescriptionSchema = { ...ModelControllers[ctx.data.modelPath]?.option.schema.description };
 
             for (const key in description) {
@@ -36,12 +41,10 @@ const Server: ControllerSchema = {
                     const rule = { ...description[key] };
 
                     if (Array.isArray(rule)) {
-
                         if (rule[0].access == 'secret') {
                             delete description[key];
                             continue;
                         }
-                        Log('key', key, '  access', rule[0].access);
                         (rule[0] as any).type = rule[0].type?.name
                         if (rule[0].match) {
                             (rule[0] as any).match = rule[0].match.toString()
@@ -67,9 +70,9 @@ const Server: ControllerSchema = {
             }
         } catch (error) {
             return {
-                error: "NOT_FOUND",
+                error: "OPERATION_FAILED",
                 status: 404,
-                code: "UNDEFINED",
+                code: "OPERATION_FAILED",
                 message: error.message,
             };
         }
@@ -81,14 +84,10 @@ const Server: ControllerSchema = {
             } = {}
 
             for (const key in ModelControllers) {
-                /// TODO verifier la permitsson   
-                //if (accessValidator(ctx, '', ModelControllers[key].option.access, 'controller'))
+
                 ctx.data.modelPath = key
                 descriptions[key] = (await Server.description(ctx, more)).response;
-                // //console.log('1', key, descriptions[key]);
-
             }
-            // //console.log('2', descriptions);
             return {
                 response: descriptions,
                 status: 202,
@@ -104,7 +103,7 @@ const Server: ControllerSchema = {
             };
         }
     },
-    valideId: async (ctx: ContextSchema): ResponseSchema => {
+    validId: async (ctx: ContextSchema): ResponseSchema => {
         try {
 
             if (new mongoose.Types.ObjectId(ctx.data.id)._id.toString() == ctx.data.id) {
@@ -124,7 +123,7 @@ const Server: ControllerSchema = {
                 code: "BAD_ARGUMENT",
                 message: error.message,
             };
-        }
+        } 
     },
     extractor: async (ctx: ContextSchema): ResponseSchema => {
         try {
@@ -143,8 +142,7 @@ const Server: ControllerSchema = {
             // //let current:any = ModelControllers[]
             // const isValidArrayProperty = (part: string) => {
             //     return /^[a-zA-Z_][a-zA-Z0-9_]*\[([0-9]{1,4})\]$/.test(part);
-            // }
-
+            // 
             let res = await ModelControllers[modelPath]().read({
                 ...ctx,
                 data: { id }

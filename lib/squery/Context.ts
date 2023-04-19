@@ -35,6 +35,14 @@ export type ContextSchema = {
     DefaultEventsMap,
     any
   >,
+  signup:{
+    modelPath:string,
+    id:string
+  },
+  login: {
+    modelPath: string,
+    id: string
+  }
   __key: string, /// pour le moment data.__key = cookies[__key]
   __permission: string
 } & MoreProperty;

@@ -117,11 +117,12 @@ export async function createModelFrom(modelPath) {
         return parentInstance;
     };
     Model.update = async (data) => {
-        const validation = dataValidator('update', description, data);
-        if (validation != true) {
-            console.error(validation);
-            return null;
-        };
+        const result = await Validator(description, data);
+        if (result.value == undefined) {
+            await emitRefresh([property])
+            throw new Error('Invalide Value :' + value + ' \n because : ' + result.message);
+        }
+
         return await new Promise((rev, rej) => {
             try {
                 SQuery.emitNow("model_" + modelPath + ':update', data,
@@ -151,6 +152,7 @@ export async function createModelFrom(modelPath) {
     }
     return Model;
 }
+
 export async function createInstanceFrom({ modelPath, id, Model }) {
     let cache = {};
     let propertyCache = {};
@@ -251,7 +253,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                                 propertyCache[property] = cache[property];
                                 lastPropertyUpdateAt = lastInstanceUpdateAt;
                                 firstRead = false
-                                //  //console.log('get:propertyCache[' + property + ']', { propertyCache, cache });
+                                //  //consopropertyCle.log('get:propertyCache[' + property + ']', { propertyCache, cache });
                             }
                             return propertyCache[property];
                         }
@@ -283,7 +285,6 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                             console.log(files);
                             value = files;
                         }
-                        //NEW_ADD
                         const result = await Validator(description[property], value);
                         if (result.value == undefined) {
                             await emitRefresh([property])
@@ -423,10 +424,10 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                                         rev(instance);
                                     })
                                 });
-                                const itemsInstance = (await Promise.allSettled(promises)).map((p) => {
-                                    return p.value || null;
-                                }).filter(itemInstance => {
-                                    return !!itemInstance;
+                                const itemsInstance = (await Promise.allSettled(promises)).filter((p) => {
+                                    return !!p.value ;
+                                }).map(p=>{
+                                    return p.value
                                 });
                                 //console.log(itemsInstance);
                                 return currentData['#itemsInstance'] = itemsInstance;
