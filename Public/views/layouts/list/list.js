@@ -98,6 +98,9 @@ export class List extends BaseComponent {
                     this.arrayInstance.when('dataAvalaible', (data) => {
                         this.emit('createList', data)
                     });
+                    this.arrayInstance.when('update', async(data) => {
+                        this.emit('createList', await data.arrayData)
+                    });
                     await this.arrayInstance.update({
                         paging: {
                             limit: 3
@@ -112,13 +115,15 @@ export class List extends BaseComponent {
                     const rule = this.description[this.property];
                     if (rule[0] && rule[0].ref) {
 
-
+                        console.log(data);
                         for (let i = 0; i < data.items.length; i++) {
                             const item = data.items[i];
                             this.emit('createBtn', {
                                 data: {
                                     modelPath: rule[0].ref,
                                     id: item._id,
+                                    itemsInstance: data.itemsInstance,
+                                    index:i,
                                 },
                                 cb: (elem) => $('.container').append(elem),
                             });
@@ -139,13 +144,14 @@ export class List extends BaseComponent {
                 this.when('createBtn', async ({ data, cb }) => {
                     const btn = _('div', 'ref-btn',
                         _('h1', 'model', data.modelPath),
-                        _('h3', 'id', await data.id),
+                        _('h3', 'id', data.id),
                     );
                     btn.addEventListener('click', async () => {
                         this.emit('hide');
+                        const instane = await  data.itemsInstance[data.index];
                         this.container.append(_('Deep', {
                             ...data,
-                            id: await data.id,
+                            id: instane.$id,
                             parentCpn: this,
                             container: this.container,
                         }));

@@ -38,16 +38,6 @@ const maker = MakeModelCtlForm({
     schema: buildingSchema,
     model: BuildingModel,
     volatile: true,
-
-    bind: [{
-        pattern: './name -> ./Thread/name',
-    }],
-    query: {
-        my_query: {
-            // les users dans la list qui respect cette condition..
-        }
-    }
-
 });
 
 

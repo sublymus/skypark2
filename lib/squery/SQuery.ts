@@ -51,19 +51,19 @@ async function defineContext(
   const token = decoded.token;
   const ctx: ContextSchema = {
     signup: {
-      id: token.__signupId,
-      modelPath: token.__signupModelPath,
+      id: token?.__signupId,
+      modelPath: token?.__signupModelPath,
     },
     login: {
-      id: token.__loginId,
-      modelPath: token.__loginModelPath,
+      id: token?.__loginId,
+      modelPath: token?.__loginModelPath,
     },
     ctrlName,
     action,
     data,
     socket,
-    __key: token.__key, /// pour le moment data.__key = cookies[__key]
-    __permission: token.__permission || "any", ///  data.__permission = undefined
+    __key: token?.__key, /// pour le moment data.__key = cookies[__key]
+    __permission: token?.__permission || "any", ///  data.__permission = undefined
   };
   MapUserCtx[token.__key] = {
     ctx: ctx.socket.id,
@@ -75,7 +75,7 @@ async function defineContext(
 type SQuerySchema = Function & {
   emiter: EventEmiter;
   io: (
-    server: any
+    server?: any
   ) => Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
   Schema: (description: DescriptionSchema) => any;
   auth: (authData: authDataOptionSchema) => void;
@@ -219,7 +219,9 @@ SQuery.emiter = new EventEmiter();
 
 SQuery.io = (server: any) => {
   /********************    Cookies   *********************** */
-
+  if (!server) {
+    return Global.io;
+  }
   const io = new Server(server, {
     cookie: {
       name: "io",
@@ -316,17 +318,17 @@ SQuery.io = (server: any) => {
         });
       }
       /********************    All  *********************** */
-      socket.onAny((event, data, cb: CallBack) => {});
+      socket.onAny((event, data, cb: CallBack) => { });
       /********************    MapUserCtx  *********************** */
 
       /********************    Models  *********************** */
 
       const squery = SQuery(socket);
-      for (const ctrlName in ModelControllers) {
-        if (Object.prototype.hasOwnProperty.call(ModelControllers, ctrlName)) {
-          for (const action of avalaibleModelAction) {
-            const b = "model_" + ctrlName;
-            socket.on(b + ":" + action, squery(b, action));
+      for (const ctrlName_modelPath in ModelControllers) {
+        if (Object.prototype.hasOwnProperty.call(ModelControllers, ctrlName_modelPath)) {
+          for (const service of avalaibleModelAction) {
+            const ctrlName = "model_" + ctrlName_modelPath;
+            socket.on(ctrlName + ":" + service, squery(ctrlName, service));
           }
         }
       } /********************    Controllers  *********************** */
@@ -334,9 +336,9 @@ SQuery.io = (server: any) => {
         if (Object.prototype.hasOwnProperty.call(Controllers, ctrlName)) {
           const ctrlMaker = Controllers[ctrlName];
           const ctrl = ctrlMaker();
-          for (const action in ctrl) {
-            if (Object.prototype.hasOwnProperty.call(ctrl, action)) {
-              socket.on(ctrlName + ":" + action, squery(ctrlName, action));
+          for (const service in ctrl) {
+            if (Object.prototype.hasOwnProperty.call(ctrl, service)) {
+              socket.on(ctrlName + ":" + service, squery(ctrlName, service));
             }
           }
         }
@@ -419,11 +421,11 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
   };
 
   description.createdAt = {
-    type: Date,
+    type: Number,
     access: "admin",
   };
   description.updatedAt = {
-    type: Date,
+    type: Number,
     access: "admin",
   };
   description.updatedProperty = [
@@ -448,6 +450,17 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
     // SQuery.emiter.when('update:' + doc._id.toString(), (val) => {
     //   Log('update:' + doc._id.toString(), val);
     // })
+    let canEmit = false;
+    doc.updatedProperty.forEach((p: string) => {
+      const rule = description[p];
+      if (Array.isArray(rule) && rule[0]?.access != 'secret') {
+        canEmit = true;
+      } else if (!Array.isArray(rule) && rule?.access != 'secret') {
+        canEmit = true;
+      }
+    });
+
+    // if(!canEmit)return;
 
     Global.io.emit("update:" + doc._id.toString(), {
       id: doc._id.toString(),

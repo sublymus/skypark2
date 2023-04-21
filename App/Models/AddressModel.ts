@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import BuildingModel from "./BuildingModel";
-import QuarterModel from "./Quarter";
+import QuarterModel from "./QuarterModel";
 
 let addressSchema = SQuery.Schema({
 

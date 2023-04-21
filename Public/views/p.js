@@ -146,31 +146,28 @@ export const load = {
   quarter: {
     create: {
 
-      name: "noga Buidl",
-      city: "agvhb",
-      community: {
-        Thread: {
+      name: "skypark Center",
+      city: "Rostov on don",
+      Thread: {
+        name: "quarter_Thread",
+        description: "thread_main",
+        vectors: [],
+        users: []
+      },
+      activities: [{
+        poster: {
+          message: "*** BEST ****"
+        },
+        channel: {
           name: "Sport_Channel",
+          firstWatcher: "",
           description: "more description about sport channel",
           vectors: [],
           users: []
         },
-        name: "Together Group",
-        activities: [{
-          poster: {
-            message: "*** BEST ****"
-          },
-          channel: {
-            name: "Sport_Channel",
-            firstWatcher: "",
-            description: "more description about sport channel",
-            vectors: [],
-            users: []
-          },
-          name: "Sport",
-          description: "we love sport"
-        }]
-      },
+        name: "Sport",
+        description: "we love sport"
+      }],
       buildings: []
 
     },
@@ -182,29 +179,11 @@ export const load = {
     create: {
       name: "skypark Center",
       city: "Rostov on don",
-      community: {
-        name: "Together Group",
-        Thread: {
-          name: "Building_Thread",
-          description: "thread_main",
-          vectors: [],
-          watcher: []
-        },
-        activities: [{
-          poster: {
-            //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
-            //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
-            message: "*** BEST ****",
-          },
-          channel: {
-            name: "Sport_Channel",
-            description: "more description about sport channel",
-            vectors: [],
-            watcher: []
-          },
-          name: "Sport",
-          description: "we love sport"
-        }]
+      Thread: {
+        name: "Building_Thread",
+        description: "thread_main",
+        vectors: [],
+        users: []
       },
     },
   },
@@ -294,10 +273,10 @@ export const load = {
     password: "azert",
   },
   server: {
-    validId:{
-      "id":" I'm a valid ID \\(^-^)/ ",
-      "modelPath":"user"
-      },
+    validId: {
+      "id": " I'm a valid ID \\(^-^)/ ",
+      "modelPath": "user"
+    },
   },
   ["server-model"]: {
     create: {

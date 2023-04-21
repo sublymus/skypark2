@@ -10,16 +10,17 @@ let PostSchema = SQuery.Schema({
     ref: MessageModel.modelName,
     required: true,
   },
-  likeCount: {
-    type: Number,
-    default: 0,
-  },
-  comments: [
-    {
+  like:[{
+    type:Schema.Types.ObjectId,
+    access:'secret',
+    impact:false,
+    required:true,
+  }],
+  comments: [ {
       type: Schema.Types.ObjectId,
       ref: "post",
-    },
-  ],
+      required:true,
+    }],
 });
 
 const PostModel = mongoose.model("post", PostSchema);
@@ -31,6 +32,7 @@ const maker = MakeModelCtlForm({
 });
 
 maker.pre("create", async ({ ctx }) => {
-  Log("piou", ctx.data);
+  ctx.data.like = [];
+  ctx.data.comments = [];
 });
 export default PostModel;

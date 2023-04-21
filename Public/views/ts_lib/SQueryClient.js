@@ -6,7 +6,6 @@ const SQuery = {};
 const socket = io(null, {
     extraHeaders: {},
 });
-//NEW_ADD
 socket.on("storeCookie", (cookie, cb) => {
     document.cookie = cookie;
     console.log('document.cookie :  ', document.cookie);

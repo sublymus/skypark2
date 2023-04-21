@@ -16,6 +16,7 @@ let ChannelSchema = SQuery.Schema({
         type: Schema.Types.ObjectId,
         ref: 'user',
         strictAlien: true,
+        impact:false,
     },
     description: {
         type: String,
@@ -32,8 +33,8 @@ let ChannelSchema = SQuery.Schema({
     users:[{
         type: Schema.Types.ObjectId,
         ref: 'user',
-        impact:true,
         access: 'public',
+        impact:false,
     }]
 });
 

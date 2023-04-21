@@ -15,13 +15,11 @@ let QuarterSchema = SQuery.Schema({
         type: String,
         required: true,
     },
-    buildings: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: BuildingModel.modelName,
-            strictAlien: true,
-        },
-    ],
+    buildings: [{
+        type: Schema.Types.ObjectId,
+        ref: BuildingModel.modelName,
+        strictAlien: true,
+    }],
     Thread: {
         type: Schema.Types.ObjectId,
         ref: ChannelModel.modelName,
@@ -42,7 +40,7 @@ MakeModelCtlForm({
     bind: [{
         pattern: './prof/dress/color -> ./buildings[my_query]/city',
     }, {
-        pattern: './_id -> ./buildings[filtre]/quarter', 
+        pattern: './_id -> ./buildings[filtre]/quarter',
     }],
 
 });

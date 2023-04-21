@@ -6,7 +6,7 @@ import BuildingModel from "./BuildingModel";
 import ConstructionManagerModel from "./EntrepriseManagerModel";
 import ProfileModel from "./ProfileModel";
 import ManagerModel from "./ManagerModel";
-import QuarterModel from "./Quarter";
+import QuarterModel from "./QuarterModel";
 import EntrepriseManagerModel from "./EntrepriseManagerModel";
 
 let EntrepiseSchema = SQuery.Schema({
@@ -15,11 +15,13 @@ let EntrepiseSchema = SQuery.Schema({
     //ref: ConstructionManagerModel.modelName,
     ref: EntrepriseManagerModel.modelName,
     strictAlien: true,
+    impact:false,
   }],
   quarters: [{
     type: Schema.Types.ObjectId,
     ref: QuarterModel.modelName,
     strictAlien: true,
+    impact:false,
   }],
   address: {
     type: Schema.Types.ObjectId,

@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
-import { ContextSchema } from "../../lib/squery/Context";
-import { SaveCtrl } from "../../lib/squery/CtrlManager";
-import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema } from "../../lib/squery/Initialize";
-import { accessValidator, parentInfo } from "../../lib/squery/ModelCtrlManager";
-import { SQuery } from "../../lib/squery/SQuery";
+import { ContextSchema } from "../Context";
+import { SaveCtrl } from "../CtrlManager";
+import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema } from "../Initialize";
+import { accessValidator, parentInfo } from "../ModelCtrlManager";
+import { SQuery } from "../SQuery";
 
 const Server: ControllerSchema = {
 
@@ -249,34 +249,8 @@ const ctrlMaker = SaveCtrl({
     }
 })
 
-
-ctrlMaker.pre('description', async (e) => {
-    await new Promise((rev => {
-        const d = Date.now() + 100
-        const t = () => {
-            //console.log(Date.now());
-            if (d < Date.now()) {
-                return rev(d);
-            }
-            setTimeout(t, 10)
-        }
-        t();
-    }))
-})
-ctrlMaker.post('description', async (e) => {
-    await new Promise((rev => {
-        const d = Date.now() + 100
-        const t = () => {
-            //console.log('_________________' + Date.now());
-            if (d < Date.now()) {
-                return rev(d);
-            }
-            setTimeout(t, 10)
-        }
-        t()
-
-    }))
-})
+ctrlMaker.pre('description', async (e) => {})
+ctrlMaker.post('description', async (e) => {})
 
 
 

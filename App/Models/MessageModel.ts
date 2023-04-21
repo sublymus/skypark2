@@ -5,10 +5,12 @@ import FileListModel from "./FileListModel";
 import FileModel from "./FileModel";
 
 let MessageSchema = SQuery.Schema({
-    user: {
+    //*NEW_ADD
+    account: {
         type: Schema.Types.ObjectId,
-        ref: 'user',
+        ref: 'account',
         strictAlien:true,
+        impact:false,
     },
     text: {
         type: String
@@ -21,6 +23,7 @@ let MessageSchema = SQuery.Schema({
     targets: [{
         type: Schema.Types.ObjectId,
         ref: 'user',/////
+        impact:false,
     }]
 });
 
