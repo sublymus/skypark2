@@ -25,6 +25,7 @@ let QuarterSchema = SQuery.Schema({
     Thread: {
         type: Schema.Types.ObjectId,
         ref: ChannelModel.modelName,
+        strictAlien : true
     },
     activities: [{
         type: Schema.Types.ObjectId,

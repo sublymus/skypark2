@@ -51,21 +51,21 @@ async function defineContext(
   const token = decoded.token;
   const ctx: ContextSchema = {
     signup: {
-      id: token.__signupId,
-      modelPath: token.__signupModelPath,
+      id: token?.__signupId,
+      modelPath: token?.__signupModelPath,
     },
     login: {
-      id: token.__loginId,
-      modelPath: token.__loginModelPath,
+      id: token?.__loginId,
+      modelPath: token?.__loginModelPath,
     },
     ctrlName,
     action,
     data,
     socket,
-    __key: token.__key, /// pour le moment data.__key = cookies[__key]
-    __permission: token.__permission || "any", ///  data.__permission = undefined
+    __key: token?.__key, /// pour le moment data.__key = cookies[__key]
+    __permission: token?.__permission || "any", ///  data.__permission = undefined
   };
-  MapUserCtx[token.__key] = {
+  MapUserCtx[token?.__key] = {
     ctx: ctx.socket.id,
     exp: decoded.exp,
     isAvalaibleCtx: true,
@@ -419,11 +419,11 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
   };
 
   description.createdAt = {
-    type: Date,
+    type: Number,
     access: "admin",
   };
   description.updatedAt = {
-    type: Date,
+    type: Number,
     access: "admin",
   };
   description.updatedProperty = [

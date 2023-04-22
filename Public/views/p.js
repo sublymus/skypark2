@@ -1,10 +1,9 @@
-
 export const load = {
   post: {
     create: {
       message: {
         // user: '',
-        text: 'c\' est mon post',
+        text: "c' est mon post",
         fileList: [],
         // __fileList: {
         //   type: String,
@@ -26,16 +25,17 @@ export const load = {
     paging: {
       page: 1,
       limit: 3,
-      select: '',
-      sort: { "createdAt": -1 },
+      select: "",
+      sort: { createdAt: -1 },
       query: {},
-    }
+    },
   },
   article: {
     create: {
-      name: 'Salade',
+      name: "Salade",
       stock: 2,
-      description: 'Plante cultivée dont on fait la salade (surtout laitues; batavias; scaroles; chicorées). Repiquer des salades.',
+      description:
+        "Plante cultivée dont on fait la salade (surtout laitues; batavias; scaroles; chicorées). Repiquer des salades.",
       views: [],
       price: 5,
       folders: [
@@ -48,7 +48,7 @@ export const load = {
         {
           folderName: "wena2",
         },
-      ]
+      ],
     },
     read: { id: "" },
     delete: { id: "" },
@@ -63,14 +63,14 @@ export const load = {
   user: {
     create: {
       messenger: {
-        discussions: []
+        discussions: [],
       },
       account: {
-        name: 'baron',
+        name: "baron",
         email: "sublymus@gmail.com",
         password: "azert",
         telephone: "12345678",
-        status: 'property',
+        status: "property",
         address: {
           location: "l:567455;h45678654",
           room: 45,
@@ -110,42 +110,27 @@ export const load = {
       },
     },
     read: {
-      id: ""
+      id: "",
     },
     delete: {
-      id: ""
+      id: "",
     },
   },
 
   entreprise: {
     create: {
-      managers: [""],
-      buildings: [""],
-      address: {
-        location: "l:567455;h45678654",
-        building: {
-          name: 'Sublymus E45',
-          city: 'Rostov-On-Don',
-        },
-        room: 45,
-        door: 296,
-        etage: 4,
-        description: "je suis ici",
+      name: "skypark Center",
+      city: "Rostov on don",
+      Thread: {
+        name: "Building_Thread",
+        description: "thread_main",
+        vectors: [],
       },
-      telephone: [1234567890, 8765432, 65456787654],
-      email: "etp@gmail.com",
-      webPageUrl: "https://v2.voiranime.com/anime/tengoku-daimakyou/tengoku-daimakyou-01-vostfr/",
-      profile: {
-        //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
-        //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
-        message: "*** BEST ****",
-      },
-      creationDate: Date.now(),
-    }
+      users: [],
+    },
   },
   quarter: {
     create: {
-
       name: "noga Buidl",
       city: "agvhb",
       community: {
@@ -153,59 +138,40 @@ export const load = {
           name: "Sport_Channel",
           description: "more description about sport channel",
           vectors: [],
-          users: []
+          users: [],
         },
         name: "Together Group",
-        activities: [{
-          poster: {
-            message: "*** BEST ****"
+        activities: [
+          {
+            poster: {
+              message: "*** BEST ****",
+            },
+            channel: {
+              name: "Sport_Channel",
+              firstWatcher: "",
+              description: "more description about sport channel",
+              vectors: [],
+              users: [],
+            },
+            name: "Sport",
+            description: "we love sport",
           },
-          channel: {
-            name: "Sport_Channel",
-            firstWatcher: "",
-            description: "more description about sport channel",
-            vectors: [],
-            users: []
-          },
-          name: "Sport",
-          description: "we love sport"
-        }]
+        ],
       },
-      buildings: []
-
+      buildings: [],
     },
     read: { id: "" },
-
-
   },
   building: {
     create: {
       name: "skypark Center",
       city: "Rostov on don",
-      community: {
-        name: "Together Group",
-        Thread: {
-          name: "Building_Thread",
-          description: "thread_main",
-          vectors: [],
-          watcher: []
-        },
-        activities: [{
-          poster: {
-            //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
-            //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
-            message: "*** BEST ****",
-          },
-          channel: {
-            name: "Sport_Channel",
-            description: "more description about sport channel",
-            vectors: [],
-            watcher: []
-          },
-          name: "Sport",
-          description: "we love sport"
-        }]
+      Thread: {
+        name: "Building_Thread",
+        description: "thread_main",
+        vectors: [],
       },
+      users: [],
     },
   },
   account: {
@@ -276,8 +242,8 @@ export const load = {
   post: {
     create: {
       message: {
-        user: '',
-        text: 'Hello Its my',
+        user: "",
+        text: "Hello Its my",
         fileList: [],
       },
       likeCount: 2098,
@@ -294,10 +260,10 @@ export const load = {
     password: "azert",
   },
   server: {
-    validId:{
-      "id":" I'm a valid ID \\(^-^)/ ",
-      "modelPath":"user"
-      },
+    validId: {
+      id: " I'm a valid ID \\(^-^)/ ",
+      modelPath: "user",
+    },
   },
   ["server-model"]: {
     create: {
@@ -307,13 +273,13 @@ export const load = {
 };
 load.manager = {
   create: {
-    ...load['user'].create,
-    entreprise: '',
+    ...load["user"].create,
+    entreprise: "",
   },
 };
 load.entreprisemanager = {
   create: {
-    ...load['user'].create,
-    entreprise: '',
+    ...load["user"].create,
+    entreprise: "",
   },
-}
+};
