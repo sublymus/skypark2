@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-import Log from "sublymus_logger";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import MessageModel from "./MessageModel";
@@ -18,6 +17,7 @@ let PostSchema = SQuery.Schema({
   }],
   comments: [ {
       type: Schema.Types.ObjectId,
+      access:'admin',
       ref: "post",
       required:true,
     }],

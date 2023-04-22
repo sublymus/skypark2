@@ -29,10 +29,13 @@ let MessageSchema = SQuery.Schema({
 
 const MessageModel = mongoose.model("message", MessageSchema);
 
-MakeModelCtlForm({
+const ctrlMaker = MakeModelCtlForm({
     schema: MessageSchema,
     model: MessageModel,
     volatile: true,
 });
-
+ctrlMaker.pre('create',async ({ctx})=>{
+    if(ctx.__permission == 'admin') return;
+    ctx.data.account = ctx.login.id;
+})
 export default MessageModel;

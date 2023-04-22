@@ -18,6 +18,7 @@ const Messenger: ControllerSchema = {
                     status: 404
                 }
             }
+            
             /** on recupere le  sender(UserModel)*/
             const sender = await ModelControllers[ctx.signup.modelPath].option.model.findOne({ _id: ctx.signup.id });
             if (!sender) {
@@ -151,6 +152,7 @@ const Messenger: ControllerSchema = {
                         const resDeleteChannel = await (ctrl.delete || ctrl.destroy)({
                             ...ctx,
                             __key: channel.__key,
+                            __permission:'admin',
                             data: {
                                 id: channel._id,
                             }

@@ -409,7 +409,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
         }
         //console.log('@@@@@@@@@@@@@@@@@@@@@@@option : ', options);
         options.paging.query = {
-            __parentModel: parentModel + '_' + parentId + '_' + property,
+            __parentModel: parentModel + '_' + parentId + '_' + property+'_'+itemModelPath,
         }
         //console.log('#####################option : ', options);
 

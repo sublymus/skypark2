@@ -255,9 +255,8 @@ export const load = {
   post: {
     create: {
       message: {
-        user: '',
         text: 'Hello Its my',
-        fileList: [],
+        file: [],
       },
       likeCount: 2098,
     },
