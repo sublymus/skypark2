@@ -27,7 +27,7 @@ const ctrlMaker = MakeModelCtlForm({
     volatile: true,
 });
 
-ctrlMaker.pre('store', async ({ ctx }) => {
+ctrlMaker.pre('create', async ({ ctx }) => {
    
 })
 

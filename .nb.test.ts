@@ -140,4 +140,18 @@ fileInstance.update({
     }],
     remove:["url"] // server file access
 })
+
+
+
+
+
+post.comments
+post.like
+messenger.createDiscussion
+messenger.removeDiscussion
+
+
+
+
+
 */

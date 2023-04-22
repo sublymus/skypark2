@@ -38,5 +38,17 @@ maker.tools.assigneToNewListElement({
     Log('soureceID', { id, option })
     return id
   }
-})
+});
+maker.tools.assigneToNewListElement({
+  parentModelPath: 'building',
+  parentListProperty: 'users',
+  targetExtractorPath: './account/address',
+  targetProperty: 'quarter',
+  sourceExtractorPath: '../',
+  sourceProperty: '_id',
+  map: (id, option) => {
+    Log('soureceID', { id, option })
+    return id
+  }
+});
 export default UserModel;

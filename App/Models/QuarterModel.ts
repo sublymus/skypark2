@@ -18,7 +18,7 @@ let QuarterSchema = SQuery.Schema({
     buildings: [{
         type: Schema.Types.ObjectId,
         ref: BuildingModel.modelName,
-        strictAlien: true,
+        alien: true,
     }],
     Thread: {
         type: Schema.Types.ObjectId,
@@ -37,11 +37,5 @@ MakeModelCtlForm({
     schema: QuarterSchema,
     model: QuarterModel,
     volatile: true,
-    bind: [{
-        pattern: './prof/dress/color -> ./buildings[my_query]/city',
-    }, {
-        pattern: './_id -> ./buildings[filtre]/quarter',
-    }],
-
 });
 export default QuarterModel;
