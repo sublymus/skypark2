@@ -23,6 +23,8 @@ import {
   ResultSchema,
   TypeRuleSchema,
 } from "./Initialize";
+import { SQuery } from "./SQuery";
+import { Tools } from "./Tools.";
 //import { Bindings } from "./Binding";
 
 // les tableau 2D sont pas tolere
@@ -31,311 +33,150 @@ const MakeModelCtlForm: (
 ) => CtrlModelMakerSchema = (
   options: ModelFrom_optionSchema
 ): CtrlModelMakerSchema => {
-  // //console.log(options?.model?.modelName);
-  const option: ModelFrom_optionSchema & { modelPath: string } = {
-    ...options,
-    modelPath: options.model.modelName,
-  };
-  option.schema.model = option.model;
-  // new Bindings(option);
-  const EventManager: {
-    [p: string]: {
-      pre: ListenerPreSchema[];
-      post: ListenerPostSchema[];
+    // //console.log(options?.model?.modelName);
+    const option: ModelFrom_optionSchema & { modelPath: string } = {
+      ...options,
+      modelPath: options.model.modelName,
     };
-  } = {};
+    option.schema.model = option.model;
+    // new Bindings(option);
+    const EventManager: {
+      [p: string]: {
+        pre: ListenerPreSchema[];
+        post: ListenerPostSchema[];
+      };
+    } = {};
 
-  const callPre: (e: EventPreSchema) => Promise<void> = async (
-    e: EventPreSchema
-  ) => {
-    if (!EventManager[e.action]?.pre) return;
+    const callPre: (e: EventPreSchema) => Promise<void> = async (
+      e: EventPreSchema
+    ) => {
+      if (!EventManager[e.action]?.pre) return;
 
-    for (const listener of EventManager[e.action].pre) {
-      try {
-        if (listener) await listener(e);
-      } catch (error) {
-        Log("ERROR_callPret", error);
+      for (const listener of EventManager[e.action].pre) {
+        try {
+          if (listener) await listener(e);
+        } catch (error) {
+          Log("ERROR_callPret", error);
+        }
       }
-    }
-  };
-  const callPost: (e: EventPostSchema) => ResponseSchema = async (
-    e: EventPostSchema
-  ) => {
-    if (!EventManager[e.action]?.post) return e.res;
-    for (const listener of EventManager[e.action].post) {
-      try {
-        if (listener) await listener(e);
-      } catch (error) {
-        Log("ERROR_callPost", error);
+    };
+    const callPost: (e: EventPostSchema) => ResponseSchema = async (
+      e: EventPostSchema
+    ) => {
+      if (!EventManager[e.action]?.post) return e.res;
+      for (const listener of EventManager[e.action].post) {
+        try {
+          if (listener) await listener(e);
+        } catch (error) {
+          Log("ERROR_callPost", error);
+        }
       }
-    }
 
-    return e.res;
-  };
-  const ctrlMaker = function () {
-    const controller: ModelControllerSchema = {};
+      return e.res;
+    };
+    const ctrlMaker = function () {
+      const controller: ModelControllerSchema = {};
 
-    const validId = async ({ id, modelPath }) => {
-      const local_modelInstance = await ModelControllers[
-        modelPath
-      ].option.model.findOne({
-        _id: id,
-      });
-      if (!local_modelInstance) {
-        Log(
-          "ERROR_validId",
-          "Id not found; modePath:" +
+      const validId = async ({ id, modelPath }) => {
+        const local_modelInstance = await ModelControllers[
+          modelPath
+        ].option.model.findOne({
+          _id: id,
+        });
+        if (!local_modelInstance) {
+          Log(
+            "ERROR_validId",
+            "Id not found; modePath:" +
             option.modelPath +
             "; alienId:" +
             id +
             "; alienModelPath:" +
             modelPath
-        );
-        throw new Error(
-          "Id not found; modePath:" +
+          );
+          throw new Error(
+            "Id not found; modePath:" +
             option.modelPath +
             "; alienId:" +
             id +
             "; alienModelPath:" +
             modelPath
-        );
-      }
-      return true;
-    };
+          );
+        }
+        return true;
+      };
 
-    /////////////////////////////////////////////////////////////////
-    ///////////////////           CREATE         ////////////////////
-    /////////////////////////////////////////////////////////////////
-    controller[option.volatile ? "create" : "store"] = async (
-      ctx: ContextSchema,
-      more: MoreSchema
-    ): ResponseSchema => {
-      const action = option.volatile ? "create" : "store";
+      /////////////////////////////////////////////////////////////////
+      ///////////////////           CREATE         ////////////////////
+      /////////////////////////////////////////////////////////////////
+      controller[option.volatile ? "create" : "store"] = async (
+        ctx: ContextSchema,
+        more: MoreSchema
+      ): ResponseSchema => {
+        const action = option.volatile ? "create" : "store";
 
-      if (!more) more = {};
-      if (!more.savedlist) more.savedlist = [];
-      if (!more.__parentModel) more.__parentModel = "";
+        if (!more) more = {};
+        if (!more.savedlist) more.savedlist = [];
+        if (!more.__parentModel) more.__parentModel = "";
 
-      if (!accessValidator(ctx, action, option.access, "controller")) {
-        return await callPost({
+        if (!accessValidator(ctx, action, option.access, "controller")) {
+          return await callPost({
+            ctx,
+            more,
+            action,
+            res: {
+              error: "BAD_AUTH_CONTROLLER",
+              ...(await STATUS.BAD_AUTH(ctx, {
+                target: option.modelPath.toLocaleUpperCase(),
+              })),
+            },
+          });
+        }
+
+        const modelId = new mongoose.Types.ObjectId().toString();
+        const description: DescriptionSchema = option.schema.description;
+        more.modelId = modelId;
+        more.modelPath = option.modelPath;
+
+        await callPre({
           ctx,
           more,
           action,
-          res: {
-            error: "BAD_AUTH_CONTROLLER",
-            ...(await STATUS.BAD_AUTH(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-            })),
-          },
         });
-      }
+        const accu = {};
+        let modelInstance: ModelInstanceSchema;
 
-      const modelId = new mongoose.Types.ObjectId().toString();
-      const description: DescriptionSchema = option.schema.description;
-      more.modelId = modelId;
-      more.modelPath = option.modelPath;
-
-      await callPre({
-        ctx,
-        more,
-        action,
-      });
-      const accu = {};
-      let modelInstance: ModelInstanceSchema;
-
-      if (!ctx.__key)
-        return callPost({
-          ctx,
-          more,
-          action,
-          res: {
-            error: "ILLEGAL_ARGUMENT",
-            status: 404,
-            code: "ILLEGAL_ARGUMENT",
-            message: "__key missing",
-          },
-        });
-      for (const property in description) {
-        if (
-          Object.prototype.hasOwnProperty.call(description, property) &&
-          ctx.data[property] != undefined
-        ) {
-          const rule = description[property];
-          //Log('log2', { property, value: ctx.data[property], modelPath: option.modelPath })
-          if (!Array.isArray(rule) && rule.ref) {
-            const isStr = typeof ctx.data[property] == "string";
-            const isAlien = !!(rule.alien || rule.strictAlien);
-            Log(
-              "alien",
-              "strictAlien: ",
-              !!rule.strictAlien,
-              "isStr: ",
-              isStr,
-              option.modelPath,
-              "result: ",
-              !!rule.strictAlien && !isStr
-            );
-            if (!isAlien && isStr) {
-              await backDestroy(ctx, more);
-              return await callPost({
-                ctx,
-                more,
-                action,
-                res: {
-                  error: "ILLEGAL_ARGUMENT",
-                  status: 404,
-                  code: "ILLEGAL_ARGUMENT",
-                  message:
-                    "the property not a alien.. ; value must be creation data object;" +
-                    "model_<" +
-                    option.modelPath +
-                    ">:<" +
-                    action +
-                    "> , can not create child :<" +
-                    property +
-                    ">, ref = <" +
-                    rule.ref +
-                    "> with id : <" +
-                    ctx.data[property] +
-                    ">",
-                },
-              });
-            } else if (isAlien && isStr) {
-              try {
-                const alienId = ctx.data[property];
-                if (
-                  await validId({
-                    id: alienId,
-                    modelPath: rule.ref,
-                  })
-                ) {
-                  accu[property] = alienId;
-                }
-              } catch (error) {
-                await backDestroy(ctx, more);
-                return await callPost({
-                  ctx,
-                  more,
-                  action,
-                  res: {
-                    error: "ILLEGAL_ARGUMENT",
-                    status: 404,
-                    code: "ILLEGAL_ARGUMENT",
-                    message:
-                      "model_<" +
-                      option.modelPath +
-                      ">:<" +
-                      action +
-                      "> , can not create child :<" +
-                      property +
-                      ">, ref = <" +
-                      rule.ref +
-                      "> with id : <" +
-                      ctx.data[property] +
-                      ">",
-                  },
-                });
-              }
-              continue;
-            } else if (!!rule.strictAlien && !isStr) {
-              await backDestroy(ctx, more);
-              return await callPost({
-                ctx,
-                more,
-                action,
-                res: {
-                  error: "ILLEGAL_ARGUMENT",
-                  status: 404,
-                  code: "ILLEGAL_ARGUMENT",
-                  message:
-                    "the property strictAlien.. ; value must be id;" +
-                    "model_<" +
-                    option.modelPath +
-                    ">:<" +
-                    action +
-                    "> , can not create child :<" +
-                    property +
-                    ">, ref = <" +
-                    rule.ref +
-                    "> with id : <" +
-                    ctx.data[property] +
-                    ">",
-                },
-              });
-            }
-            const ctrl = ModelControllers[rule.ref]();
-            Log("log", {
-              property,
-              value: ctx.data[property],
-              modelPath: option.modelPath,
-            });
-            const res = await (ctrl.create || ctrl.store)(
-              {
-                ...ctx,
-                data: ctx.data[property],
-              },
-              {
-                ...more,
-                __parentModel:
-                  option.modelPath +
-                  "_" +
-                  modelId +
-                  "_" +
-                  property +
-                  "_" +
-                  rule.ref,
-              }
-            );
-            if (!res) {
-              // Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
-
-              await backDestroy(ctx, more);
-              // Log('log', { res })
-              return await callPost({
-                ctx,
-                more,
-                action,
-                res: {
-                  error: "ACCESS_NOT_FOUND",
-                  status: 404,
-                  code: "ACCESS_NOT_FOUND",
-                  message:
-                    "model_<" +
-                    option.modelPath +
-                    ">:<" +
-                    action +
-                    "> , can not create child :<" +
-                    property +
-                    ">, ref = <" +
-                    rule.ref +
-                    "> with id : <" +
-                    ctx.data[property] +
-                    ">",
-                },
-              });
-            }
-            if (res.error) {
-              await backDestroy(ctx, more);
-              return await callPost({
-                ctx,
-                more,
-                action,
-                res,
-              });
-            }
-            accu[property] = res.response;
-          } else if (Array.isArray(rule) && rule[0].ref) {
-            ctx.data[property] = Array.isArray(ctx.data[property])
-              ? ctx.data[property]
-              : [];
-            accu[property] = [];
-            const ctrl = ModelControllers[rule[0].ref]();
-            for (let i = 0; i < ctx.data[property].length; i++) {
-              //Log('******', { property }, ' = ', accu[property][i], ' value = ', ctx.data[property][i]);
-              // Log('info', 'alien = ', rule[0].alien, ' if ', (rule[0].alien && typeof ctx.data[property][i] == 'string'))
-              const isStr = typeof ctx.data[property][i] == "string";
-              const isAlien = !!(rule[0].alien || rule[0].strictAlien);
-              // Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
+        if (!ctx.__key)
+          return callPost({
+            ctx,
+            more,
+            action,
+            res: {
+              error: "ILLEGAL_ARGUMENT",
+              status: 404,
+              code: "ILLEGAL_ARGUMENT",
+              message: "__key missing",
+            },
+          });
+        for (const property in description) {
+          if (
+            Object.prototype.hasOwnProperty.call(description, property) &&
+            ctx.data[property] != undefined
+          ) {
+            const rule = description[property];
+            //Log('log2', { property, value: ctx.data[property], modelPath: option.modelPath })
+            if (!Array.isArray(rule) && rule.ref) {
+              const isStr = typeof ctx.data[property] == "string";
+              const isAlien = !!(rule.alien || rule.strictAlien);
+              Log(
+                "alien",
+                "strictAlien: ",
+                !!rule.strictAlien,
+                "isStr: ",
+                isStr,
+                option.modelPath,
+                "result: ",
+                !!rule.strictAlien && !isStr
+              );
               if (!isAlien && isStr) {
                 await backDestroy(ctx, more);
                 return await callPost({
@@ -355,22 +196,22 @@ const MakeModelCtlForm: (
                       "> , can not create child :<" +
                       property +
                       ">, ref = <" +
-                      rule[0].ref +
+                      rule.ref +
                       "> with id : <" +
-                      ctx.data[property][i] +
+                      ctx.data[property] +
                       ">",
                   },
                 });
               } else if (isAlien && isStr) {
                 try {
-                  const alienId = ctx.data[property][i];
+                  const alienId = ctx.data[property];
                   if (
                     await validId({
                       id: alienId,
-                      modelPath: rule[0].ref,
+                      modelPath: rule.ref,
                     })
                   ) {
-                    accu[property][i] = alienId;
+                    accu[property] = alienId;
                   }
                 } catch (error) {
                   await backDestroy(ctx, more);
@@ -390,15 +231,15 @@ const MakeModelCtlForm: (
                         "> , can not create child :<" +
                         property +
                         ">, ref = <" +
-                        rule[0].ref +
+                        rule.ref +
                         "> with id : <" +
-                        ctx.data[property][i] +
+                        ctx.data[property] +
                         ">",
                     },
                   });
                 }
                 continue;
-              } else if (!!rule[0].strictAlien && !isStr) {
+              } else if (!!rule.strictAlien && !isStr) {
                 await backDestroy(ctx, more);
                 return await callPost({
                   ctx,
@@ -417,17 +258,23 @@ const MakeModelCtlForm: (
                       "> , can not create child :<" +
                       property +
                       ">, ref = <" +
-                      rule[0].ref +
+                      rule.ref +
                       "> with id : <" +
-                      ctx.data[property][i] +
+                      ctx.data[property] +
                       ">",
                   },
                 });
               }
+              const ctrl = ModelControllers[rule.ref]();
+              Log("log", {
+                property,
+                value: ctx.data[property],
+                modelPath: option.modelPath,
+              });
               const res = await (ctrl.create || ctrl.store)(
                 {
                   ...ctx,
-                  data: ctx.data[property][i],
+                  data: ctx.data[property],
                 },
                 {
                   ...more,
@@ -438,23 +285,35 @@ const MakeModelCtlForm: (
                     "_" +
                     property +
                     "_" +
-                    rule[0].ref,
+                    rule.ref,
                 }
               );
-              Log("log_list", {
-                res,
-                property,
-                value: ctx.data[property][i],
-                modelPath: option.modelPath,
-              });
               if (!res) {
+                // Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
+
                 await backDestroy(ctx, more);
-                //Log('log', { res })
+                // Log('log', { res })
                 return await callPost({
                   ctx,
                   more,
                   action,
-                  res,
+                  res: {
+                    error: "ACCESS_NOT_FOUND",
+                    status: 404,
+                    code: "ACCESS_NOT_FOUND",
+                    message:
+                      "model_<" +
+                      option.modelPath +
+                      ">:<" +
+                      action +
+                      "> , can not create child :<" +
+                      property +
+                      ">, ref = <" +
+                      rule.ref +
+                      "> with id : <" +
+                      ctx.data[property] +
+                      ">",
+                  },
                 });
               }
               if (res.error) {
@@ -466,118 +325,278 @@ const MakeModelCtlForm: (
                   res,
                 });
               }
-              accu[property][i] = res.response;
+              accu[property] = res.response;
+            } else if (Array.isArray(rule) && rule[0].ref) {
+              ctx.data[property] = Array.isArray(ctx.data[property])
+                ? ctx.data[property]
+                : [];
+              accu[property] = [];
+              const ctrl = ModelControllers[rule[0].ref]();
+              for (let i = 0; i < ctx.data[property].length; i++) {
+                //Log('******', { property }, ' = ', accu[property][i], ' value = ', ctx.data[property][i]);
+                // Log('info', 'alien = ', rule[0].alien, ' if ', (rule[0].alien && typeof ctx.data[property][i] == 'string'))
+                const isStr = typeof ctx.data[property][i] == "string";
+                const isAlien = !!(rule[0].alien || rule[0].strictAlien);
+                // Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
+                if (!isAlien && isStr) {
+                  await backDestroy(ctx, more);
+                  return await callPost({
+                    ctx,
+                    more,
+                    action,
+                    res: {
+                      error: "ILLEGAL_ARGUMENT",
+                      status: 404,
+                      code: "ILLEGAL_ARGUMENT",
+                      message:
+                        "the property not a alien.. ; value must be creation data object;" +
+                        "model_<" +
+                        option.modelPath +
+                        ">:<" +
+                        action +
+                        "> , can not create child :<" +
+                        property +
+                        ">, ref = <" +
+                        rule[0].ref +
+                        "> with id : <" +
+                        ctx.data[property][i] +
+                        ">",
+                    },
+                  });
+                } else if (isAlien && isStr) {
+                  try {
+                    const alienId = ctx.data[property][i];
+                    if (
+                      await validId({
+                        id: alienId,
+                        modelPath: rule[0].ref,
+                      })
+                    ) {
+                      accu[property][i] = alienId;
+                    }
+                  } catch (error) {
+                    await backDestroy(ctx, more);
+                    return await callPost({
+                      ctx,
+                      more,
+                      action,
+                      res: {
+                        error: "ILLEGAL_ARGUMENT",
+                        status: 404,
+                        code: "ILLEGAL_ARGUMENT",
+                        message:
+                          "model_<" +
+                          option.modelPath +
+                          ">:<" +
+                          action +
+                          "> , can not create child :<" +
+                          property +
+                          ">, ref = <" +
+                          rule[0].ref +
+                          "> with id : <" +
+                          ctx.data[property][i] +
+                          ">",
+                      },
+                    });
+                  }
+                  continue;
+                } else if (!!rule[0].strictAlien && !isStr) {
+                  await backDestroy(ctx, more);
+                  return await callPost({
+                    ctx,
+                    more,
+                    action,
+                    res: {
+                      error: "ILLEGAL_ARGUMENT",
+                      status: 404,
+                      code: "ILLEGAL_ARGUMENT",
+                      message:
+                        "the property strictAlien.. ; value must be id;" +
+                        "model_<" +
+                        option.modelPath +
+                        ">:<" +
+                        action +
+                        "> , can not create child :<" +
+                        property +
+                        ">, ref = <" +
+                        rule[0].ref +
+                        "> with id : <" +
+                        ctx.data[property][i] +
+                        ">",
+                    },
+                  });
+                }
+                const res = await (ctrl.create || ctrl.store)(
+                  {
+                    ...ctx,
+                    data: ctx.data[property][i],
+                  },
+                  {
+                    ...more,
+                    __parentModel:
+                      option.modelPath +
+                      "_" +
+                      modelId +
+                      "_" +
+                      property +
+                      "_" +
+                      rule[0].ref,
+                  }
+                );
+                Log("log_list", {
+                  res,
+                  property,
+                  value: ctx.data[property][i],
+                  modelPath: option.modelPath,
+                });
+                if (!res) {
+                  await backDestroy(ctx, more);
+                  //Log('log', { res })
+                  return await callPost({
+                    ctx,
+                    more,
+                    action,
+                    res,
+                  });
+                }
+                if (res.error) {
+                  await backDestroy(ctx, more);
+                  return await callPost({
+                    ctx,
+                    more,
+                    action,
+                    res,
+                  });
+                }
+                accu[property][i] = res.response;
+              }
+            } else if (Array.isArray(rule) && rule[0].file) {
+              // accu[property] = await FileValidator(ctx, action, rule[0], ctx.data[property])
+              Log("File", ctx.data[property]);
+              try {
+                accu[property] = await FileValidator(
+                  ctx,
+                  action,
+                  rule[0],
+                  ctx.data[property],
+                  []
+                );
+              } catch (error) {
+                await backDestroy(ctx, more);
+                return await callPost({
+                  ctx,
+                  more,
+                  action,
+                  res: {
+                    error: "NOT_CREATED",
+                    ...(await STATUS.NOT_CREATED(ctx, {
+                      target: option.modelPath.toLocaleUpperCase(),
+                      message: error.message,
+                    })),
+                  },
+                });
+              }
+            } else {
+              accu[property] = ctx.data[property];
             }
-          } else if (Array.isArray(rule) && rule[0].file) {
-            // accu[property] = await FileValidator(ctx, action, rule[0], ctx.data[property])
-            Log("File", ctx.data[property]);
-            try {
-              accu[property] = await FileValidator(
-                ctx,
-                action,
-                rule[0],
-                ctx.data[property],
-                []
-              );
-            } catch (error) {
-              await backDestroy(ctx, more);
-              return await callPost({
-                ctx,
-                more,
-                action,
-                res: {
-                  error: "NOT_CREATED",
-                  ...(await STATUS.NOT_CREATED(ctx, {
-                    target: option.modelPath.toLocaleUpperCase(),
-                    message: error.message,
-                  })),
-                },
-              });
-            }
-          } else {
-            accu[property] = ctx.data[property];
           }
         }
-      }
-      accu["__key"] = ctx.__key;
-      accu["__parentModel"] = more.__parentModel;
-      accu["__modePath"] = option.modelPath;
-      accu["createdAt"] = Date.now();
-      Log("logAccu", { accu });
-      try {
-        modelInstance = new option.model({
-          ...accu,
-          _id: modelId,
-        });
-        await modelInstance.save();
-        more.savedlist.push({
-          modelId,
-          __key: ctx.__key,
-          volatile: option.volatile,
-          controller,
-        });
-      } catch (error) {
-        //Log('error', error);
-        await backDestroy(ctx, more);
+        accu["__key"] = ctx.__key;
+        accu["__parentModel"] = more.__parentModel;
+        accu["__modePath"] = option.modelPath;
+        accu["createdAt"] = Date.now();
+        Log("logAccu", { accu });
+        try {
+          modelInstance = new option.model({
+            ...accu,
+            _id: modelId,
+          });
+          await modelInstance.save();
+          more.savedlist.push({
+            modelId,
+            __key: ctx.__key,
+            volatile: option.volatile,
+            controller,
+          });
+        } catch (error) {
+          //Log('error', error);
+          await backDestroy(ctx, more);
+          return await callPost({
+            ctx,
+            more,
+            action,
+            res: {
+              error: "NOT_CREATED",
+              ...(await STATUS.NOT_CREATED(ctx, {
+                target: option.modelPath.toLocaleUpperCase(),
+                message: error.message,
+              })),
+            },
+          });
+        }
+        //Log('apresPromise', modelId)
+
         return await callPost({
           ctx,
-          more,
+          more: { ...more, modelInstance },
           action,
           res: {
-            error: "NOT_CREATED",
-            ...(await STATUS.NOT_CREATED(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-              message: error.message,
-            })),
-          },
-        });
-      }
-      //Log('apresPromise', modelId)
-
-      return await callPost({
-        ctx,
-        more: { ...more, modelInstance },
-        action,
-        res: {
-          response: modelId,
-          ...(await STATUS.CREATED(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
-          })),
-        },
-      });
-    };
-    /////////////////////////////////////////////////////////////////
-    ///////////////////            READ          ////////////////////
-    /////////////////////////////////////////////////////////////////
-    controller["read"] = async (ctx, more): ResponseSchema => {
-      const action = "read";
-
-      //Log('auth', { ctx, action, access: option.access, "controller": "" })
-      if (!accessValidator(ctx, action, option.access, "controller")) {
-        return await callPost({
-          ctx,
-          more,
-          action,
-          res: {
-            error: "BAD_AUTH_CONTROLLER",
-            ...(await STATUS.BAD_AUTH(ctx, {
+            response: modelId,
+            ...(await STATUS.CREATED(ctx, {
               target: option.modelPath.toLocaleUpperCase(),
             })),
           },
         });
-      }
-      await callPre({
-        ctx,
-        more,
-        action,
-      });
-      let modelInstance: ModelInstanceSchema;
-      try {
-        modelInstance = await option.model.findOne({
-          _id: ctx.data.id,
+      };
+      /////////////////////////////////////////////////////////////////
+      ///////////////////            READ          ////////////////////
+      /////////////////////////////////////////////////////////////////
+      controller["read"] = async (ctx, more): ResponseSchema => {
+        const action = "read";
+
+        //Log('auth', { ctx, action, access: option.access, "controller": "" })
+        if (!accessValidator(ctx, action, option.access, "controller")) {
+          return await callPost({
+            ctx,
+            more,
+            action,
+            res: {
+              error: "BAD_AUTH_CONTROLLER",
+              ...(await STATUS.BAD_AUTH(ctx, {
+                target: option.modelPath.toLocaleUpperCase(),
+              })),
+            },
+          });
+        }
+        await callPre({
+          ctx,
+          more,
+          action,
         });
-        //Log('__permission', ctx.__permission, '__key', ctx.__key, 'instance__key', modelInstance.__key);
-        if (!modelInstance) {
+        let modelInstance: ModelInstanceSchema;
+        try {
+          modelInstance = await option.model.findOne({
+            _id: ctx.data.id,
+          });
+          //Log('__permission', ctx.__permission, '__key', ctx.__key, 'instance__key', modelInstance.__key);
+          if (!modelInstance) {
+            return await callPost({
+              ctx,
+              more: { ...more, modelInstance },
+              action,
+              res: {
+                error: "NOT_FOUND",
+                ...(await STATUS.NOT_FOUND(ctx, {
+                  target: option.modelPath.toLocaleUpperCase(),
+                  message: "modelInstance is null, " + ctx.data.id,
+                })),
+              },
+            });
+          }
+          //Log('aboutAccessRead', { ctx, action, option, modelInstance })
+          await formatModelInstance(ctx, action, option, modelInstance);
+          //await modelInstance.select(i)
+        } catch (error) {
           return await callPost({
             ctx,
             more: { ...more, modelInstance },
@@ -586,268 +605,601 @@ const MakeModelCtlForm: (
               error: "NOT_FOUND",
               ...(await STATUS.NOT_FOUND(ctx, {
                 target: option.modelPath.toLocaleUpperCase(),
-                message: "modelInstance is null, " + ctx.data.id,
+                message: error.message,
               })),
             },
           });
         }
-        //Log('aboutAccessRead', { ctx, action, option, modelInstance })
-        await formatModelInstance(ctx, action, option, modelInstance);
-        //await modelInstance.select(i)
-      } catch (error) {
         return await callPost({
           ctx,
           more: { ...more, modelInstance },
           action,
           res: {
-            error: "NOT_FOUND",
-            ...(await STATUS.NOT_FOUND(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-              message: error.message,
-            })),
-          },
-        });
-      }
-      return await callPost({
-        ctx,
-        more: { ...more, modelInstance },
-        action,
-        res: {
-          response: modelInstance,
-          ...(await STATUS.OPERATION_SUCCESS(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
-          })),
-        },
-      });
-    };
-
-    /////////////////////////////////////////////////////////////////
-    ///////////////////            LIST          ////////////////////
-    /////////////////////////////////////////////////////////////////
-    controller["list"] = async (ctx, more): ResponseSchema => {
-      const action = "list";
-      if (!accessValidator(ctx, action, option.access, "controller")) {
-        return await callPost({
-          ctx,
-          more,
-          action,
-          res: {
-            error: "BAD_AUTH_CONTROLLER",
-            ...(await STATUS.BAD_AUTH(ctx, {
+            response: modelInstance,
+            ...(await STATUS.OPERATION_SUCCESS(ctx, {
               target: option.modelPath.toLocaleUpperCase(),
             })),
           },
         });
-      }
-      await callPre({
-        ctx,
-        more,
-        action,
-      });
-      const { paging, addNew, addId, remove } = ctx.data;
-      let parentModelInstance: ModelInstanceSchema;
-      more = {
-        savedlist: [],
-        ...more,
-        __parentModel: paging?.query?.__parentModel,
       };
-      //   Log('remove', { remove })
-      const parts = more.__parentModel?.split("_");
-      const parentModelPath = parts?.[0];
-      const parentId = parts?.[1];
-      const parentProperty = parts?.[2];
-      let added = undefined;
-      Log("__parentModel", parts);
-      if (
-        !more.__parentModel ||
-        !parentModelPath ||
-        !parentId ||
-        !parentProperty
-      ) {
-        return await callPost({
-          ctx,
-          more,
-          action,
-          res: {
-            error: "ILLEGAL_ARGUMENT",
-            ...(await STATUS.OPERATION_FAILED(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-              message:
-                "__parentModel must be defined: <parentModelPath>_<parentId>_<parentProperty>",
-            })),
-          },
-        });
-      }
 
-      try {
-        parentModelInstance = await ModelControllers[
-          parentModelPath
-        ].option.model.findOne({
-          _id: parentId,
-        });
-        if (!parentModelInstance) {
-          throw new Error(
-            "parentModelInstance is undefined, using {id:" +
-              parentId +
-              ", modelPath:" +
-              parentModelPath +
-              "}"
-          );
-        }
-      } catch (error) {
-        return await callPost({
-          ctx,
-          more,
-          action,
-          res: {
-            error: "NOT_FOUND",
-            ...(await STATUS.NOT_FOUND(ctx, {
-              target: parentModelPath.toLocaleUpperCase(),
-              message: error.message,
-            })),
-          },
-        });
-      }
-      const parentDescription =
-        ModelControllers[parentModelPath].option.schema.description;
-      let parentPropertyRule = parentDescription[parentProperty];
-      if (!Array.isArray(parentPropertyRule))
-        return await callPost({
-          ctx,
-          more: { ...more },
-          action,
-          res: {
-            error: "OPERATION_FAILED5",
-            status: 404,
-            code: "OPERATION_FAILED",
-            message: " property <" + parentProperty + "> is not an array",
-          },
-        });
-      parentPropertyRule = parentPropertyRule[0];
-
-      const isParentUser =
-        parentModelInstance.__key._id.toString() == ctx.__key;
-      Log("PARENTMODEL", parentModelInstance.__key._id.toString());
-
-      let validAddId = [];
-      let validAddNew = [];
-      Log("ACEES_AUTHARIZES", {
-        parentModel: parentPropertyRule.access,
-        isParentUser,
-        key: ctx.__key,
-        permission: ctx.__permission,
-      });
-
-      if (
-        accessValidator(
-          ctx,
-          "update",
-          parentPropertyRule.access,
-          "property",
-          isParentUser
-        )
-      ) {
-        /***********************  AddId  ****************** */
-        const isAlien = !!(
-          parentPropertyRule.alien || parentPropertyRule.strictAlien
-        );
-        Log("isAlien", isAlien);
-        if (Array.isArray(addId) && isAlien) {
-          Log("Je_peux_ajouter_dans_la_list", true);
-          const promises = addId.map((id) => {
-            return new Promise<string>(async (rev, rej) => {
-              try {
-                await validId({
-                  id,
-                  modelPath: option.modelPath,
-                });
-                let canAdd = true;
-                parentModelInstance[parentProperty].forEach((idInLis) => {
-                  if (idInLis == id) canAdd = false;
-                });
-                rev(canAdd ? id : null);
-              } catch (error) {
-                rej(null);
-              }
-            });
-          });
-          const result = await Promise.allSettled(promises);
-          const validResult = result
-            .filter((data: any) => {
-              return !!data.value;
-            })
-            .map((data: any) => {
-              return data.value;
-            });
-          validAddId.push(...validResult);
-        }
-        /***********************  AddNew  ****************** */
-        Log("strictAlien", parentPropertyRule.strictAlien);
-        Log("addNew_is_array", Array.isArray(addNew));
-        if (Array.isArray(addNew) && parentPropertyRule.strictAlien != true) {
-          Log("Je_peux_cree_dans_la_list", true);
-          const ctrl = ModelControllers[option.modelPath]();
-          more.__parentModel = paging?.query?.__parentModel;
-          const promises = addNew.map((data) => {
-            return new Promise(async (rev, rej) => {
-              if (!more.__parentModel) rej(null);
-              const res = await ctrl.create(
-                {
-                  ...ctx,
-                  data,
-                },
-                more
-              );
-              if (res.error) rej(null);
-              else rev(res.response);
-            });
-          });
-          const result = await Promise.allSettled(promises);
-          const validResult = result
-            .filter((data: any) => {
-              return !!data.value;
-            })
-            .map((data: any) => {
-              return data.value;
-            });
-          validAddNew.push(...validResult);
-        } else {
-        }
-
-        /***********************  remove : in DB - > in List ****************** */
-        try {
-          Log("try", { remove, parentProperty });
-          if (Array.isArray(remove)) {
-            for (const id of remove) {
-              const impact = parentPropertyRule.impact != false;
-              let res: ResultSchema;
-              Log("impact", { impact, parentProperty, parentPropertyRule });
-              if (impact) {
-                res = await ModelControllers[option.modelPath]().delete(
-                  {
-                    ...ctx,
-                    data: { id },
-                  },
-                  more
-                );
-                Log("List_remove_res", res);
-                if (res.error) continue;
-              }
-              parentModelInstance[parentProperty] = parentModelInstance[
-                parentProperty
-              ].filter((some_id: string) => {
-                return !(some_id == id);
-              });
-            }
-          }
-        } catch (error) {
-          await backDestroy(ctx, more);
+      /////////////////////////////////////////////////////////////////
+      ///////////////////            LIST          ////////////////////
+      /////////////////////////////////////////////////////////////////
+      controller["list"] = async (ctx, more): ResponseSchema => {
+        const action = "list";
+        if (!accessValidator(ctx, action, option.access, "controller")) {
           return await callPost({
             ctx,
             more,
             action,
             res: {
-              error: "OPERATION_FAILED4",
+              error: "BAD_AUTH_CONTROLLER",
+              ...(await STATUS.BAD_AUTH(ctx, {
+                target: option.modelPath.toLocaleUpperCase(),
+              })),
+            },
+          });
+        }
+        await callPre({
+          ctx,
+          more,
+          action,
+        });
+        const { paging, addNew, addId, remove } = ctx.data;
+        let parentModelInstance: ModelInstanceSchema;
+        more = {
+          savedlist: [],
+          ...more,
+          __parentModel: paging?.query?.__parentModel,
+        };
+        //   Log('remove', { remove })
+        const parts = more.__parentModel?.split("_");
+        const parentModelPath = parts?.[0];
+        const parentId = parts?.[1];
+        const parentProperty = parts?.[2];
+        let added = undefined;
+        let removed = undefined;
+        Log("__parentModel", parts);
+        if (
+          !more.__parentModel ||
+          !parentModelPath ||
+          !parentId ||
+          !parentProperty
+        ) {
+          return await callPost({
+            ctx,
+            more,
+            action,
+            res: {
+              error: "ILLEGAL_ARGUMENT",
+              ...(await STATUS.OPERATION_FAILED(ctx, {
+                target: option.modelPath.toLocaleUpperCase(),
+                message:
+                  "__parentModel must be defined: <parentModelPath>_<parentId>_<parentProperty>",
+              })),
+            },
+          });
+        }
+
+        try {
+          parentModelInstance = await ModelControllers[
+            parentModelPath
+          ].option.model.findOne({
+            _id: parentId,
+          });
+          if (!parentModelInstance) {
+            throw new Error(
+              "parentModelInstance is undefined, using {id:" +
+              parentId +
+              ", modelPath:" +
+              parentModelPath +
+              "}"
+            );
+          }
+        } catch (error) {
+          return await callPost({
+            ctx,
+            more,
+            action,
+            res: {
+              error: "NOT_FOUND",
+              ...(await STATUS.NOT_FOUND(ctx, {
+                target: parentModelPath.toLocaleUpperCase(),
+                message: error.message,
+              })),
+            },
+          });
+        }
+        const parentDescription =
+          ModelControllers[parentModelPath].option.schema.description;
+        let parentPropertyRule = parentDescription[parentProperty];
+        if (!Array.isArray(parentPropertyRule))
+          return await callPost({
+            ctx,
+            more: { ...more },
+            action,
+            res: {
+              error: "OPERATION_FAILED5",
+              status: 404,
+              code: "OPERATION_FAILED",
+              message: " property <" + parentProperty + "> is not an array",
+            },
+          });
+        parentPropertyRule = parentPropertyRule[0];
+
+        const isParentUser =
+          parentModelInstance.__key._id.toString() == ctx.__key;
+        // Log("PARENTMODEL", parentModelInstance.__key._id.toString());
+
+        let validAddId = [];
+        let validAddNew = [];
+        // Log("ACEES_AUTHARIZES", {
+        //   parentModel: parentPropertyRule.access,
+        //   isParentUser,
+        //   key: ctx.__key,
+        //   permission: ctx.__permission,
+        // });
+
+        if (
+          accessValidator(
+            ctx,
+            "update",
+            parentPropertyRule.access,
+            "property",
+            isParentUser
+          )
+        ) {
+          /***********************  AddId  ****************** */
+          const isAlien = !!(
+            parentPropertyRule.alien || parentPropertyRule.strictAlien
+          );
+          Log("isAlien", isAlien);
+          if (Array.isArray(addId) && isAlien) {
+            Log("Je_peux_ajouter_dans_la_list", true);
+            const promises = addId.map((id) => {
+              return new Promise<string>(async (rev, rej) => {
+                try {
+                  await validId({
+                    id,
+                    modelPath: option.modelPath,
+                  });
+                  let canAdd = true;
+                  parentModelInstance[parentProperty].forEach((idInLis) => {
+                    if (idInLis == id) canAdd = false;
+                  });
+                  rev(canAdd ? id : null);
+                } catch (error) {
+                  rej(null);
+                }
+              });
+            });
+            const result = await Promise.allSettled(promises);
+            const validResult = result
+              .filter((data: any) => {
+                return !!data.value;
+              })
+              .map((data: any) => {
+                return data.value;
+              });
+            validAddId.push(...validResult);
+          }
+          /***********************  AddNew  ****************** */
+          Log("strictAlien", parentPropertyRule.strictAlien);
+          Log("addNew_is_array", Array.isArray(addNew));
+          if (Array.isArray(addNew) && parentPropertyRule.strictAlien != true) {
+            Log("Je_peux_cree_dans_la_list", true);
+            const ctrl = ModelControllers[option.modelPath]();
+            more.__parentModel = paging?.query?.__parentModel;
+            const promises = addNew.map((data) => {
+              return new Promise(async (rev, rej) => {
+                if (!more.__parentModel) rej(null);
+                const res = await ctrl.create(
+                  {
+                    ...ctx,
+                    data,
+                  },
+                  more
+                );
+                if (res.error) rej(null);
+                else rev(res.response);
+              });
+            });
+            const result = await Promise.allSettled(promises);
+            const validResult = result
+              .filter((data: any) => {
+                return !!data.value;
+              })
+              .map((data: any) => {
+                return data.value;
+              });
+            validAddNew.push(...validResult);
+          } else {
+          }
+
+          /***********************  remove : in DB - > in List ****************** */
+          try {
+            //Log("try", { remove, parentProperty });
+            if (Array.isArray(remove)) {
+              for (const id of remove) {
+                const impact = parentPropertyRule.impact != false;
+                let res: ResultSchema;
+                Log("impact", { impact, parentProperty, parentPropertyRule });
+                if (impact) {
+                  res = await ModelControllers[option.modelPath]().delete(
+                    {
+                      ...ctx,
+                      data: { id },
+                    },
+                    more
+                  );
+                  Log("List_remove_res", res);
+                  if (res.error) continue;
+                }
+                let include = false;
+                parentModelInstance[parentProperty] = parentModelInstance[
+                  parentProperty
+                ].filter((some_id: string) => {
+                  const equals = some_id == id;
+                  if (equals) {
+                    include = true;
+                  }
+                  return !(equals);
+                });
+                if (include) {
+                  removed = [...(removed || []), id];
+                }
+              }
+            }
+          } catch (error) {
+            await backDestroy(ctx, more);
+            return await callPost({
+              ctx,
+              more,
+              action,
+              res: {
+                error: "OPERATION_FAILED4",
+                ...(await STATUS.OPERATION_FAILED(ctx, {
+                  target: option.modelPath.toLocaleUpperCase(),
+                  message: error.message,
+                })),
+              },
+            });
+          }
+          const hasNewId = validAddNew.length > 0 ||
+            validAddId.length > 0
+          const canSave = hasNewId ||
+            (Array.isArray(remove) && remove.length > 0);
+
+          if (canSave) {
+            try {
+
+              if (hasNewId) {
+                parentModelInstance[parentProperty].push([
+                  ...validAddNew,
+                  ...validAddId,
+                ]);
+              }
+
+              await parentModelInstance.save();
+              added = [...validAddNew, ...validAddId];
+              SQuery.io().emit('list/' + parentModelPath + '/' + parentProperty + ':' + parentId, {
+                added,
+                removed
+              })
+            } catch (error) {
+              await backDestroy(ctx, more);
+              return await callPost({
+                ctx,
+                more,
+                action,
+                res: {
+                  error: "OPERATION_FAILED1",
+                  ...(await STATUS.OPERATION_FAILED(ctx, {
+                    target: option.modelPath.toLocaleUpperCase(),
+                    message: error.message,
+                  })),
+                },
+              });
+            }
+          }
+        } else {
+          Log("AccesRefuse", {addId , addNew , remove ,isParentUser});
+        }
+        //Log('parent', parentModelInstance);
+        if (
+          !accessValidator(
+            ctx,
+            "read",
+            parentPropertyRule.access,
+            "property",
+            isParentUser
+          )
+        )
+          return await callPost({
+            ctx,
+            more: { ...more },
+            action,
+            res: {
+              error: "OPERATION_FAILED2",
+              status: 404,
+              code: "OPERATION_FAILED",
+              message:
+                "access refused for property <" +
+                parentProperty +
+                "> , mothod <read>",
+            },
+          });
+        const defaultPaging = {
+          page: 1,
+          limit: 20,
+          lean: false,
+          sort: {},
+          select: "",
+        };
+        const myCustomLabels = {
+          totalDocs: "totalItems",
+          docs: "items",
+        };
+
+        const options: any = {
+          page: paging.page || defaultPaging.page,
+          limit: paging.limit || defaultPaging.limit,
+          lean: defaultPaging.lean,
+          sort: paging.sort || defaultPaging.sort,
+          select: paging.select || defaultPaging.select,
+          populate: false,
+          customLabels: myCustomLabels,
+        };
+
+        let pagingData = null;
+        try {
+          pagingData = await ModelControllers[
+            option.modelPath
+          ].option.model.paginate(
+            {
+              _id: {
+                $in: parentModelInstance[parentProperty],
+              },
+            },
+            options
+          );
+          pagingData.added = added;
+          pagingData.removed = removed;
+          if (!pagingData) {
+          }
+          const promise = pagingData.items.map((item:any) => {
+            return formatModelInstance(ctx, action, option, item);
+          });
+          await Promise.allSettled(promise);
+        } catch (error) {
+          return await callPost({
+            ctx,
+            more: { ...more },
+            action,
+            res: {
+              error: "OPERATION_FAILED3",
+              status: 404,
+              code: "OPERATION_FAILED",
+              message: error.message,
+            },
+          });
+        }
+        return await callPost({
+          ctx,
+          more: { ...more },
+          action,
+          res: {
+            response: pagingData,
+            ...(await STATUS.OPERATION_SUCCESS(ctx, {
+              target: option.modelPath.toLocaleUpperCase(),
+            })),
+          },
+        });
+      };
+
+      /////////////////////////////////////////////////////////////////
+      ///////////////////           UPDATE         ////////////////////
+      /////////////////////////////////////////////////////////////////
+      controller["update"] = async (ctx, more): ResponseSchema => {
+        const action = "update";
+        if (!accessValidator(ctx, action, option.access, "controller")) {
+          return await callPost({
+            ctx,
+            more,
+            action,
+            res: {
+              error: "BAD_AUTH_CONTROLLER",
+              ...(await STATUS.BAD_AUTH(ctx, {
+                target: option.modelPath.toLocaleUpperCase(),
+              })),
+            },
+          });
+        }
+        await callPre({
+          ctx,
+          more,
+          action,
+        });
+
+        let modelInstance: ModelInstanceSchema;
+        const description: DescriptionSchema = option.schema.description;
+
+        try {
+          modelInstance = await option.model.findOne({
+            _id: ctx.data.id,
+          });
+          if (!modelInstance) {
+            return await callPost({
+              ctx,
+              more: { ...more, modelInstance },
+              action,
+              res: {
+                error: "NOT_FOUND",
+                ...(await STATUS.NOT_FOUND(ctx, {
+                  target: option.modelPath.toLocaleUpperCase(),
+                })),
+              },
+            });
+          }
+          for (const p in description) {
+            if (Object.prototype.hasOwnProperty.call(description, p)) {
+              const rule = description[p];
+
+              if (!ctx.data[p]) continue;
+              else if (!Array.isArray(rule) && rule.ref) {
+                if (
+                  !accessValidator(
+                    ctx,
+                    "update",
+                    rule.access,
+                    "property",
+                    ctx.__key == modelInstance.__key._id.toString()
+                  )
+                )
+                  continue;
+
+                const isStr = typeof ctx.data[p] == "string";
+                const isAlien = !!(rule.alien || rule.strictAlien);
+                Log(
+                  "alien",
+                  "strictAlien: ",
+                  !!rule.strictAlien,
+                  "isStr: ",
+                  isStr,
+                  option.modelPath,
+                  "result: ",
+                  !!rule.strictAlien && !isStr
+                );
+                if (!(isAlien && isStr)) continue;
+
+                const oldId = modelInstance[p];
+                try {
+                  const alienId = ctx.data[p];
+                  if (
+                    await validId({
+                      id: alienId,
+                      modelPath: rule.ref,
+                    })
+                  ) {
+                    modelInstance[p] = alienId;
+                  }
+                } catch (error) {
+                  Log("Error_Ilegall_Arg_update_ref", error);
+                  continue;
+                }
+                try {
+                  if (
+                    !(await validId({
+                      id: oldId,
+                      modelPath: rule.ref,
+                    }))
+                  )
+                    continue;
+
+                  const impact = rule.impact != false;
+                  let res: ResultSchema;
+                  Log("impact", { impact, rule });
+                  if (impact) {
+                    res = await ModelControllers[rule.ref]().delete(
+                      {
+                        ...ctx,
+                        data: { id: oldId },
+                      },
+                      more
+                    );
+                    Log("Error_impactRes", res);
+                  }
+                  continue;
+                } catch (error) {
+                  Log("Error_update_ref", error);
+                  continue;
+                }
+              } else if (Array.isArray(rule)) {
+                if (
+                  !accessValidator(
+                    ctx,
+                    "update",
+                    rule[0].access,
+                    "property",
+                    ctx.__key == modelInstance.__key._id.toString()
+                  )
+                )
+                  continue;
+                if (rule[0].ref) {
+                  continue;
+                } else if (rule[0].file) {
+                  try {
+                    modelInstance[p] = await FileValidator(
+                      ctx,
+                      action,
+                      rule[0],
+                      ctx.data[p],
+                      modelInstance[p]
+                    );
+                  } catch (error) {
+                    return await callPost({
+                      ctx,
+                      more: { ...more, modelInstance },
+                      action,
+                      res: {
+                        error: "UPLOAD_ERROR",
+                        ...(await STATUS.OPERATION_FAILED(ctx, {
+                          target: option.modelPath.toLocaleUpperCase(),
+                          message: error.message,
+                        })),
+                      },
+                    });
+                  }
+                } else {
+                  modelInstance[p] = ctx.data[p];
+                }
+              } else {
+                const access = accessValidator(
+                  ctx,
+                  "update",
+                  rule.access,
+                  "property",
+                  ctx.__key == modelInstance.__key._id.toString()
+                );
+                Log(
+                  "AboutUpdateAccess",
+                  "<update>",
+                  "access:",
+                  rule.access,
+                  "<property>",
+                  "user: ",
+                  ctx.__key == modelInstance.__key._id.toString()
+                );
+                if (!access) continue;
+                modelInstance[p] = ctx.data[p];
+              }
+            }
+          }
+        } catch (error) {
+          return await callPost({
+            ctx,
+            more: { ...more, modelInstance },
+            action,
+            res: {
+              error: "OPERATION_FAILED",
+              ...(await STATUS.NOT_FOUND(ctx, {
+                target: option.modelPath.toLocaleUpperCase(),
+                message: error.message,
+              })),
+            },
+          });
+        }
+
+        try {
+          await modelInstance.save();
+        } catch (error) {
+          return await callPost({
+            ctx,
+            more: { ...more, modelInstance },
+            action,
+            res: {
+              error: "OPERATION_FAILED",
               ...(await STATUS.OPERATION_FAILED(ctx, {
                 target: option.modelPath.toLocaleUpperCase(),
                 message: error.message,
@@ -856,263 +1208,109 @@ const MakeModelCtlForm: (
           });
         }
 
-        if (
-          validAddNew.length > 0 ||
-          validAddId.length > 0 ||
-          (Array.isArray(remove) && remove.length > 0)
-        ) {
-          try {
-            if (!parentModelInstance[parentProperty])
-              parentModelInstance[parentProperty] = [];
-            parentModelInstance[parentProperty].push([
-              ...validAddNew,
-              ...validAddId,
-            ]);
-            await parentModelInstance.save();
-            added = [...validAddNew, ...validAddId];
-          } catch (error) {
-            await backDestroy(ctx, more);
-            return await callPost({
-              ctx,
-              more,
-              action,
-              res: {
-                error: "OPERATION_FAILED1",
-                ...(await STATUS.OPERATION_FAILED(ctx, {
-                  target: option.modelPath.toLocaleUpperCase(),
-                  message: error.message,
-                })),
-              },
-            });
-          }
-        }
-      } else {
-        Log("AccesRefuse", "update List");
-      }
-      //Log('parent', parentModelInstance);
-      if (
-        !accessValidator(
-          ctx,
-          "read",
-          parentPropertyRule.access,
-          "property",
-          isParentUser
-        )
-      )
         return await callPost({
           ctx,
-          more: { ...more },
+          more: { ...more, modelInstance },
           action,
           res: {
-            error: "OPERATION_FAILED2",
-            status: 404,
-            code: "OPERATION_FAILED",
-            message:
-              "access refused for property <" +
-              parentProperty +
-              "> , mothod <read>",
-          },
-        });
-      const defaultPaging = {
-        page: 1,
-        limit: 20,
-        lean: false,
-        sort: {},
-        select: "",
-      };
-      const myCustomLabels = {
-        totalDocs: "totalItems",
-        docs: "items",
-      };
-
-      const options: any = {
-        page: paging.page || defaultPaging.page,
-        limit: paging.limit || defaultPaging.limit,
-        lean: defaultPaging.lean,
-        sort: paging.sort || defaultPaging.sort,
-        select: paging.select || defaultPaging.select,
-        populate: false,
-        customLabels: myCustomLabels,
-      };
-
-      let pagingData = null;
-      try {
-        pagingData = await ModelControllers[
-          option.modelPath
-        ].option.model.paginate(
-          {
-            _id: {
-              $in: parentModelInstance[parentProperty],
-            },
-          },
-          options
-        );
-        pagingData.added = added;
-        if (!pagingData) {
-        }
-        const promise = pagingData.items.map((item) => {
-          return formatModelInstance(ctx, action, option, item);
-        });
-        await Promise.allSettled(promise);
-      } catch (error) {
-        return await callPost({
-          ctx,
-          more: { ...more },
-          action,
-          res: {
-            error: "OPERATION_FAILED3",
-            status: 404,
-            code: "OPERATION_FAILED",
-            message: error.message,
-          },
-        });
-      }
-      return await callPost({
-        ctx,
-        more: { ...more },
-        action,
-        res: {
-          response: pagingData,
-          ...(await STATUS.OPERATION_SUCCESS(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
-          })),
-        },
-      });
-    };
-
-    /////////////////////////////////////////////////////////////////
-    ///////////////////           UPDATE         ////////////////////
-    /////////////////////////////////////////////////////////////////
-    controller["update"] = async (ctx, more): ResponseSchema => {
-      const action = "update";
-      if (!accessValidator(ctx, action, option.access, "controller")) {
-        return await callPost({
-          ctx,
-          more,
-          action,
-          res: {
-            error: "BAD_AUTH_CONTROLLER",
-            ...(await STATUS.BAD_AUTH(ctx, {
+            response: (
+              await controller.read({
+                ...ctx,
+                data: {
+                  id: modelInstance._id.toString(),
+                },
+              })
+            ).response,
+            ...(await STATUS.OPERATION_SUCCESS(ctx, {
               target: option.modelPath.toLocaleUpperCase(),
             })),
           },
         });
-      }
-      await callPre({
+      };
+
+      //***************la supresion doit forcement bien se passer **********/
+      ///////////////////          DELETE          ////////////////////
+      /////////////////////////////////////////////////////////////////
+      controller[option.volatile ? "delete" : "destroy"] = async (
         ctx,
-        more,
-        action,
-      });
-
-      let modelInstance: ModelInstanceSchema;
-      const description: DescriptionSchema = option.schema.description;
-
-      try {
-        modelInstance = await option.model.findOne({
-          _id: ctx.data.id,
-        });
-        if (!modelInstance) {
+        more
+      ): ResponseSchema => {
+        const action = option.volatile ? "delete" : "destroy";
+        if (!accessValidator(ctx, action, option.access, "controller")) {
           return await callPost({
             ctx,
-            more: { ...more, modelInstance },
+            more,
             action,
             res: {
-              error: "NOT_FOUND",
-              ...(await STATUS.NOT_FOUND(ctx, {
+              error: "BAD_AUTH_CONTROLLER",
+              ...(await STATUS.BAD_AUTH(ctx, {
                 target: option.modelPath.toLocaleUpperCase(),
               })),
             },
           });
         }
-        for (const p in description) {
-          if (Object.prototype.hasOwnProperty.call(description, p)) {
-            const rule = description[p];
-
-            if (!ctx.data[p]) continue;
-            else if (!Array.isArray(rule) && rule.ref) {
-              if (
-                !accessValidator(
-                  ctx,
-                  "update",
-                  rule.access,
-                  "property",
-                  ctx.__key == modelInstance.__key._id.toString()
-                )
-              )
-                continue;
-
-              const isStr = typeof ctx.data[p] == "string";
-              const isAlien = !!(rule.alien || rule.strictAlien);
-              Log(
-                "alien",
-                "strictAlien: ",
-                !!rule.strictAlien,
-                "isStr: ",
-                isStr,
-                option.modelPath,
-                "result: ",
-                !!rule.strictAlien && !isStr
-              );
-              if (!(isAlien && isStr)) continue;
-
-              const oldId = modelInstance[p];
-              try {
-                const alienId = ctx.data[p];
-                if (
-                  await validId({
-                    id: alienId,
-                    modelPath: rule.ref,
-                  })
-                ) {
-                  modelInstance[p] = alienId;
+        await callPre({
+          ctx,
+          more,
+          action,
+        });
+        let modelInstance: ModelInstanceSchema;
+        const description: DescriptionSchema = option.schema.description;
+        try {
+          modelInstance = await option.model.findOne({
+            _id: ctx.data.id,
+            __key: ctx.__key,
+          });
+          if (!modelInstance) {
+            return await callPost({
+              ctx,
+              more: { ...more, modelInstance },
+              action,
+              res: {
+                error: "NOT_FOUND_MODEL_INSTANCE",
+                ...(await STATUS.NOT_FOUND(ctx, {
+                  target: option.modelPath.toLocaleUpperCase(),
+                })),
+              },
+            });
+          }
+          for (const p in description) {
+            if (Object.prototype.hasOwnProperty.call(description, p)) {
+              const rule = description[p];
+              if (!Array.isArray(rule) && rule.ref && rule.impact != false) {
+                const ctrl = ModelControllers[rule.ref]();
+                const res = await (ctrl.delete || ctrl.destroy)({
+                  ...ctx,
+                  data: {
+                    __key: ctx.__key,
+                    id: modelInstance[p],
+                  },
+                });
+                if (res.error) {
+                  //////// tres important ///////////
                 }
-              } catch (error) {
-                Log("Error_Ilegall_Arg_update_ref", error);
-                continue;
-              }
-              try {
-                if (
-                  !(await validId({
-                    id: oldId,
-                    modelPath: rule.ref,
-                  }))
-                )
-                  continue;
-
-                const impact = rule.impact != false;
-                let res: ResultSchema;
-                Log("impact", { impact, rule });
-                if (impact) {
-                  res = await ModelControllers[rule.ref]().delete(
-                    {
-                      ...ctx,
-                      data: { id: oldId },
-                    },
-                    more
-                  );
-                  Log("Error_impactRes", res);
-                }
-                continue;
-              } catch (error) {
-                Log("Error_update_ref", error);
-                continue;
-              }
-            } else if (Array.isArray(rule)) {
-              if (
-                !accessValidator(
-                  ctx,
-                  "update",
-                  rule[0].access,
-                  "property",
-                  ctx.__key == modelInstance.__key._id.toString()
-                )
-              )
-                continue;
-              if (rule[0].ref) {
-                continue;
-              } else if (rule[0].file) {
+              } else if (Array.isArray(rule) && rule[0].ref) {
+                // for (let i = 0; i < modelInstance[p].length; i++) {
+                //     const ctrl = ModelControllers[rule[0].ref]();
+                //     const res = await (ctrl.delete || ctrl.destroy)({
+                //         ...ctx,
+                //         data: {
+                //             ...ctx.data,
+                //             id: modelInstance[p][i],
+                //         },
+                //     });
+                // }
+                const res = await ModelControllers[rule[0].ref]().list({
+                  ...ctx,
+                  data: {
+                    remove: modelInstance[p] || [],
+                  },
+                });
+                Log("DELETE_REF[]_LIST_RES", res);
+              } else if (Array.isArray(rule) && rule[0].file) {
+                //await FileValidator(ctx, action, rule[0], ctx.data[p], modelInstance[p])
                 try {
-                  modelInstance[p] = await FileValidator(
+                  const res = await FileValidator(
                     ctx,
                     action,
                     rule[0],
@@ -1125,278 +1323,98 @@ const MakeModelCtlForm: (
                     more: { ...more, modelInstance },
                     action,
                     res: {
-                      error: "UPLOAD_ERROR",
-                      ...(await STATUS.OPERATION_FAILED(ctx, {
+                      error: "FILE_REMOVE_ERROR",
+                      ...(await STATUS.NOT_FOUND(ctx, {
                         target: option.modelPath.toLocaleUpperCase(),
                         message: error.message,
                       })),
                     },
                   });
                 }
-              } else {
-                modelInstance[p] = ctx.data[p];
               }
-            } else {
-              const access = accessValidator(
-                ctx,
-                "update",
-                rule.access,
-                "property",
-                ctx.__key == modelInstance.__key._id.toString()
-              );
-              Log(
-                "AboutUpdateAccess",
-                "<update>",
-                "access:",
-                rule.access,
-                "<property>",
-                "user: ",
-                ctx.__key == modelInstance.__key._id.toString()
-              );
-              if (!access) continue;
-              modelInstance[p] = ctx.data[p];
             }
           }
-        }
-      } catch (error) {
-        return await callPost({
-          ctx,
-          more: { ...more, modelInstance },
-          action,
-          res: {
-            error: "OPERATION_FAILED",
-            ...(await STATUS.NOT_FOUND(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-              message: error.message,
-            })),
-          },
-        });
-      }
-
-      try {
-        await modelInstance.save();
-      } catch (error) {
-        return await callPost({
-          ctx,
-          more: { ...more, modelInstance },
-          action,
-          res: {
-            error: "OPERATION_FAILED",
-            ...(await STATUS.OPERATION_FAILED(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-              message: error.message,
-            })),
-          },
-        });
-      }
-
-      return await callPost({
-        ctx,
-        more: { ...more, modelInstance },
-        action,
-        res: {
-          response: (
-            await controller.read({
-              ...ctx,
-              data: {
-                id: modelInstance._id.toString(),
-              },
-            })
-          ).response,
-          ...(await STATUS.OPERATION_SUCCESS(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
-          })),
-        },
-      });
-    };
-
-    //***************la supresion doit forcement bien se passer **********/
-    ///////////////////          DELETE          ////////////////////
-    /////////////////////////////////////////////////////////////////
-    controller[option.volatile ? "delete" : "destroy"] = async (
-      ctx,
-      more
-    ): ResponseSchema => {
-      const action = option.volatile ? "delete" : "destroy";
-      if (!accessValidator(ctx, action, option.access, "controller")) {
-        return await callPost({
-          ctx,
-          more,
-          action,
-          res: {
-            error: "BAD_AUTH_CONTROLLER",
-            ...(await STATUS.BAD_AUTH(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-            })),
-          },
-        });
-      }
-      await callPre({
-        ctx,
-        more,
-        action,
-      });
-      let modelInstance: ModelInstanceSchema;
-      const description: DescriptionSchema = option.schema.description;
-      try {
-        modelInstance = await option.model.findOne({
-          _id: ctx.data.id,
-          __key: ctx.__key,
-        });
-        if (!modelInstance) {
+        } catch (error) {
           return await callPost({
             ctx,
             more: { ...more, modelInstance },
             action,
             res: {
-              error: "NOT_FOUND_MODEL_INSTANCE",
+              error: "DELETE_ERROR",
               ...(await STATUS.NOT_FOUND(ctx, {
                 target: option.modelPath.toLocaleUpperCase(),
+                message: error.message,
               })),
             },
           });
         }
-        for (const p in description) {
-          if (Object.prototype.hasOwnProperty.call(description, p)) {
-            const rule = description[p];
-            if (!Array.isArray(rule) && rule.ref && rule.impact != false) {
-              const ctrl = ModelControllers[rule.ref]();
-              const res = await (ctrl.delete || ctrl.destroy)({
-                ...ctx,
-                data: {
-                  __key: ctx.__key,
-                  id: modelInstance[p],
-                },
-              });
-              if (res.error) {
-                //////// tres important ///////////
-              }
-            } else if (Array.isArray(rule) && rule[0].ref) {
-              // for (let i = 0; i < modelInstance[p].length; i++) {
-              //     const ctrl = ModelControllers[rule[0].ref]();
-              //     const res = await (ctrl.delete || ctrl.destroy)({
-              //         ...ctx,
-              //         data: {
-              //             ...ctx.data,
-              //             id: modelInstance[p][i],
-              //         },
-              //     });
-              // }
-              const res = await ModelControllers[rule[0].ref]().list({
-                ...ctx,
-                data: {
-                  remove: modelInstance[p] || [],
-                },
-              });
-              Log("DELETE_REF[]_LIST_RES", res);
-            } else if (Array.isArray(rule) && rule[0].file) {
-              //await FileValidator(ctx, action, rule[0], ctx.data[p], modelInstance[p])
-              try {
-                const res = await FileValidator(
-                  ctx,
-                  action,
-                  rule[0],
-                  ctx.data[p],
-                  modelInstance[p]
-                );
-              } catch (error) {
-                return await callPost({
-                  ctx,
-                  more: { ...more, modelInstance },
-                  action,
-                  res: {
-                    error: "FILE_REMOVE_ERROR",
-                    ...(await STATUS.NOT_FOUND(ctx, {
-                      target: option.modelPath.toLocaleUpperCase(),
-                      message: error.message,
-                    })),
-                  },
-                });
-              }
-            }
-          }
+        try {
+          modelInstance.remove();
+        } catch (error) {
+          return await callPost({
+            ctx,
+            more: { ...more, modelInstance },
+            action,
+            res: {
+              error: "NOT_DELETED",
+              ...(await STATUS.NOT_DELETED(ctx, {
+                target: option.modelPath.toLocaleUpperCase(),
+                message: error.message,
+                /////////////////    super important  //////////////////////
+              })),
+            },
+          });
         }
-      } catch (error) {
-        return await callPost({
-          ctx,
-          more: { ...more, modelInstance },
-          action,
-          res: {
-            error: "DELETE_ERROR",
-            ...(await STATUS.NOT_FOUND(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-              message: error.message,
-            })),
-          },
-        });
-      }
-      try {
-        modelInstance.remove();
-      } catch (error) {
-        return await callPost({
-          ctx,
-          more: { ...more, modelInstance },
-          action,
-          res: {
-            error: "NOT_DELETED",
-            ...(await STATUS.NOT_DELETED(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-              message: error.message,
-              /////////////////    super important  //////////////////////
-            })),
-          },
-        });
-      }
 
-      return await callPost({
-        ctx,
-        more: { ...more, modelInstance },
-        action,
-        res: {
-          response: "OPERATION_SUCCESS",
-          ...(await STATUS.DELETED(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
-          })),
-        },
+        return await callPost({
+          ctx,
+          more: { ...more, modelInstance },
+          action,
+          res: {
+            response: "OPERATION_SUCCESS",
+            ...(await STATUS.DELETED(ctx, {
+              target: option.modelPath.toLocaleUpperCase(),
+            })),
+          },
+        });
+      };
+      return controller;
+    };
+
+    ctrlMaker.option = option;
+
+    ctrlMaker.pre = (
+      action: ModelActionAvailable,
+      listener: ListenerPreSchema
+    ) => {
+      if (!EventManager[action]) {
+        EventManager[action] = {
+          pre: [],
+          post: [],
+        };
+      }
+      EventManager[action].pre.push(listener);
+    };
+    ctrlMaker.post = (
+      action: ModelActionAvailable,
+      listener: ListenerPostSchema
+    ) => {
+      Log("das_le_ctrlMaker.post", { action, listener, model: option.modelPath });
+      if (!EventManager[action]) {
+        EventManager[action] = {
+          pre: [],
+          post: [],
+        };
+      }
+      EventManager[action].post.push(listener);
+      Log("das_le_ctrlMaker.post", {
+        ert: EventManager[action],
+        model: option.modelPath,
       });
     };
-    return controller;
+    ctrlMaker.tools = new Tools(ctrlMaker)  
+    return (ModelControllers[option.modelPath] = ctrlMaker);
   };
-
-  ctrlMaker.option = option;
-
-  ctrlMaker.pre = (
-    action: ModelActionAvailable,
-    listener: ListenerPreSchema
-  ) => {
-    if (!EventManager[action]) {
-      EventManager[action] = {
-        pre: [],
-        post: [],
-      };
-    }
-    EventManager[action].pre.push(listener);
-  };
-  ctrlMaker.post = (
-    action: ModelActionAvailable,
-    listener: ListenerPostSchema
-  ) => {
-    Log("das_le_ctrlMaker.post", { action, listener, model: option.modelPath });
-    if (!EventManager[action]) {
-      EventManager[action] = {
-        pre: [],
-        post: [],
-      };
-    }
-    EventManager[action].post.push(listener);
-    Log("das_le_ctrlMaker.post", {
-      ert: EventManager[action],
-      model: option.modelPath,
-    });
-  };
-
-  return (ModelControllers[option.modelPath] = ctrlMaker);
-};
 
 async function formatModelInstance(
   ctx: ContextSchema,
@@ -1509,8 +1527,8 @@ async function FileValidator(
     let sizeMax = Array.isArray(rule.file.size)
       ? rule.file.size[1]
       : Number.isInteger(rule.file.size)
-      ? rule.file.size
-      : 10_000_000;
+        ? rule.file.size
+        : 10_000_000;
     sizeMax = sizeMax > 15_000_000 ? 15_000_000 : sizeMax;
     let lengthMin =
       rule.file.length && Array.isArray(rule.file.length)
@@ -1520,19 +1538,19 @@ async function FileValidator(
     let lengthMax = Array.isArray(rule.file.length)
       ? rule.file.length[1]
       : Number.isInteger(rule.file.length)
-      ? rule.file.length
-      : 1;
+        ? rule.file.length
+        : 1;
     lengthMax = lengthMax > 1_000 ? 1_000 : lengthMax;
 
     if (files.length < lengthMin || files.length > lengthMax)
       throw new Error(
         " Files.length = " +
-          files.length +
-          "; but must be beetwen [" +
-          lengthMin +
-          "," +
-          lengthMax +
-          "]"
+        files.length +
+        "; but must be beetwen [" +
+        lengthMin +
+        "," +
+        lengthMax +
+        "]"
       );
 
     for (const i in files) {
@@ -1541,20 +1559,20 @@ async function FileValidator(
         if (file.size < sizeMin || file.size > sizeMax)
           throw new Error(
             "file.size = " +
-              file.size +
-              "; but must be beetwen [" +
-              sizeMin +
-              "," +
-              sizeMax +
-              "]"
+            file.size +
+            "; but must be beetwen [" +
+            sizeMin +
+            "," +
+            sizeMax +
+            "]"
           );
         if (!isValideType(rule.file.type, file.type))
           throw new Error(
             "file.type = " +
-              file.type +
-              "; but is not valide: [" +
-              rule.file.type.toString() +
-              "]"
+            file.type +
+            "; but is not valide: [" +
+            rule.file.type.toString() +
+            "]"
           );
       }
     }

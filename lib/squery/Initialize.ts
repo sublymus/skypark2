@@ -4,6 +4,7 @@ import { StatusSchema } from "../../App/Errors/STATUS";
 import { ContextSchema } from "./Context";
 import EventEmiter from './event/eventEmiter';
 import './execAuto';
+import { Tools } from './Tools.';
 
 export type FileSchema = {
   type: string;
@@ -79,6 +80,7 @@ export type ModelControllerConfigSchema = {
   option?: ModelFrom_optionSchema;
   pre: (action: ModelActionAvailable, listener: ListenerPreSchema) => void;
   post: (action: ModelActionAvailable, listener: ListenerPostSchema) => void;
+  tools:Tools,
 }
 export type ControllerConfigSchema = {
   option?: SaveCtrlOptionSchema;
@@ -119,7 +121,7 @@ export type bindData = {
 }
 export type ModelFrom_optionSchema = {
   schema: SQueryMongooseSchema;
-  model: any;
+  model:  mongoose.Model<any, unknown, unknown, unknown, any> & {paginate?:(...arg:any[])=>any};
   volatile: boolean;
   access?: ControllerAccesSchema;
   bind?: bindData[],
@@ -183,7 +185,7 @@ export type TypeRuleSchema = {
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
   //TODO: watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
   //TODO: refPath?: string;
-
+  emit?:boolean// si la property doit invalider
   alien?: boolean,
   strictAlien?: boolean,
   access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//

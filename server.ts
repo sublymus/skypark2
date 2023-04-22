@@ -3,10 +3,10 @@ import path from "path";
 
 import { Socket } from "socket.io";
 import { SQuery } from "./lib/squery/SQuery";
-
+const PORT = 3500;
 const app = express();
-const server = app.listen(3501, () => {
-  console.log('Server running at http://localhost:3501/');
+const server = app.listen(PORT, () => {
+  console.log('Server running at http://localhost:'+PORT);
 });
 
 app.get("/", (req, res) => {

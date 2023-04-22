@@ -7,6 +7,7 @@ let folderSchema = SQuery.Schema({
 
   refIds: [{
     type: Schema.Types.ObjectId,
+    impact:false,
   }],
   folderName: {
     type: String,

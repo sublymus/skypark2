@@ -1,3 +1,4 @@
+import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
 import { SaveCtrl } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ResponseSchema } from "../../lib/squery/Initialize";
@@ -17,6 +18,7 @@ const Messenger: ControllerSchema = {
                     status: 404
                 }
             }
+            
             /** on recupere le  sender(UserModel)*/
             const sender = await ModelControllers[ctx.signup.modelPath].option.model.findOne({ _id: ctx.signup.id });
             if (!sender) {
@@ -129,7 +131,37 @@ const Messenger: ControllerSchema = {
 
     removeDiscussion: async (ctx: ContextSchema): ResponseSchema => {
         try {
-            
+            const { discussionId } = ctx.data;
+            const clientDisscussion = await ModelControllers['discussion'].option.model.findOne({ _id: discussionId });
+            if (clientDisscussion) {
+                const ctrl = ModelControllers['discussion']();
+                const resDeleteDiscussion = await (ctrl.delete || ctrl.destroy)({
+                    ...ctx,
+                    data: {
+                        id: discussionId,
+                    }
+                });
+                if (resDeleteDiscussion.error) {
+                    Log('ERROR_resDeleteDiscussion', resDeleteDiscussion);
+                    return resDeleteDiscussion;
+                }
+                const disscussion = await ModelControllers['discussion'].option.model.findOne({ channel: clientDisscussion.channel });
+                if (!disscussion) {
+                    const channel = await ModelControllers['channel'].option.model.findOne({ id: clientDisscussion.channel });
+                    if (channel) {
+                        const resDeleteChannel = await (ctrl.delete || ctrl.destroy)({
+                            ...ctx,
+                            __key: channel.__key,
+                            __permission:'admin',
+                            data: {
+                                id: channel._id,
+                            }
+                        });
+                        if (resDeleteChannel.error) Log('ERROR_resDeleteChannel', resDeleteChannel);
+                    }
+
+                }
+            }
             return {
                 code: "OPERATION_SUCCESS",
                 message: "OPERATION_SUCCESS",
@@ -156,33 +188,8 @@ const ctrlMaker = SaveCtrl({
 })
 
 
-ctrlMaker.pre('description', async (e) => {
-    await new Promise((rev => {
-        const d = Date.now() + 100
-        const t = () => {
-            //console.log(Date.now());
-            if (d < Date.now()) {
-                return rev(d);
-            }
-            setTimeout(t, 10)
-        }
-        t();
-    }))
-})
-ctrlMaker.post('description', async (e) => {
-    await new Promise((rev => {
-        const d = Date.now() + 100
-        const t = () => {
-            //console.log('_________________' + Date.now());
-            if (d < Date.now()) {
-                return rev(d);
-            }
-            setTimeout(t, 10)
-        }
-        t()
-
-    }))
-})
+ctrlMaker.pre('createDiscussion', async (e) => {})
+ctrlMaker.post('createDiscussion', async (e) => {})
 
 
 

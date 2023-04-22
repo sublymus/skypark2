@@ -34,20 +34,9 @@ let buildingSchema = SQuery.Schema({
 const BuildingModel = mongoose.model("building", buildingSchema);
 
 const maker = MakeModelCtlForm({
-  schema: buildingSchema,
-  model: BuildingModel,
-  volatile: true,
-
-  bind: [
-    {
-      pattern: "./name -> ./Thread/name",
-    },
-  ],
-  query: {
-    my_query: {
-      // les users dans la list qui respect cette condition..
-    },
-  },
+    schema: buildingSchema,
+    model: BuildingModel,
+    volatile: true,
 });
 
 export default BuildingModel;

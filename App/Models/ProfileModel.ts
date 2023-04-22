@@ -7,7 +7,6 @@ let profileSchema = SQuery.Schema({
 
   imgProfile: [{
     type: String,
-    access: 'private',
     file: {
       size: [1, 1_000_000],
       length: [0, 4],

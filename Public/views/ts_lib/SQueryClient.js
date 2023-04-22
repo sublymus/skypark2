@@ -8,7 +8,6 @@ const SQuery = {};
 const socket = io("http://127.0.0.1:3501", {
   extraHeaders: {},
 });
-//NEW_ADD
 socket.on("storeCookie", (cookie, cb) => {
   document.cookie = cookie;
   console.log("document.cookie :  ", document.cookie);

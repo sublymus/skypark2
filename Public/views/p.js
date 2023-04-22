@@ -119,45 +119,57 @@ export const load = {
 
   entreprise: {
     create: {
-      name: "skypark Center",
-      city: "Rostov on don",
-      Thread: {
-        name: "Building_Thread",
-        description: "thread_main",
-        vectors: [],
+      managers: [""],
+      buildings: [""],
+      address: {
+        location: "l:567455;h45678654",
+        building: {
+          name: "Sublymus E45",
+          city: "Rostov-On-Don",
+        },
+        room: 45,
+        door: 296,
+        etage: 4,
+        description: "je suis ici",
       },
-      users: [],
+      telephone: [1234567890, 8765432, 65456787654],
+      email: "etp@gmail.com",
+      webPageUrl:
+        "https://v2.voiranime.com/anime/tengoku-daimakyou/tengoku-daimakyou-01-vostfr/",
+      profile: {
+        //imgProfile: 'http://www.ert.fr/fgiurr85o28t5.img',
+        //banner: 'http://www.ert.fr/fgiurr85o28t5.img',
+        message: "*** BEST ****",
+      },
+      creationDate: Date.now(),
     },
   },
   quarter: {
     create: {
-      name: "noga Buidl",
-      city: "agvhb",
-      community: {
-        Thread: {
-          name: "Sport_Channel",
-          description: "more description about sport channel",
-          vectors: [],
-          users: [],
-        },
-        name: "Together Group",
-        activities: [
-          {
-            poster: {
-              message: "*** BEST ****",
-            },
-            channel: {
-              name: "Sport_Channel",
-              firstWatcher: "",
-              description: "more description about sport channel",
-              vectors: [],
-              users: [],
-            },
-            name: "Sport",
-            description: "we love sport",
-          },
-        ],
+      name: "skypark Center",
+      city: "Rostov on don",
+      Thread: {
+        name: "quarter_Thread",
+        description: "thread_main",
+        vectors: [],
+        users: [],
       },
+      activities: [
+        {
+          poster: {
+            message: "*** BEST ****",
+          },
+          channel: {
+            name: "Sport_Channel",
+            firstWatcher: "",
+            description: "more description about sport channel",
+            vectors: [],
+            users: [],
+          },
+          name: "Sport",
+          description: "we love sport",
+        },
+      ],
       buildings: [],
     },
     read: { id: "" },
@@ -170,8 +182,8 @@ export const load = {
         name: "Building_Thread",
         description: "thread_main",
         vectors: [],
+        users: [],
       },
-      users: [],
     },
   },
   account: {
@@ -242,9 +254,8 @@ export const load = {
   post: {
     create: {
       message: {
-        user: "",
         text: "Hello Its my",
-        fileList: [],
+        file: [],
       },
       likeCount: 2098,
     },

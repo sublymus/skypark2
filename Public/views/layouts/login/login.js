@@ -26,7 +26,6 @@ export class Login extends BaseComponent {
             ['@type:change']: (select) => {
                 this.type = select.value;
             },
-            //NEW_ADD
             ['@current:click']: async () => {
                 const userInstance = await SQuery.CurrentUserInstance();
                 console.log({ userInstance });

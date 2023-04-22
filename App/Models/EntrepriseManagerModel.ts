@@ -15,6 +15,7 @@ let EntrepriseManagerSchema = SQuery.Schema({
         type: Schema.Types.ObjectId,
         ref: 'entreprise',
         strictAlien: true,
+        impact:false,
     }
 });
 
@@ -26,7 +27,7 @@ const ctrlMaker = MakeModelCtlForm({
     volatile: true,
 });
 
-ctrlMaker.pre('store', async ({ ctx }) => {
+ctrlMaker.pre('create', async ({ ctx }) => {
    
 })
 

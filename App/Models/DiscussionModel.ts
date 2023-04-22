@@ -36,6 +36,5 @@ const maker = MakeModelCtlForm({
 });
 
 maker.pre("create", async ({ ctx }) => {
-  Log("piou", ctx.data);
 });
 export default DiscussionModel;

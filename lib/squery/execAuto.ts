@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { Config } from "../../squeryconfig";
 
-Config.execDir.forEach(exec)
+[(__dirname+'/Start').replace(Config.rootDir,''),...Config.execDir].forEach(exec)
 
 async function exec(directory: string) {
   const dir = Config.rootDir + directory;
