@@ -14,7 +14,6 @@ const Post: ControllerSchema = {
             status: 404,
         }
         parent[property] = [...(parent[property] || [])];
-    
         let newCommentId :any;
         if(ctx?.login.id){
             const res = await ModelControllers['post']()['list']({

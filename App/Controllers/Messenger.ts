@@ -4,7 +4,7 @@ import { SaveCtrl } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ResponseSchema } from "../../lib/squery/Initialize";
 
 const Messenger: ControllerSchema = {
-
+    i_saw:  async (ctx: ContextSchema): ResponseSchema => {return},
     createDiscussion: async (ctx: ContextSchema): ResponseSchema => {
         try {
             const { receiverId } = ctx.data;
