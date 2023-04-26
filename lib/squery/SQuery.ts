@@ -309,7 +309,7 @@ SQuery.io = (server: any) => {
               if (Object.prototype.hasOwnProperty.call(MapUserCtx, key)) {
                 const ctxData = MapUserCtx[key];
                 if (ctxData.exp - Date.now() <= 0) {
-                  Log("delete_data", key);
+                 // Log("delete_data", key);
                   delete MapUserCtx[key];
                 }
               }

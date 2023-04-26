@@ -135,10 +135,15 @@ const Messenger: ControllerSchema = {
             const clientDisscussion = await ModelControllers['discussion'].option.model.findOne({ _id: discussionId });
             if (clientDisscussion) {
                 const ctrl = ModelControllers['discussion']();
-                const resDeleteDiscussion = await (ctrl.delete || ctrl.destroy)({
+                const resDeleteDiscussion = await ModelControllers["discussion"]()['list']({
                     ...ctx,
                     data: {
-                        id: discussionId,
+                        remove: [discussionId],
+                        paging: {
+                            query: {
+                                __parentModel: clientDisscussion.__parentModel,
+                            }
+                        }
                     }
                 });
                 if (resDeleteDiscussion.error) {

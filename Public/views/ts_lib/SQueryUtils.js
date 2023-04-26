@@ -377,7 +377,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
     SQuery.on('list/' + parentModel + '/' + property + ':' + parentId, async (data) => {
         const modifData = {
             added: data.added,
-            remove: data.remove
+            removed: data.removed
         };
         Object.defineProperties(modifData, {
              arrayData:{
@@ -389,7 +389,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                 },
              }
         })
-        console.log("~ ~ ~ ~ ~ ~ "+{modifData});
+        console.log("~ ~ ~ ~ ~ ~ ",{modifData});
         emiter.emit('update', modifData);
     })
     const refresh = async (options) => {

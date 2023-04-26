@@ -820,6 +820,7 @@ const MakeModelCtlForm: (
           /***********************  remove : in DB - > in List ****************** */
           try {
             //Log("try", { remove, parentProperty });
+            Log('remove',{remove})
             if (Array.isArray(remove)) {
               for (const id of remove) {
                 const impact = parentPropertyRule.impact != false;

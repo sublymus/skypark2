@@ -5,7 +5,7 @@ import {
 } from "./SQueryUtils.js";
 const SQuery = {};
 
-const socket = io("http://127.0.0.1:3501", {
+const socket = io(null, {
   extraHeaders: {},
 });
 socket.on("storeCookie", (cookie, cb) => {
