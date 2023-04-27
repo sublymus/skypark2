@@ -192,9 +192,8 @@ const ctrlMaker = SaveCtrl({
     }
 })
 
-
-ctrlMaker.pre('createDiscussion', async (e) => {})
-ctrlMaker.post('createDiscussion', async (e) => {})
+ctrlMaker.pre('createDiscussion', async (e) => {});
+ctrlMaker.post('createDiscussion', async (e) => {});
 
 
 

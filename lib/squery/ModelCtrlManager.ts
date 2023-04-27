@@ -499,6 +499,13 @@ const MakeModelCtlForm: (
             } else {
               accu[property] = ctx.data[property];
             }
+          } else{
+            const rule = description[property];
+            if(Array.isArray(rule)){
+              accu[property] = rule[0].default ||[];
+            }else{
+              accu[property]  = rule.default;
+            }
           }
         }
         accu["__key"] = ctx.__key;

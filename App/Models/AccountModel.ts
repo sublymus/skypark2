@@ -25,6 +25,9 @@ let accountSchema = SQuery.Schema({
     type: String,
     unique: true,
   },
+  status: {
+    type: String,
+  },
   password: {
     type: String,
     required: true,

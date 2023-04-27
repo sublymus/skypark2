@@ -126,12 +126,12 @@ SQuery.emitNow('event',data,callBack) // if server conected
 .. pour gerer les error => await SQuery.<methode>(...methodArg , (error,instance)=>{})
 const lolModel = await SQuery.model('lolModelPath');   
 const lolInstance = await lolModel.create(lolCreationData);   renvoie une instance si les information rentrer sont bonne, sinon renvoie null
-const lolInstance = await lolModel.instance({id: lolId });    renvoie une instance si les information rentrer sont bonne, sinon renvoie null
-TODO: const lolInstance = await lolModel.update(aUpdateData); renvoie une instance si les information rentrer sont bonne, sinon renvoie null
-TODO: const isDeleted = lolModel.delete({id: lolId });
+const lolInstance = await lolModel.newInstance({id: lolId });    renvoie une instance si les information rentrer sont bonne, sinon renvoie null
+const lolInstance = await lolModel.update(aUpdateData); renvoie une instance si les information rentrer sont bonne, sinon renvoie null
+const isDeleted = lolModel.delete({id: lolId });
 
- const profile = await user['./account/profile']
- const building = await address['../../building']
+ const profile = await user.extractor('./account/profile')
+ const building = await address.extractor('../../building')
  condt fileInstance = await profile['imgProfile];
 fileInstance.urls
 fileInstance.update({

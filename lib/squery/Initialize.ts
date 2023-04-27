@@ -180,11 +180,10 @@ export type TypeRuleSchema = {
   // TODO: {
   // get:(v)=> value
   //}
-  //TODO: checkout?:true,
+  difine?:[string , ],
   type: TypeSchema//TypeSchema;
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
   //TODO: watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
-  //TODO: refPath?: string;
   emit?:boolean// si la property doit invalider
   alien?: boolean,
   strictAlien?: boolean,
@@ -196,11 +195,13 @@ export type TypeRuleSchema = {
     type?: string[]
     dir?: string;
   },
-
-  required?: boolean;
   ref?: string;
-  match?: RegExp;
   default?: valueSchema;
+  added?:any,
+  removed?:any,
+  refPath?: string;
+  required?: boolean;
+  match?: RegExp;
   unique?: boolean;
   uniqueCaseInsitive?: boolean;
   lowerCase?: boolean;

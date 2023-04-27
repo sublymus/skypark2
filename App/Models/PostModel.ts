@@ -14,12 +14,14 @@ let PostSchema = SQuery.Schema({
     access:'secret',
     impact:false,
     required:true,
+    default:[],
   }],
   comments: [ {
       type: Schema.Types.ObjectId,
       access:'admin',
       ref: "post",
       required:true,
+      default:[],
     }],
 });
 
@@ -31,8 +33,5 @@ const maker = MakeModelCtlForm({
   volatile: true,
 });
 
-maker.pre("create", async ({ ctx }) => {
-  ctx.data.like = [];
-  ctx.data.comments = [];
-});
+
 export default PostModel;

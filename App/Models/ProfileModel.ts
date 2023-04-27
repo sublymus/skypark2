@@ -8,19 +8,22 @@ let profileSchema = SQuery.Schema({
   imgProfile: [{
     type: String,
     file: {
-      size: [1, 1_000_000],
+      size: [1, 100_000_000],
       length: [0, 4],
       dir: Config.rootDir + '/tamp',
     }
   }],
+
   banner: [{
     type: String,
     file: {
       length: [0, 4],
     }
   }],
+
   message: {
-    type: String
+    type: String,
+    default:'this is my profile'
   },
 
 });
