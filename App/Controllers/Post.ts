@@ -4,6 +4,12 @@ import { SaveCtrl } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ModelInstanceSchema, ResponseSchema } from "../../lib/squery/Initialize";
 
 const Post: ControllerSchema = {
+    allUserPost:async (ctx: ContextSchema): ResponseSchema => {
+    const arrayData = ModelControllers['post']()['list']({
+        ...ctx
+    })
+        return arrayData
+    },
     comments: async (ctx: ContextSchema): ResponseSchema => {
         const { modelPath , id, property, newPostData } = ctx.data;
         const parent: ModelInstanceSchema = await ModelControllers[modelPath]?.option.model.findOne({ _id: id });

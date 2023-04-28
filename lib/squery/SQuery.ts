@@ -134,7 +134,7 @@ const SQuery: SQuerySchema = function (
           res = await Controllers[ctrlName]?.()[action]?.(ctx);
         }
       } catch (error) {
-        Log("ERROR_Controller", error.message);
+        Log("ERROR_Controller", error);
         if (MapUserCtx[ctx.__key]) MapUserCtx[ctx.__key].isAvalaibleCtx = false;
         return cb?.({
           error: "ERROR_CTRL_UNDEFINED",

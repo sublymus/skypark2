@@ -20,7 +20,15 @@ let ActivitySchema = SQuery.Schema({
   },
   description: {
     type: String,
-  }
+  },
+  icon:[{
+    required:true,
+    type:String,
+    file:{
+      size:800_000,
+      type:['image/png']
+    }
+  }]
 });
 
 const ActivityModel = mongoose.model('activity', ActivitySchema)

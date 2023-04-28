@@ -499,12 +499,12 @@ const MakeModelCtlForm: (
             } else {
               accu[property] = ctx.data[property];
             }
-          } else{
+          } else {
             const rule = description[property];
-            if(Array.isArray(rule)){
-              accu[property] = rule[0].default ||[];
-            }else{
-              accu[property]  = rule.default;
+            if (Array.isArray(rule)) {
+              accu[property] = rule[0].default || [];
+            } else {
+              accu[property] = rule.default;
             }
           }
         }
@@ -653,13 +653,14 @@ const MakeModelCtlForm: (
           more,
           action,
         });
-        const { paging, addNew, addId, remove } = ctx.data;
+        let { paging, addNew, addId, remove } = ctx.data;
         let parentModelInstance: ModelInstanceSchema;
         more = {
           savedlist: [],
           ...more,
           __parentModel: paging?.query?.__parentModel,
         };
+        paging = paging || {};
         //   Log('remove', { remove })
         const parts = more.__parentModel?.split("_");
         const parentModelPath = parts?.[0];
@@ -669,10 +670,10 @@ const MakeModelCtlForm: (
         let removed = undefined;
         Log("__parentModel", parts);
         if (
-          !more.__parentModel ||
-          !parentModelPath ||
-          !parentId ||
-          !parentProperty
+          (addId || addNew) && !(more.__parentModel &&
+            parentModelPath &&
+            parentId &&
+            parentProperty)
         ) {
           return await callPost({
             ctx,
@@ -689,54 +690,26 @@ const MakeModelCtlForm: (
           });
         }
 
+
+        const parentDescription =
+          ModelControllers[parentModelPath]?.option.schema.description;
+        let parentPropertyRule = parentDescription?.[parentProperty];
+        if (Array.isArray(parentPropertyRule)) {
+          parentPropertyRule = parentPropertyRule?.[0];
+        } else {
+          parentPropertyRule = parentPropertyRule;
+        }
+
         try {
           parentModelInstance = await ModelControllers[
             parentModelPath
-          ].option.model.findOne({
+          ]?.option.model.findOne({
             _id: parentId,
           });
-          if (!parentModelInstance) {
-            throw new Error(
-              "parentModelInstance is undefined, using {id:" +
-              parentId +
-              ", modelPath:" +
-              parentModelPath +
-              "}"
-            );
-          }
         } catch (error) {
-          return await callPost({
-            ctx,
-            more,
-            action,
-            res: {
-              error: "NOT_FOUND",
-              ...(await STATUS.NOT_FOUND(ctx, {
-                target: parentModelPath.toLocaleUpperCase(),
-                message: error.message,
-              })),
-            },
-          });
+          
         }
-        const parentDescription =
-          ModelControllers[parentModelPath].option.schema.description;
-        let parentPropertyRule = parentDescription[parentProperty];
-        if (!Array.isArray(parentPropertyRule))
-          return await callPost({
-            ctx,
-            more: { ...more },
-            action,
-            res: {
-              error: "OPERATION_FAILED5",
-              status: 404,
-              code: "OPERATION_FAILED",
-              message: " property <" + parentProperty + "> is not an array",
-            },
-          });
-        parentPropertyRule = parentPropertyRule[0];
-
-        const isParentUser =
-          parentModelInstance.__key._id.toString() == ctx.__key;
+        const isParentUser = parentModelInstance?.__key._id.toString() == ctx.__key;
         // Log("PARENTMODEL", parentModelInstance.__key._id.toString());
 
         let validAddId = [];
@@ -749,14 +722,16 @@ const MakeModelCtlForm: (
         // });
 
         if (
-          accessValidator(
-            ctx,
-            "update",
-            parentPropertyRule.access,
-            "property",
-            isParentUser
-          )
+          parentPropertyRule ?
+            accessValidator(
+              ctx,
+              "update",
+              parentPropertyRule?.access,
+              "property",
+              isParentUser
+            ) : false
         ) {
+          
           /***********************  AddId  ****************** */
           const isAlien = !!(
             parentPropertyRule.alien || parentPropertyRule.strictAlien
@@ -827,7 +802,7 @@ const MakeModelCtlForm: (
           /***********************  remove : in DB - > in List ****************** */
           try {
             //Log("try", { remove, parentProperty });
-            Log('remove',{remove})
+            Log('remove', { remove })
             if (Array.isArray(remove)) {
               for (const id of remove) {
                 const impact = parentPropertyRule.impact != false;
@@ -912,17 +887,23 @@ const MakeModelCtlForm: (
             }
           }
         } else {
-          Log("AccesRefuse", {addId , addNew , remove ,isParentUser});
+          Log("je_ne_peux_pas_modifier", { addId, addNew, remove, isParentUser });
         }
         //Log('parent', parentModelInstance);
+        Log('parentModelInstance', {parentModelInstance})
+        const query = parentProperty && parentModelInstance ? {
+          _id: {
+            $in: parentModelInstance?.[parentProperty],
+          },
+        } : { __key: ctx.__key };
         if (
-          !accessValidator(
+          parentProperty ? !accessValidator(
             ctx,
             "read",
             parentPropertyRule.access,
             "property",
             isParentUser
-          )
+          ) : false
         )
           return await callPost({
             ctx,
@@ -942,7 +923,9 @@ const MakeModelCtlForm: (
           page: 1,
           limit: 20,
           lean: false,
-          sort: {},
+          sort: {
+            "createdAt":-1
+          },
           select: "",
         };
         const myCustomLabels = {
@@ -965,18 +948,14 @@ const MakeModelCtlForm: (
           pagingData = await ModelControllers[
             option.modelPath
           ].option.model.paginate(
-            {
-              _id: {
-                $in: parentModelInstance[parentProperty],
-              },
-            },
+            query,
             options
           );
           pagingData.added = added;
           pagingData.removed = removed;
           if (!pagingData) {
           }
-          const promise = pagingData.items.map((item:any) => {
+          const promise = pagingData.items.map((item: any) => {
             return formatModelInstance(ctx, action, option, item);
           });
           await Promise.allSettled(promise);
@@ -1007,7 +986,7 @@ const MakeModelCtlForm: (
       };
 
       /////////////////////////////////////////////////////////////////
-      ///////////////////           UPDATE         ////////////////////
+      ///////////////////           UPDATE           //////////////////
       /////////////////////////////////////////////////////////////////
       controller["update"] = async (ctx, more): ResponseSchema => {
         const action = "update";
@@ -1420,7 +1399,7 @@ const MakeModelCtlForm: (
         model: option.modelPath,
       });
     };
-    ctrlMaker.tools = new Tools(ctrlMaker)  
+    ctrlMaker.tools = new Tools(ctrlMaker)
     return (ModelControllers[option.modelPath] = ctrlMaker);
   };
 
