@@ -1,3 +1,4 @@
+import SQuery from '../../ts_lib/SQueryClient.js';
 import BaseComponent from '../../ts_lib/baseComponent/baseComponent.js';
 import '../creationPage/creationPage.js';
 import '../deep/deep2.js';
@@ -12,7 +13,26 @@ import '../welcome/welcome.js';
 export class Home extends BaseComponent {
     constructor() {
         super();
-
+        SQuery.dataStore = {
+            useStore:true,
+            updateTimeOut:500,
+            setData:async(key , data)=>{
+               try {
+                 localStorage.setItem(key , JSON.stringify(data));
+               } catch (error) {
+                console.error(error);
+               }
+            },
+            getData:async(key )=>{
+                try {
+                    return JSON.parse(localStorage.getItem(key))
+                } catch (error) {
+                    console.error(error);
+                    return null
+                }
+            }
+        }
+        
         const { _, $, $All, viewName } = this.mvc;
         this.view = _('div', viewName,
             _('div', 'top-bar',

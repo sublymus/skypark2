@@ -10,6 +10,7 @@ let addressSchema = SQuery.Schema({
     type: String,
     trim: true,
     required: true,
+    emit:false
   },
   quarter: {
     type: Schema.Types.ObjectId,
@@ -27,6 +28,7 @@ let addressSchema = SQuery.Schema({
     type: String,
     trim: true,
     required: true,
+    emit:true
   },
   city: {
     type: String,

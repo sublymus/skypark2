@@ -1,9 +1,8 @@
 import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
-import { SaveCtrl } from "../../lib/squery/CtrlManager";
+import { CtrlManager } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ResponseSchema } from "../../lib/squery/Initialize";
-
-const Messenger: ControllerSchema = {
+const messenger: ControllerSchema = {
     i_saw:  async (ctx: ContextSchema): ResponseSchema => {return},
     createDiscussion: async (ctx: ContextSchema): ResponseSchema => {
         try {
@@ -185,16 +184,12 @@ const Messenger: ControllerSchema = {
 
 }
 
-const ctrlMaker = SaveCtrl({
-    ctrl: { Messenger },
+CtrlManager({
+    ctrl: { messenger },
     access: {
         createDiscussion: "any"
     }
 })
-
-ctrlMaker.pre('createDiscussion', async (e) => {});
-ctrlMaker.post('createDiscussion', async (e) => {});
-
 
 
 

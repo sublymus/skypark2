@@ -5,7 +5,7 @@ import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
-
+import Log from "sublymus_logger";
 let accountSchema = SQuery.Schema({
   name: {
     type: String,
@@ -57,13 +57,12 @@ let accountSchema = SQuery.Schema({
 
 const AccountModel = mongoose.model("account", accountSchema);
 
-const ctrlMaker = MakeModelCtlForm({
+const maker = MakeModelCtlForm({
   schema: accountSchema,
   model: AccountModel,
   volatile: false,
-});
-
-ctrlMaker.pre("store", async ({ ctx }) => {
+})
+maker.pre("store", async function youyou ({ ctx })  {
   const userTarg = getTarg(ctx);
   const account = await AccountModel.findOne({
     userTarg: userTarg,
@@ -82,5 +81,6 @@ function getTarg(ctx: ContextSchema) {
   );
   return targ || Math.round(Math.random() * 1000000).toString(32);
 }
+
 
 export default AccountModel;

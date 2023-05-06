@@ -27,7 +27,7 @@ export class Login extends BaseComponent {
                 this.type = select.value;
             },
             ['@current:click']: async () => {
-                const userInstance = await SQuery.CurrentUserInstance();
+                const userInstance = await SQuery.currentUserInstance();
                 console.log({ userInstance });
                 this.emit('success', {
                     modelPath: userInstance.$modelPath,//this.type,

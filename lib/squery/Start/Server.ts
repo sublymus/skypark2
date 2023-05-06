@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
 import { ContextSchema } from "../Context";
-import { SaveCtrl } from "../CtrlManager";
+import { CtrlManager } from "../CtrlManager";
 import { ControllerSchema, DescriptionSchema, ModelControllers, MoreSchema, ResponseSchema } from "../Initialize";
-import { accessValidator, parentInfo } from "../ModelCtrlManager";
+import { parentInfo } from "../ModelCtrlManager";
 import { SQuery } from "../SQuery";
-
-const Server: ControllerSchema = {
+import { accessValidator } from "../AccessManager";
+const server: ControllerSchema = {
 
     currentUser: async (ctx: ContextSchema): ResponseSchema => {
         const token = await SQuery.cookies(ctx.socket, 'token');
@@ -28,7 +28,7 @@ const Server: ControllerSchema = {
     },
     description: async (ctx: ContextSchema): ResponseSchema => {
         try {
-            const valid = accessValidator(ctx, 'read', ModelControllers[ctx.data.modelPath]?.option.access, 'controller');
+            const valid = accessValidator(ctx, ModelControllers[ctx.data.modelPath]?.option.access, 'controller');
             //Log('Description_valid_access:', valid, '; ctrlAccess:', ModelControllers[ctx.data.modelPath]?.option.access, '; __permission =', ctx.__permission, '; modelPath:',ctx.data.modelPath)
 
             if (!valid) throw new Error("ACCESS_REFUSED");
@@ -86,7 +86,7 @@ const Server: ControllerSchema = {
             for (const key in ModelControllers) {
 
                 ctx.data.modelPath = key
-                descriptions[key] = (await Server.description(ctx, more)).response;
+                descriptions[key] = (await server.description(ctx, more)).response;
             }
             return {
                 response: descriptions,
@@ -103,6 +103,23 @@ const Server: ControllerSchema = {
             };
         }
     },
+    instanceId :async (ctx: ContextSchema): ResponseSchema =>{
+        const local_modelInstance = await ModelControllers[
+            ctx.data.modelPath
+        ].option.model.findOne({
+          _id: ctx.data.id,
+        });
+        if (!local_modelInstance) {
+          Log( "ERROR_validId", `Id not found; modePath:${ctx.data.modelPath} alienId: ${ctx.data.id}  alienModelPath: ${ctx.data.modelPath}`);
+          throw new Error(`Id not found; modePath:${ctx.data.modelPath} alienId: ${ctx.data.id}  alienModelPath: ${ctx.data.modelPath}`);
+        }
+        return {
+            response: true,
+            status: 404,
+            code: "OPERATION_SUCCESS",
+            message: 'OPERATION_SUCCESS',
+        };
+      },
     validId: async (ctx: ContextSchema): ResponseSchema => {
         try {
 
@@ -242,16 +259,12 @@ const Server: ControllerSchema = {
     },
 }
 
-const ctrlMaker = SaveCtrl({
-    ctrl: { Server },
+const ctrlMaker = CtrlManager({
+    ctrl: { server },
     access: {
         description: "any"
     }
 })
-
-ctrlMaker.pre('description', async (e) => {})
-ctrlMaker.post('description', async (e) => {})
-
 
 
 

@@ -8,9 +8,13 @@ import { SQuery } from "./SQuery";
 export class AuthManager {
 
   login = async (ctx: ContextSchema): ResponseSchema => {
+    
     const { data, socket, authData: authDataAny } = ctx;
     const authData: authDataSchema = authDataAny;
     let loginModelInstance = null;
+    Log('login',ctx.data);
+    //console.log('login',ctx.data);
+    
     try {
       let filter: any = {};
       authData.match.forEach((property) => {
@@ -18,11 +22,11 @@ export class AuthManager {
 
         filter[property] = data[property];
       });
-      Log("oops", filter)
       loginModelInstance = await ModelControllers[authData.login].option.model.findOne(filter);
       Log('loginModelInstance', loginModelInstance)
     } catch (error) {
-      Log('loginModelInstance', error)
+      Log('ERROR_loginModelInstance', error);
+    //  console.log('ERROR_loginModelInstance', error);
       return {
         error: `${authData.login.toLocaleUpperCase()} BAD_AUTH`,
         ...(await STATUS.BAD_AUTH(ctx, {
@@ -104,9 +108,6 @@ export class AuthManager {
         })),
       };
     }
-
-    //AuthManager.cookiesInSocket(info, socket);
-
     return res
   };
 

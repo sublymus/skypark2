@@ -90,7 +90,7 @@ export class List extends BaseComponent {
             [viewName]: async () => {
                 /***************************     Init    ********************** */
                 this.when('modelPath', async (modelPath) => {
-                    this.model = await SQuery.Model(modelPath);
+                    this.model = await SQuery.model(modelPath);
                     this.modelInstance = await this.model.newInstance({ id: this.id });
                     this.description = this.model.description;
                     this.arrayInstance = (await this.modelInstance[this.property])
@@ -99,6 +99,7 @@ export class List extends BaseComponent {
                         this.emit('createList', data)
                     });
                     this.arrayInstance.when('update', async(data) => {
+                        console.log('######################################################');
                         this.emit('createList', await data.arrayData)
                     });
                     await this.arrayInstance.update({

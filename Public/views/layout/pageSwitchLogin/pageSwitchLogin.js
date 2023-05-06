@@ -84,7 +84,7 @@ export default class PageSwitchLogin extends BaseComponent {
                     doneAnim.start();
                 })
                 this.view.style.display = 'none';
-                this.when('start', (action) => {
+                this.when('start', (service) => {
                     //console.log('qwertyuioiuytrewertyui');
 
                     $('.form-ctn').append(
@@ -107,7 +107,7 @@ export default class PageSwitchLogin extends BaseComponent {
                     this.view.style.display = 'flex';
                     this.view.style.opacity = '1'
                     let p = 0
-                    if (action == 'login') {
+                    if (service == 'login') {
                         anim.start()
                     } else {
                         anim.startReverse()

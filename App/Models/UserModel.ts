@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import Log from "sublymus_logger";
-import { Controllers, ModelControllers } from "../../lib/squery/Initialize";
+import { Controllers, ModelControllers, Tools } from "../../lib/squery/Initialize";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AccountModel from "./AccountModel";
@@ -19,7 +19,7 @@ let userSchema = SQuery.Schema({
   }
 });
 
-const UserModel = mongoose.model("user", userSchema);
+ const UserModel = mongoose.model("user", userSchema);
 
 const maker = MakeModelCtlForm({
   model: UserModel,
@@ -51,4 +51,5 @@ maker.tools.assigneToNewListElement({
     return id
   }
 });
+
 export default UserModel;

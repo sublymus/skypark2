@@ -127,12 +127,12 @@
 
       let modelId = "";
       const fun = (ligne) => {
-        return (action) => {
+        return (service) => {
           const Model = SQuery.Model('modelPath')
           const { carte, title, text } = createCarte();
           ligne.append(carte);
-          title.textContent = action;
-          text.value = JSON.stringify(load[modelPath][action])
+          title.textContent = service;
+          text.value = JSON.stringify(load[modelPath][service])
             ?.replace(",", ",\n")
             .replace("}", "\n}")
             .replace("{", "{\n");
@@ -169,8 +169,8 @@
     const submit = document.querySelector("#login");
     submit.addEventListener("click", () => {
       if (socket.connected) {
-        socket.emit("login:user", JSON.parse(areaLogin.value), res => //console.log(res));
-          socket.emit("signup:user", JSON.parse(areaLogin.value), res => //console.log(res));
+        socket.emit("login:user", JSON.parse(areaLogin.value), res => console.log(res));
+          socket.emit("signup:user", JSON.parse(areaLogin.value), res => console.log(res));
       } else {
       }
     });

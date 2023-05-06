@@ -4,6 +4,7 @@ import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AccountModel from "./AccountModel";
 import ChannelModel from "./ChannelModel";
+import MessageModel from "./MessageModel";
 
 let DiscussionSchema = SQuery.Schema({
   receiver: {
@@ -21,7 +22,11 @@ let DiscussionSchema = SQuery.Schema({
   channel: {
     type: Schema.Types.ObjectId,
     ref: ChannelModel.modelName,
-    //access: 'admin',
+    difine:['./channel/vectors',{
+      type:Schema.Types.ObjectId,
+      ref:MessageModel.modelName,
+    }],
+    access: 'admin',
     strictAlien: true,
     impact: false,
   },

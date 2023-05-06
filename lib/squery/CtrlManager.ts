@@ -1,14 +1,14 @@
 import Log from "sublymus_logger";
 import STATUS from "../../App/Errors/STATUS";
 import { ContextSchema } from "./Context";
-import { Controllers, ControllerSchema, CtrlMakerSchema, EventPostSchema, EventPreSchema, ListenerPostSchema, ListenerPreSchema, MoreSchema, ResponseSchema, SaveCtrlOptionSchema } from "./Initialize";
+import { Controllers, ControllerSchema, CtrlMakerSchema, EventPostSchema, EventPreSchema, ListenerPostSchema, ListenerPreSchema, MoreSchema, ResponseSchema, SaveCtrlOptionSchema, Tools, ToolsInterface } from "./Initialize";
 /*88888888888888888888
 
 NB:  les nom de model sont en lowercase : my_controller is well
 
 8888888888888888888*/
 
-const SaveCtrl = (option: SaveCtrlOptionSchema): CtrlMakerSchema => {
+const CtrlManager = (option: SaveCtrlOptionSchema): CtrlMakerSchema => {
     let ctrl: ControllerSchema = null;
     let name: string;
     const EventManager: {
@@ -18,52 +18,57 @@ const SaveCtrl = (option: SaveCtrlOptionSchema): CtrlMakerSchema => {
         };
     } = {};
     const callPre: (e: EventPreSchema) => Promise<void> = async (e: EventPreSchema) => {
+        try {
 
-        if (!(EventManager[e.action]?.pre)) return
+            if (!(EventManager[e.ctx.service]?.pre)) return
 
-        for (const listener of EventManager[e.action].pre) {
+            for (const listener of EventManager[e.ctx.service].pre) {
 
-            if (listener) await listener(e);
+                if (listener) await listener(e);
+            }
+        } catch (error) {
+            Log('ERROR_Ctrl_callPre',error);
         }
     };
     const callPost: (e: EventPostSchema) => ResponseSchema = async (e: EventPostSchema) => {
-        if (!(EventManager[e.action]?.post)) return e.res;
+        try {
+            if (!(EventManager[e.ctx.service]?.post)) return e.res;
 
-        for (const listener of EventManager[e.action].post) {
-            if (listener) await listener(e);
+            for (const listener of EventManager[e.ctx.service].post) {
+                if (listener) await listener(e);
+            }
+            return e.res;
+        } catch (error) {
+            Log('ERROR_Ctrl_callPost',error);
         }
-        return e.res;
     };
     const observableCtrl: ControllerSchema = {};
     for (const key in option.ctrl) {
         if (Object.prototype.hasOwnProperty.call(option.ctrl, key)) {
             ctrl = option.ctrl[key];
             name = key;
-            for (const action in ctrl) {
-                if (Object.prototype.hasOwnProperty.call(ctrl, action)) {
-                    observableCtrl[action] = async (ctx: ContextSchema, more: MoreSchema): ResponseSchema => {
-                        if (!ctrlAccessValidator(ctx, option.access[action])) {
+            for (const service in ctrl) {
+                if (Object.prototype.hasOwnProperty.call(ctrl, service)) {
+                    observableCtrl[service] = async (ctx: ContextSchema, more: MoreSchema): ResponseSchema => {
+                        if (!ctrlAccessValidator(ctx, option.access[service])) {
                             return await callPost({
                                 ctx,
-                                more: { ...more },
-                                action,
-                                res: {
+                                more,
+                                res: { 
                                     error: "BAD_AUTH",
                                     ...(await STATUS.BAD_AUTH(ctx, {
-                                        target: 'SERVER:' + action.toLocaleUpperCase(),
+                                        target: 'SERVER:' + service.toLocaleUpperCase(),
                                     })),
                                 },
                             });
                         }
                         await callPre({
                             ctx,
-                            action,
                             more
                         });
                         return await callPost({
-                            action,
                             ctx,
-                            res: await ctrl[action](ctx, more),
+                            res: await ctrl[service](ctx, more),
                             more
                         });
                     };
@@ -72,39 +77,48 @@ const SaveCtrl = (option: SaveCtrlOptionSchema): CtrlMakerSchema => {
             break;
         }
     }
-    name = option.name || name.toLocaleLowerCase();
-    const ctrlMaker = () => {
+    name = option.name || name;
+    const ctrlMaker :CtrlMakerSchema = () => {
         return observableCtrl
     };
     ctrlMaker.option = option;
 
-    ctrlMaker.pre = (action: string, listener: ListenerPreSchema) => {
-        if (!EventManager[action]) {
-            EventManager[action] = {
+    ctrlMaker.pre = (service: string, listener: ListenerPreSchema):CtrlMakerSchema => {
+        if (!EventManager[service]) {
+            EventManager[service] = {
                 pre: [],
                 post: [],
             };
         }
-        EventManager[action].pre.push(listener);
+        EventManager[service].pre.push(listener);
+        return ctrlMaker;
     };
-    ctrlMaker.post = (action: string, listener: ListenerPostSchema) => {
-        if (!EventManager[action]) {
-            EventManager[action] = {
+    ctrlMaker.post = (service: string, listener: ListenerPostSchema):CtrlMakerSchema => {
+        if (!EventManager[service]) {
+            EventManager[service] = {
                 pre: [],
                 post: [],
             };
         }
-        EventManager[action].post.push(listener);
+        EventManager[service].post.push(listener);
+        return ctrlMaker;
     };
-    Controllers[name] = ctrlMaker as CtrlMakerSchema;
-    Log('ctrl', name);
+    ;
+    ctrlMaker.tools = {} as (ToolsInterface & { maker: CtrlMakerSchema });
+    ctrlMaker.tools.maker = ctrlMaker;
 
-    return Controllers[name];
+    for (const tool in Tools) {
+      if (Object.prototype.hasOwnProperty.call(Tools, tool)) {
+        const func = Tools[tool];
+        ctrlMaker.tools[tool] = func.bind(ctrlMaker.tools);
+      }
+    }
+    return Controllers[name] = ctrlMaker;
 }
 function ctrlAccessValidator(ctx: ContextSchema, access: string) {
     access = access || 'any';
     return access == 'any' ? true : (access == ctx.__permission);
 }
 
-export { SaveCtrl };
+export { CtrlManager };
 

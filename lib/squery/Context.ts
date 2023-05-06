@@ -27,7 +27,7 @@ export type DataSchema = {
 
 export type ContextSchema = {
   ctrlName: string,
-  action: string,
+  service: string,
   data: DataSchema,
   socket: Socket<
     DefaultEventsMap,

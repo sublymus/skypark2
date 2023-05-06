@@ -1,0 +1,19 @@
+{
+  "include": [
+    "./**/*.ts",
+    "*.ts",
+  ],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "target": "ESNext",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "rootDir": "./",
+    "sourceMap": true,
+    "jsx": "preserve"
+  },
+  "ts-node": {
+    "esm": true
+  }
+}

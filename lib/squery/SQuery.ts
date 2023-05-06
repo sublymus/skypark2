@@ -1,3 +1,16 @@
+
+import {
+  Controllers,
+  DescriptionSchema,
+  GlobalMiddlewares,
+  ListenerPostSchema,
+  ListenerPreSchema,
+  ModelAccessAvailable,
+  ModelControllers,
+  ResultSchema,
+  SQueryMongooseSchema,
+  UrlDataType,
+} from "./Initialize";
 import { parse, serialize } from "cookie";
 import jwt from "jsonwebtoken";
 
@@ -7,25 +20,17 @@ import mongoose_unique_validator from "mongoose-unique-validator";
 import { Server, Socket } from "socket.io";
 import { DefaultEventsMap } from "socket.io/dist/typed-events";
 import Log from "sublymus_logger";
-import { Config } from "../../squeryconfig";
-import { AuthManager } from "./AuthManager";
 import {
   ContextSchema,
   DataSchema,
   authDataOptionSchema,
   authDataSchema,
 } from "./Context";
-import {
-  Controllers,
-  DescriptionSchema,
-  GlobalMiddlewares,
-  ListenerPostSchema,
-  ListenerPreSchema,
-  ModelControllers,
-  ResultSchema,
-  SQueryMongooseSchema,
-} from "./Initialize";
+
+import { Config } from "./Config";
 import EventEmiter from "./event/eventEmiter";
+import { AuthManager } from "./AuthManager";
+import { log } from "console";
 type MapUserCtxSchema = {
   [p: string]: {
     exp: number;
@@ -36,15 +41,15 @@ type MapUserCtxSchema = {
 export const MapUserCtx: MapUserCtxSchema = {};
 
 export type FirstDataSchema = {
-  __action: "create" | "read" | "list" | "update" | "delete";
+  __service: "create" | "read" | "list" | "update" | "delete";
   [p: string]: any;
 };
-const avalaibleModelAction = ["create", "read", "list", "update", "delete"];
+const avalaibleModelService = ["create", "read", "list", "update", "delete"];
 type CallBack = (result: ResultSchema | void) => any;
 async function defineContext(
   socket: Socket,
   ctrlName: string,
-  action: string,
+  service: string,
   data: DataSchema
 ): Promise<ContextSchema> {
   const decoded = await SQuery.cookies(socket);
@@ -59,7 +64,7 @@ async function defineContext(
       modelPath: token?.__loginModelPath,
     },
     ctrlName,
-    action,
+    service,
     data,
     socket,
     __key: token?.__key, /// pour le moment data.__key = cookies[__key]
@@ -72,6 +77,7 @@ async function defineContext(
   };
   return ctx;
 }
+
 type SQuerySchema = Function & {
   emiter: EventEmiter;
   io: (
@@ -79,6 +85,9 @@ type SQuerySchema = Function & {
   ) => Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
   Schema: (description: DescriptionSchema) => any;
   auth: (authData: authDataOptionSchema) => void;
+  files: {
+    accessValidator: (url: string, cookies: any) => Promise<UrlDataType>
+  },
   cookies(
     socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>,
     key?: string,
@@ -88,32 +97,14 @@ type SQuerySchema = Function & {
 const SQuery: SQuerySchema = function (
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
 ) {
-  return (ctrlName: string, action: string) => {
+  return (ctrlName: string, service: string) => {
     return async (data: FirstDataSchema, cb?: CallBack) => {
-      Log("squery:data", data, { ctrlName }, { action });
-      let modelRequest = false;
-      if (ctrlName.startsWith("model_")) {
-        modelRequest = true;
-        if (avalaibleModelAction.includes(action) == false) {
-          return cb?.({
-            error: "NOT_FOUND",
-            status: 404,
-            code: "UNDEFINED",
-            message:
-              "access not found for Controller: " +
-              ctrlName +
-              "." +
-              action +
-              "; model action must be : [" +
-              avalaibleModelAction.join(", ") +
-              "]",
-          });
-        }
-      }
+      Log("squery:data", data, { ctrlName }, { service });
+
       const ctx: ContextSchema = await defineContext(
         socket,
         ctrlName,
-        action,
+        service,
         data
       );
 
@@ -125,13 +116,12 @@ const SQuery: SQuerySchema = function (
         if (res !== undefined) return cb?.(res);
       }
       let res: ResultSchema = null;
+      let modelRequest = !!(ModelControllers[ctrlName]?.()[service]) && avalaibleModelService.includes(service);
       try {
         if (modelRequest) {
-          res = await ModelControllers[ctrlName.replace("model_", "")]?.()[
-            action
-          ]?.(ctx);
+          res = await ModelControllers[ctrlName]?.()[service]?.(ctx);
         } else {
-          res = await Controllers[ctrlName]?.()[action]?.(ctx);
+          res = await Controllers[ctrlName]?.()[service]?.(ctx);
         }
       } catch (error) {
         Log("ERROR_Controller", error);
@@ -150,7 +140,7 @@ const SQuery: SQuerySchema = function (
           error: "NOT_FOUND",
           status: 404,
           code: "UNDEFINED",
-          message: "access not found for Path: " + ctrlName + "." + action,
+          message: "access not found for Path: " + ctrlName + "." + service,
         });
       }
       // Log('res', res)
@@ -168,17 +158,13 @@ export const Global: GlobalSchema = {
 
 SQuery.cookies = async (socket, key: string, value?: any) => {
   let decoded: any = {};
+  let cookie = socket.request.headers.cookie;
   try {
-    let cookie = socket.request.headers.cookie;
-    // Log("SQuery.cookies_parse", JSON.parse(parse(cookie).squery_session));
-    // Log("SQuery.cookies_parse", parse(cookie));
-    // Log("SQuery.cookies_parse", cookie);
     const squery_session = JSON.parse(parse(cookie).squery_session);
-    decoded = jwt.verify(squery_session, Config.KEY) || {};
+    decoded = jwt.verify(squery_session, Config.conf.TOKEN_KEY) || {};
   } catch (error) {
     Log("jwtError", error.message);
   }
-  Log("decoded", { decoded });
   if (key && value) decoded[key] = value;
   if (!key && !value) return decoded;
   if (!value) return decoded[key];
@@ -188,7 +174,7 @@ SQuery.cookies = async (socket, key: string, value?: any) => {
       {
         ...payload,
       },
-      Config.KEY
+      Config.conf.TOKEN_KEY
     );
   };
 
@@ -201,19 +187,64 @@ SQuery.cookies = async (socket, key: string, value?: any) => {
     socket.emit("storeCookie", cookieToken, (clientCookie: string) => {
       socket.request.headers.cookie =
         ((socket.request.headers.cookie as string) || "")
-          .split(";")
-          .filter((part: string) => {
-            Log("clientCookie", clientCookie);
+          .split(";").filter((part: string) => {
             part = part.trim();
             return !part.startsWith("squery_session");
-          })
-          .join("; ") +
-        "; " +
-        cookieToken;
+          }).join("; ") + "; " + cookieToken;
       rev(clientCookie);
     });
   });
 };
+
+SQuery.files = {
+  accessValidator: async (url, cookie) => {
+    let urlData: UrlDataType;
+    try {
+      if (!url) throw new Error('url is missing;');
+      url = url.substring(url.lastIndexOf('/') + 1, url.length)
+      urlData = jwt.verify(url, Config.conf.URL_KEY) as any;
+      if (!urlData) throw new Error('invalid url , urlData  is missing');
+      const rule = ModelControllers[urlData.modelPath]?.option.schema.description[urlData.property];
+      if (!rule || !Array.isArray(rule)) throw new Error('invalid url, rule not found');
+      let access: ModelAccessAvailable;
+      access = rule[0].access;
+      if (rule[0].access == 'public' || rule[0].access == 'default' || rule[0].access == undefined || rule[0].access == 'admin') return urlData;
+      if (!cookie || !cookie.squery_session) throw new Error('invalid cookie, cookie.squery_session is missing');
+      const squery_session = JSON.parse(cookie.squery_session);
+      if (!squery_session) throw new Error('invalid squery_session');
+      let decoded: any = {};
+      decoded = jwt.verify(squery_session, Config.conf.TOKEN_KEY) || {};
+      const token = decoded.token
+      if (!token) throw new Error('invalid token');
+      const ctx: ContextSchema = {
+        signup: {
+          id: token.__signupId,
+          modelPath: token.__signupModelPath,
+        },
+        login: {
+          id: token.__loginId,
+          modelPath: token.__loginModelPath,
+        },
+        ctrlName: urlData.modelPath,
+        service: 'read',
+        data: {
+          id: urlData.id,
+        },
+        socket: null,
+        __key: token.__key, /// pour le moment data.__key = cookies[__key]
+        __permission: token.__permission || "any", ///  data.__permission = undefined
+      };
+
+      const res = await ModelControllers[urlData.modelPath]()['read'](ctx)
+      if (res.error) throw new Error(JSON.stringify(res));
+      if (!res.response[urlData.property]) throw new Error('access not allowed');
+      return urlData;
+
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+}
 
 SQuery.emiter = new EventEmiter();
 
@@ -269,83 +300,70 @@ SQuery.io = (server: any) => {
   };
 
   let firstConnection = true;
-  io.on(
-    "connection",
-    async (
-      socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
-    ) => {
-      if (firstConnection) {
-        firstConnection = false;
-        const readylist = [];
-        for (const key in AuthDataMap) {
-          if (Object.prototype.hasOwnProperty.call(AuthDataMap, key)) {
-            const authData = AuthDataMap[key];
-            ModelControllers[authData.signup].pre(
-              "create",
-              setAuthValues(authData)
-            );
-            ModelControllers[authData.signup].pre(
-              "store",
-              setAuthValues(authData)
-            );
-            if (readylist.includes(authData.login)) continue;
-            Log("init_Model_" + authData.login, authData);
-            ModelControllers[authData.login].pre("create", setPermission);
-            ModelControllers[authData.login].pre("store", setPermission);
-            ModelControllers[authData.login].post(
-              "create",
-              setLoginCookie(authData)
-            );
-            ModelControllers[authData.login].post(
-              "store",
-              setLoginCookie(authData)
-            );
-            readylist.push(authData.login);
-          }
-        }
 
-        new Promise(() => {
-          setInterval(() => {
-            for (const key in MapUserCtx) {
-              if (Object.prototype.hasOwnProperty.call(MapUserCtx, key)) {
-                const ctxData = MapUserCtx[key];
-                if (ctxData.exp - Date.now() <= 0) {
-                 // Log("delete_data", key);
-                  delete MapUserCtx[key];
-                }
+  io.on("connection", async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>) => {
+    if (firstConnection) {
+      firstConnection = false;
+      const readylist = [];
+      for (const key in AuthDataMap) {
+        if (Object.prototype.hasOwnProperty.call(AuthDataMap, key)) {
+          const authData = AuthDataMap[key];
+          const signupCtrl = ModelControllers[authData.signup]();
+          ModelControllers[authData.signup].pre(signupCtrl.create ? 'create' : 'store', setAuthValues(authData));
+          if (readylist.includes(authData.login)) continue;
+          Log("init_Model_" + authData.login, authData);
+          const loginCtrl = ModelControllers[authData.login]();
+          ModelControllers[authData.login].pre(loginCtrl.create ? "create" : 'store', setPermission);
+          ModelControllers[authData.login].post(loginCtrl.create ? "create" : 'store', setLoginCookie(authData));
+          readylist.push(authData.login);
+        }
+      }
+      /********************    MapUserCtx  *********************** */
+      new Promise(() => {
+        setInterval(() => {
+          for (const key in MapUserCtx) {
+            if (Object.prototype.hasOwnProperty.call(MapUserCtx, key)) {
+              const ctxData = MapUserCtx[key];
+              if (ctxData.exp - Date.now() <= 0) {
+                // Log("delete_data", key);
+                delete MapUserCtx[key];
               }
             }
-          }, 10_000);
-        });
+          }
+        }, 10_000);
+      });
+    }
+    /********************    All  *********************** */
+    socket.onAny((event, data, cb: CallBack) => {
+      console.log({ event, data })
+
+    });
+
+
+    /********************    Models  *********************** */
+
+    const squery = SQuery(socket);
+    console.log(ModelControllers);
+
+    for (const ctrlName in ModelControllers) {
+      if (Object.prototype.hasOwnProperty.call(ModelControllers, ctrlName)) {
+        for (const service of avalaibleModelService) {
+          socket.on(ctrlName + ":" + service, squery(ctrlName, service));
+        }
       }
-      /********************    All  *********************** */
-      socket.onAny((event, data, cb: CallBack) => { });
-      /********************    MapUserCtx  *********************** */
-
-      /********************    Models  *********************** */
-
-      const squery = SQuery(socket);
-      for (const ctrlName_modelPath in ModelControllers) {
-        if (Object.prototype.hasOwnProperty.call(ModelControllers, ctrlName_modelPath)) {
-          for (const service of avalaibleModelAction) {
-            const ctrlName = "model_" + ctrlName_modelPath;
+    } /********************    Controllers  *********************** */
+    for (const ctrlName in Controllers) {
+      if (Object.prototype.hasOwnProperty.call(Controllers, ctrlName)) {
+        const ctrlMaker = Controllers[ctrlName];
+        const ctrl = ctrlMaker();
+        for (const service in ctrl) {
+          if (Object.prototype.hasOwnProperty.call(ctrl, service)) {
             socket.on(ctrlName + ":" + service, squery(ctrlName, service));
           }
         }
-      } /********************    Controllers  *********************** */
-      for (const ctrlName in Controllers) {
-        if (Object.prototype.hasOwnProperty.call(Controllers, ctrlName)) {
-          const ctrlMaker = Controllers[ctrlName];
-          const ctrl = ctrlMaker();
-          for (const service in ctrl) {
-            if (Object.prototype.hasOwnProperty.call(ctrl, service)) {
-              socket.on(ctrlName + ":" + service, squery(ctrlName, service));
-            }
-          }
-        }
       }
-      /********************   Description   *********************** */
     }
+  }
   );
   Global.io = io;
   return io;
@@ -369,26 +387,26 @@ socket.request.headers.cookie = ..... // ecrase le cookies du header;
 SQuery.auth = (authDataOption: authDataOptionSchema) => {
   const authData: authDataSchema = {
     ...authDataOption,
-    __permission: "user:" + authDataOption.signup,
+    __permission: `user:${authDataOption.signup}`,
   };
   authData.match.push("__permission");
   AuthDataMap[authData.signup] = authData;
 
+
   Global.io.on("connection", (socket: any) => {
-    socket.on(
-      "login:" + authData.signup,
-      async (data: DataSchema, cb: CallBack) => {
-        data.__permission = authData.__permission;
-        const authCtrl = new AuthManager();
-        const res = await authCtrl.login({
-          ...(await defineContext(socket, "login", "read", data)),
-          authData,
-        });
-        cb(res);
-      }
+    socket.on(`login:${authData.signup}`, async (data: DataSchema, cb: CallBack) => {
+      Log(`login:${authData.signup}`, data);
+      data.__permission = authData.__permission;
+      const authCtrl = new AuthManager();
+      const res = await authCtrl.login({
+        ...(await defineContext(socket, "login", "read", data)),
+        authData,
+      });
+      cb(res);
+    }
     );
     socket.on(
-      "signup:" + authData.signup,
+      `signup:${authData.signup}`,
       async (data: DataSchema, cb: CallBack) => {
         let __key = new mongoose.Types.ObjectId().toString();
         const authCtrl = new AuthManager();
@@ -421,29 +439,31 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
     access: "secret",
   };
 
-  description.createdAt = {
+  description.__createdAt = {
     type: Number,
     access: "admin",
   };
-  description.updatedAt = {
+  description.__updatedAt = {
     type: Number,
     access: "admin",
   };
-  description.updatedProperty = [
+  description.__updatedProperty = [
     {
       type: String,
       access: "secret",
-    },
+    },//64438cae5f4ed54dc6cefa6f
   ];
-
+  description._id = {
+    type: Schema.Types.ObjectId,
+    access: 'public'
+  };
   const schema = new Schema(description as any);
   schema.plugin(mongoosePaginate);
   schema.plugin(mongoose_unique_validator);
 
   schema.pre("save", async function () {
-    this.updatedAt = Date.now();
-    this.modifiedPaths();
-    this.updatedProperty = this.modifiedPaths();
+    this.__updatedAt = Date.now();
+    this.__updatedProperty = this.modifiedPaths();
   });
 
   schema.post("save", async function (doc: any) {
@@ -452,24 +472,26 @@ SQuery.Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
     //   Log('update:' + doc._id.toString(), val);
     // })
     let canEmit = false;
-    doc.updatedProperty.forEach((p: string) => {
+    doc.__updatedProperty.forEach((p: string) => {
       const rule = description[p];
-      if (Array.isArray(rule) && rule[0]?.access != 'secret') {
+      if (p == '__updatedProperty' || p == '__updatedAt') {
+        return;
+      } else if (Array.isArray(rule) && rule[0]?.access != 'secret' && rule[0]?.emit != false) {
         canEmit = true;
-      } else if (!Array.isArray(rule) && rule?.access != 'secret') {
+      } else if (!Array.isArray(rule) && rule?.access != 'secret' && rule?.emit != false) {
         canEmit = true;
       }
+      //console.log(p, canEmit);
     });
-
-    // if(!canEmit)return;
+    //console.log(doc.__updatedProperty, canEmit);
+    if (!canEmit) return;
 
     Global.io.emit("update:" + doc._id.toString(), {
       id: doc._id.toString(),
       doc,
-      properties: doc.updatedProperty,
+      properties: doc.__updatedProperty,
     });
   });
-
   (schema as any).description = description;
   return schema as SQueryMongooseSchema;
 };

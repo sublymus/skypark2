@@ -1,6 +1,6 @@
+import Log from "sublymus_logger";
 import { EmailConfirmartion } from "../lib/AuthConfirmation/AuthConfirmation";
 import { SQuery } from "../lib/squery/SQuery";
-
 SQuery.auth({
   login: "account",
   extension: [EmailConfirmartion],

@@ -1,14 +1,19 @@
 import express from "express";
 import path from "path";
-
+import cookieSession from 'cookie-session'
 import { Socket } from "socket.io";
+import './squeryconfig'
 import { SQuery } from "./lib/squery/SQuery";
-const PORT = 3500;
+import Log from "sublymus_logger";
+import cookieParser from 'cookie-parser';
+import { Config } from "./lib/squery/Config";
+
 const app = express();
-const server = app.listen(PORT, () => {
-  console.log('Server running at http://localhost:'+PORT);
+const server = app.listen(Config.conf.PORT, () => {
+  console.log('Server running at http://localhost:' + Config.conf.PORT);
 });
 
+app.use(cookieParser());
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "Public/views/index.html"));
 });
@@ -16,9 +21,16 @@ app.get("/test", (req, res) => {
   res.sendFile(path.join(__dirname, "Public/views/test.html"));
 });
 
-app.get("*", (req, res) => {
+app.get("*", async (req, res) => {
   if (req.path.startsWith('/tamp') || req.path.startsWith('/temp')) {
-    return res.sendFile(path.join(__dirname, req.path));
+    try {
+      const urlData = await SQuery.files.accessValidator(req.url, req.cookies)
+      if (!urlData) return res.status(404).send('File Not Found')
+      return res.sendFile(path.join(__dirname, urlData.realPath));
+    } catch (error) {
+      Log('FILE_ACCESS_ERROR', error)
+      return res.status(404).send('File Not Found')
+    }
   }
   const filePath = path.join(__dirname, "Public/views", req.path);
   res.sendFile(filePath);

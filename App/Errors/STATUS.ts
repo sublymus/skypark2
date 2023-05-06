@@ -1,4 +1,5 @@
 import { ContextSchema } from "../../lib/squery/Context";
+import { StatusSchema } from "../../lib/squery/Initialize";
 import Message from "./Message";
 type OptionShema = {
   message?: string,
@@ -39,12 +40,7 @@ const STATUS = {
   },
 
 };
-export type StatusSchema = {
-  code: string,
-  __key ?: string,
-  message: string,
-  status: number,
-}
+
 async function BuildSatut(
   ctx: ContextSchema,
   code: string | Function,

@@ -109,7 +109,7 @@ export default class PageCreateUser extends BaseComponent {
             socket.emit("sendCode", { userEmail, userName }, (resCode) => {
               code = resCode;
               socket.emit("signup", {
-                __action: "create",
+                __service: "create",
                 __modelPath: "user",
                 account: {
                   name: data.name,

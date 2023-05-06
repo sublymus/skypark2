@@ -1,8 +1,19 @@
+import { Config} from "./lib/squery/Config";
 
-export const Config = {
-    execDir: ['/Start', '/App/Models', '/App/Controllers'],
-    afterExec: [],
-    beforeExec: [],
-    rootDir: __dirname,
-    KEY: 'a',
+declare module "./lib/squery/Config" {
+  export interface ConfigInterface {
+    PORT:number,
+    tempDir?:string
+    tempDuration?:number,
+  }
+}
+
+Config.conf ={
+    PORT:3500,
+    tempDir:'/temp',
+    tempDuration:24*60*60*1000,
+    URL_KEY:'Log("<{-_-}>","\\(^_^)/")',
+    TOKEN_KEY:'Log("(-^-)","(- _-)")',
+    rootDir:__dirname,
+    execDir:['/App/Models','/App/Controllers','/App/Tools','/Start'],
 }

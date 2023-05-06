@@ -46,7 +46,7 @@ export type authDataSchema = {
 };
 export type ContextSchema = {
   ctrlName: string;
-  action: string;
+  service: string;
   data: DataSchema;
   socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
   signup: {
@@ -104,7 +104,7 @@ export class EmailConfirmartion {
   async confirm(ctx: ContextSchema): Promise<boolean> {
     let { data, socket } = ctx;
     const code = genereCodeEmail();
-    console.log({ code });
+   //console.log({ code });
 
     if (!(await sendEmail(data.account.email, data.account.name, code))) {
       this.#msgError = "email n'a pa pu etre envoye";
@@ -119,7 +119,7 @@ export class EmailConfirmartion {
           this.#msgError = "expiration du code";
           res(false);
         }
-        console.log({ code }, { codeuser });
+       // console.log({ code }, { codeuser });
         if (!(codeuser === code)) {
           this.#msgError = "code invalide";
           res(false);
@@ -133,60 +133,3 @@ export class EmailConfirmartion {
     return this.#msgError;
   }
 }
-/***
- {
-"my_article":{
-"name":"Salade",
-"stock":2,
-"description":"Plante cultivée dont on fait la salade (surtout laitues; batavias; scaroles; chicorées). Repiquer des salades.",
-"views":[],
-"price":5,
-"folders":[{
-"folderName":"wena0"
-},
-{
-"folderName":"wena1"
-},
-{
-"folderName":"wena2"
-}]
-},
-"account":{
-"name":"baron",
-"email":"ema1E1@gmail.com",
-"password":"azert",
-"telephone":"12345678",
-"status":"property",
-"address":{
-"location":"l:567455;h45678654",
-"room":45,
-"door":296,
-"etage":4,
-"description":"je suis ici"
-},
-"favorites":{
-"folders":[{
-"folderName":"wena0"
-},
-{
-"folderName":"wena1"
-},
-{
-"folderName":"wena2"
-},
-{
-"folderName":"wena3"
-},
-{
-"folderName":"wena4"
-},
-{
-"folderName":"wena5"
-}]
-},
-"profile":{
-"message":"*** BEST ****"
-}
-}
-}
- */

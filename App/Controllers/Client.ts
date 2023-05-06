@@ -1,11 +1,9 @@
-import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
-import { SaveCtrl } from "../../lib/squery/CtrlManager";
+import { CtrlManager } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ModelInstanceSchema, ResponseSchema } from "../../lib/squery/Initialize";
 import { AuthDataMap, SQuery } from "../../lib/squery/SQuery";
 import { AuthManager } from "../../lib/squery/AuthManager";
-
-const Client: ControllerSchema = {
+const client: ControllerSchema = {
     create: async (ctx: ContextSchema): ResponseSchema => {
         const token = await SQuery.cookies(ctx.socket, 'token');
         const res = await ModelControllers['user']()['create']({
@@ -43,7 +41,7 @@ const Client: ControllerSchema = {
 
         const LogRes = await authCtrl.login({
             ...ctx,
-            action: 'read',
+            service: 'read',
             ctrlName: 'login',
             authData: AuthDataMap['user'],
             data: {
@@ -63,26 +61,16 @@ const Client: ControllerSchema = {
             }
         });
         if(res.error) return res;
-
-        Log("****", res);
         
         return res;
     }
 }
 
-
-const ctrlMaker = SaveCtrl({
-    ctrl: { Client },
+const maker = CtrlManager({
+    ctrl: { client },
     access: {
         like: "any"
     }
-})
+});
 
-ctrlMaker.pre('comments', async ({ ctx }) => {
-    ctx.post = {
-        comments: {
-            __permission: 'admin'
-        }
-    }
-})
-ctrlMaker.post('like', async (e) => { })
+  

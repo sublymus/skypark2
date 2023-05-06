@@ -13,37 +13,20 @@ let buildingSchema = SQuery.Schema({
     type: String,
     required: true,
   },
-  users: [
-    {
+  users: [ {
       type: Schema.Types.ObjectId,
       ref: "user",
       strictAlien: true,
       impact: false,
-      removed:[{
-        pattern: './account/address/building',
-        map: (source , target) => {
-          Log('soureceID', { source, target })
-          return source
-        }
-      }],
-      added:[{
-        pattern: './account/address/building -> ./_id',
-        map: (id, option) => {
-          Log('soureceID', { id, option })
-          return id
-        }
-      }]
-    }, 
-  ],
+      bind:{
+        pattern:''
+      }
+    }],
   Thread: {
     type: Schema.Types.ObjectId,
     ref: ChannelModel.modelName,
     alien: true,
   },
-  // activities: [{
-  //     type: Schema.Types.ObjectId,
-  //     ref: ActivityModel.modelName,
-  // }]
 });
 
 const BuildingModel = mongoose.model("building", buildingSchema);
@@ -52,18 +35,6 @@ const maker = MakeModelCtlForm({
     schema: buildingSchema,
     model: BuildingModel,
     volatile: true,
-    bind:[
-      {
-        pattern:'wertyui',
-        map:{
-          toLeft(v) {
-            
-          },toRight(v) {
-            
-          },
-        }
-      }
-    ]
 });
 
 export default BuildingModel;

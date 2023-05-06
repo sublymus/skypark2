@@ -26,7 +26,7 @@ export const load = {
       page: 1,
       limit: 3,
       select: "",
-      sort: { createdAt: -1 },
+      sort: { __createdAt: -1 },
       query: {},
     },
   },

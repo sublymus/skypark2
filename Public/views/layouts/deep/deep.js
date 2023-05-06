@@ -49,7 +49,7 @@ export class Deep extends BaseComponent {
                     const description = this.description = await SQuery.Description(modelPath);
                     await new Promise((rev) => {
                         SQuery.socket.emit(modelPath, {
-                            __action: 'read',
+                            __service: 'read',
                             id: this.id,
                         }, (res) => {
                             this.cache = res.response;
@@ -134,7 +134,7 @@ export class Deep extends BaseComponent {
                             return alert('Invalide Value :' + input.value + ' \n because : ' + result.message);
                         }
                         SQuery.socket.emit(this.modelPath, {
-                            __action: 'update',
+                            __service: 'update',
                             id: this.id,
                             [data.property]: result.value
                         }, (res) => {
@@ -167,7 +167,7 @@ export class Deep extends BaseComponent {
                             return alert('Invalide Value :' + input.value + ' \n because : ' + result.message);
                         }
                         SQuery.socket.emit(this.modelPath, {
-                            __action: 'update',
+                            __service: 'update',
                             id: this.id,
                             [data.property]: files
                         }, (res) => {

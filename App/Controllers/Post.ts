@@ -1,8 +1,7 @@
 import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
-import { SaveCtrl } from "../../lib/squery/CtrlManager";
+import { CtrlManager } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ModelInstanceSchema, ResponseSchema } from "../../lib/squery/Initialize";
-
 const Post: ControllerSchema = {
     allUserPost:async (ctx: ContextSchema): ResponseSchema => {
     const arrayData = ModelControllers['post']()['list']({
@@ -139,19 +138,15 @@ const Post: ControllerSchema = {
 }
 
 
-const ctrlMaker = SaveCtrl({
+CtrlManager({
     ctrl: { Post },
     access: {
         like: "any"
     }
-})
-
-
-ctrlMaker.pre('comments', async ({ctx}) => {
+}).pre('comments', async ({ctx}) => {
     ctx.post = {
         comments:{
             __permission:'admin'
         }
     }
  })
-ctrlMaker.post('like', async (e) => { })

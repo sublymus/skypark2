@@ -52,8 +52,9 @@ export class Deep extends BaseComponent {
                     const parentInstance = await this.instance.newParentInstance();
                     if (parentInstance) {
                         this.emit('hide');
+                        console.log('parentInstance.$modelPath' , {parentInstance , modelPath: parentInstance.$modelPath})
                         this.container.append(_('Deep', {
-                            modelPath: parentInstance.$modelPath,
+                            modelPath: await parentInstance.$modelPath,
                             id: parentInstance.$id,
                             // parentCpn: this,
                             container: this.container,
@@ -83,7 +84,7 @@ export class Deep extends BaseComponent {
                 /***************************     Init    ********************** */
                 this.when('modelPath', async (modelPath) => {
                     /*************************** Mise En Cache ********************** */
-                    this.model = await SQuery.Model(modelPath);
+                    this.model = await SQuery.model(modelPath);
                     this.instance = await this.model.newInstance({ id: this.id });
                     console.log('model : ', this.model);
                     console.log('instance : ', this.instance);
@@ -101,7 +102,7 @@ export class Deep extends BaseComponent {
                                     data: {
                                         modelPath: rule.ref,
                                         property,
-                                        id: (await this.instance[property])?.$id,
+                                        id: this.instance.$cache[property],
                                     },
                                     cb: (elem) => $('.container').append(elem),
                                 })
@@ -153,12 +154,12 @@ export class Deep extends BaseComponent {
                 });
                 this.when('createBtn', async ({ data, cb }) => {
                     const btn = _('div', 'ref-btn',
-                        _('h1', 'model', data.modelPath),
+                        _('h1', 'model', data.property+',model='+data.modelPath),
                         _('input', ['type:text', `value:${data.id}`, 'placeholder:id']),
                     );
-                    this.instance.when('refresh:' + data.property, async () => {
+                    this.instance.when('refresh:' + data.property, async (e) => {
                         //console.log('*******************************', this.instance, data.property, $(btn, 'input').value);
-                        this.waitAnim($(btn, 'input'), 'value', (await this.instance[data.property]).$id)
+                        this.waitAnim($(btn, 'input'), 'value',  e.value)
                     })
                     $(btn, 'input').addEventListener('blur', async () => {
 
@@ -169,7 +170,7 @@ export class Deep extends BaseComponent {
                         this.emit('hide');
                         this.container.append(_('Deep', {
                             ...data,
-                            id: (await this.instance[data.property]).$id,
+                            id: this.instance.$cache[data.property],
                             parentCpn: this,
                             container: this.container,
                         }));
@@ -197,7 +198,7 @@ export class Deep extends BaseComponent {
                     cb(btn);
                 });
                 this.when('createInput', ({ data, cb }) => {
-                    const input = _('input', ['type:text', `value:${data.value}`, 'placeholder:' + data.property])
+                    const input = _('input', ['type:text', `${data.value ?'value:'+ data.value:''}`, 'placeholder:' + data.property])
                     input.addEventListener('blur', async () => {
                         ////*console.log(this.instance[data.property]);
                         this.instance[data.property] = input.value;
@@ -208,7 +209,7 @@ export class Deep extends BaseComponent {
                         let i = 0;
                         const v = await this.instance[data.property];
                         input.value = '';
-                        this.waitAnim(input, 'value', v)
+                        this.waitAnim(input, 'value', v||'')
 
                     })
                     const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), input)
@@ -223,27 +224,29 @@ export class Deep extends BaseComponent {
                     });
                     const inputCtn = _('div', 'input-ctn', _('h3', 'property', data.property), fileElm, _('br'));
 
-                    const make = async (property) => {
+                    const make = async (e) => {
+                        console.log("$$$$$$$",e);
                         list_a.forEach(e => {
                             console.log(e);
-                            inputCtn.removeChild(e)
                             e.remove();
                         });
-                        property.forEach(filePath => {
+                        e.value.forEach(filePath => {
                             list_a = [];
-                            list_a.push(_('a', ['target:_blank', 'href:' + filePath], filePath.substring(filePath.lastIndexOf('/'))));
+                            list_a.push(_('a', ['target:_blank', 'href:' + filePath], filePath.length >40 ? filePath.substring(0, 40)+'...':filePath) );
                             list_a.push(_('br'))
                         });
                         inputCtn.append(...list_a);
                     }
                     this.instance.when('refresh:' + data.property, make)
-                    make(await this.instance[data.property]);
+                    make({
+                        value: await this.instance[data.property],
+                    });
                     cb(inputCtn)
                 })
             }
         }
     }
-    waitAnim(input, property, value, time) {
+    waitAnim(input, property, valurte, time) {
         const d = Date.now();
         input[property] = "";
         const id = setInterval(() => {
@@ -251,7 +254,8 @@ export class Deep extends BaseComponent {
             input[property] += " .";
 
             if (Date.now() >= d + (time || 700)) {
-                input[property] = value;
+                input[property] = "";
+                input[property] = valurte;
                 clearInterval(id)
             }
         }, 100);

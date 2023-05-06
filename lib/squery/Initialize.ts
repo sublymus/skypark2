@@ -1,11 +1,13 @@
-
+import './execAuto'
 import mongoose, { Schema } from 'mongoose';
-import { StatusSchema } from "../../App/Errors/STATUS";
 import { ContextSchema } from "./Context";
 import EventEmiter from './event/eventEmiter';
-import './execAuto';
-import { Tools } from './Tools.';
-
+export type StatusSchema = {
+  code: string,
+  __key ?: string,
+  message: string,
+  status: number,
+}
 export type FileSchema = {
   type: string;
   size: number;
@@ -34,6 +36,7 @@ export type MoreSchema = {
   savedlist?: savedSchema[];
   modelPath?: string;
   modelInstance?: any,
+  lastInstance?: any,
   modelId?: string,
   signupId?: string,
   __parentModel?: string,
@@ -57,20 +60,27 @@ export type ModelControllerSchema = {
   delete?: ControlSchema;
   destroy?: ControlSchema;
 };
-export type ModelActionAllowed = "create" | "read" | "list" | "update" | "delete";
-export type ModelActionAvailable = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
+export type ModelServiceAllowed = "create" | "read" | "list" | "update" | "delete";
+export type ModelServiceAvailable = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
+export type ModelAccessAvailable = 'private' | 'public' | 'secret' | 'admin' | 'default'|undefined;
 export type ControllerAccesSchema = "public" | "share" | "admin" | "secret";
 export type EventPreSchema = {
   ctx: ContextSchema;
   more?: MoreSchema;
-  action?: string
 };
 export type EventPostSchema = {
   ctx: ContextSchema;
   more?: MoreSchema;
   res: ResultSchema;
-  action: string;
 };
+export type UrlDataType = {
+  realPath: string,
+  property: string,
+  id: string,
+  modelPath: string,
+  createdAt: number,
+}
+
 
 export type ListenerPreSchema = (e: EventPreSchema) => Promise<void>;
 
@@ -78,14 +88,15 @@ export type ListenerPostSchema = (e: EventPostSchema) => Promise<void>;
 
 export type ModelControllerConfigSchema = {
   option?: ModelFrom_optionSchema;
-  pre: (action: ModelActionAvailable, listener: ListenerPreSchema) => void;
-  post: (action: ModelActionAvailable, listener: ListenerPostSchema) => void;
-  tools:Tools,
+  pre: (service: ModelServiceAvailable, listener: ListenerPreSchema) => CtrlModelMakerSchema;
+  post: (service: ModelServiceAvailable, listener: ListenerPostSchema) => CtrlModelMakerSchema;
+  tools:ToolsInterface & {maker:CtrlModelMakerSchema},
 }
 export type ControllerConfigSchema = {
   option?: SaveCtrlOptionSchema;
-  pre: (action: string, listener: ListenerPreSchema) => void;
-  post: (action: string, listener: ListenerPostSchema) => void;
+  tools:ToolsInterface & { maker: CtrlMakerSchema }
+  pre: (service: string, listener: ListenerPreSchema) => CtrlMakerSchema;
+  post: (service: string, listener: ListenerPostSchema) => CtrlMakerSchema;
 }
 export type CtrlModelMakerSchema = (() => ModelControllerSchema) & ModelControllerConfigSchema;
 export type CtrlMakerSchema = (() => ControllerSchema) & ControllerConfigSchema
@@ -167,7 +178,13 @@ export type ModelInstanceSchema = {
   };
   select: (p: string) => Promise<void>;
 };
+export interface ModelToolsInterface{
 
+}
+export interface ToolsInterface{
+  [key:string]:(this:{maker:CtrlModelMakerSchema},data: unknown) => void
+}
+export const Tools : ToolsInterface = {} as ToolsInterface
 export const GlobalMiddlewares: GlobalMiddlewareSchema = [];
 export const ModelControllers: ModelControllersStorage = {};
 export const Controllers: ControllersStorage = {};
@@ -175,19 +192,19 @@ export type SQueryMongooseSchema = Schema & { description: DescriptionSchema, mo
 export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId;
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
 export type TypeRuleSchema = {
-  //TODO: bind bindbidirectional // ./_id  ; ../../fileType;
+  //TODO: bind bindbidirectional // ./_id  ; ../../fileType; 
   //
   // TODO: {
   // get:(v)=> value
   //}
-  difine?:[string , ],
+  difine?:[string , TypeRuleSchema],
   type: TypeSchema//TypeSchema;
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
   //TODO: watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
   emit?:boolean// si la property doit invalider
   alien?: boolean,
   strictAlien?: boolean,
-  access?: 'private' | 'public' | 'secret' | 'admin' | 'default';//
+  access?: ModelAccessAvailable;//
   populate?: boolean;// 
   file?: {//
     size?: number | [number, number];
@@ -197,8 +214,9 @@ export type TypeRuleSchema = {
   },
   ref?: string;
   default?: valueSchema;
-  added?:any,
-  removed?:any,
+  bind?:any,
+  
+
   refPath?: string;
   required?: boolean;
   match?: RegExp;
