@@ -1,8 +1,9 @@
 import { ContextSchema } from "../../lib/squery/Context";
 import { CtrlManager } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ModelInstanceSchema, ResponseSchema } from "../../lib/squery/Initialize";
-import { AuthDataMap, SQuery } from "../../lib/squery/SQuery";
+import {SQuery } from "../../lib/squery/SQuery";
 import { AuthManager } from "../../lib/squery/AuthManager";
+import { AuthDataMap } from "../../lib/squery/SQuery_auth";
 const client: ControllerSchema = {
     create: async (ctx: ContextSchema): ResponseSchema => {
         const token = await SQuery.cookies(ctx.socket, 'token');

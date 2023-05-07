@@ -156,7 +156,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
             ctx,
             more,
             res: {
-                response: "OPERATION_SUCCESS",
+                response: more.modelId,
                 ...(await STATUS.DELETED(ctx, {
                     target: option.modelPath.toLocaleUpperCase(),
                 })),

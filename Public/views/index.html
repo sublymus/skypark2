@@ -2,43 +2,12 @@
 <html>
   <head>
     <title>Skypark</title>
-    <!-- <link rel="stylesheet" href="./layout/home/main.css" /> -->
+    <link rel="stylesheet" href="./layout/home/main.css" />
   </head>
   <body>
   </body>
   <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-  <script type="module">
-    document.body.innerHTML = '<h1>wertyuio</h1>'
-   
-
-    const Tools = {};
-    const mySuperTools = function(){
-      console.log(this.m);
-    }
-
-    Tools.mySuperTools = mySuperTools
-
-    const maker = {
-      pre:0,
-      post:0,
-    }
-    maker.tools = { };
-    maker.tools.maker = maker;
-
-    for (const tool in Tools) {
-      if (Object.hasOwnProperty.call(Tools, tool)) {
-        const func = Tools[tool];
-        maker.tools['#'+tool] = func.bind(maker.tools);
-      }
-    }
-    console.log(mySuperTools == maker.tools['#mySuperTools'], mySuperTools , maker.tools['#mySuperTools']);
-    console.log(maker);
-
-
-
-
-
-  </script>
+  <script type="module" src="./layout/home/home.js"></script>
 </html>
 
 

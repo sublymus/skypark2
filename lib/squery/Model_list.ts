@@ -155,7 +155,7 @@ export const listFactory = (controller: ModelControllerSchema, option: ModelFrom
       if (Array.isArray(addNew) && parentPropertyRule.strictAlien != true) {
         Log("Je_peux_cree_dans_la_list", true);
         const ctrl = ModelControllers[option.modelPath]();
-        more.__parentModel = paging?.query?.__parentModel;
+        more.__parentModel = parentModelPath+'_'+ parentId+'_'+parentProperty+'_'+option.modelPath;
         const promises = addNew.map((data) => {
           return new Promise(async (rev, rej) => {
             if (!more.__parentModel) rej(null);
@@ -315,9 +315,9 @@ export const listFactory = (controller: ModelControllerSchema, option: ModelFrom
     const options: any = {
       page: paging.page || defaultPaging.page,
       limit: paging.limit || defaultPaging.limit,
-      lean: defaultPaging.lean,
       sort: paging.sort || defaultPaging.sort,
       select: paging.select || defaultPaging.select,
+      lean: defaultPaging.lean,
       populate: false,
       customLabels: myCustomLabels,
     };

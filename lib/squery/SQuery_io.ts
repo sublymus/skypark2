@@ -101,8 +101,7 @@ export const SQuery_io = (server: any) => {
       /********************    Models  *********************** */
   
       const squery = SQuery(socket);
-      console.log(ModelControllers);
-  
+     
       for (const ctrlName in ModelControllers) {
         if (Object.prototype.hasOwnProperty.call(ModelControllers, ctrlName)) {
           for (const service of  modelServiceEnabled) {

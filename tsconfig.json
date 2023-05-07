@@ -2,9 +2,6 @@
   "include": [
     "./**/*.ts",
     "*.ts",
-    "Public/views/p.js",
-    "Start/Controllers.ts",
-    "Public/views/ts_lib/SQueryClient.js"
   ],
   "compilerOptions": {
     "module": "CommonJS",

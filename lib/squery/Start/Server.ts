@@ -28,10 +28,13 @@ const server: ControllerSchema = {
     },
     description: async (ctx: ContextSchema): ResponseSchema => {
         try {
-            const valid = accessValidator(ctx, ModelControllers[ctx.data.modelPath]?.option.access, 'controller');
+            const valid = accessValidator({
+                ...ctx,
+                service:'read'
+            }, ModelControllers[ctx.data.modelPath]?.option.access, 'controller');
             //Log('Description_valid_access:', valid, '; ctrlAccess:', ModelControllers[ctx.data.modelPath]?.option.access, '; __permission =', ctx.__permission, '; modelPath:',ctx.data.modelPath)
 
-            if (!valid) throw new Error("ACCESS_REFUSED");
+            if (!valid) throw new Error("ACCESS_REFUSED:"+ctx.data.modelPath);
 
             const description: DescriptionSchema = { ...ModelControllers[ctx.data.modelPath]?.option.schema.description };
 
