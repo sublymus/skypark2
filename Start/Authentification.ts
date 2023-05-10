@@ -17,6 +17,6 @@ SQuery.auth({
 SQuery.auth({
   login: "account",
   extension: [EmailConfirmartion],
-  match: ["phone", "password"],
+  match: ["telephone", "password"],
   signup: "manager",
 });

@@ -18,9 +18,6 @@ let buildingSchema = SQuery.Schema({
       ref: "user",
       strictAlien: true,
       impact: false,
-      bind:{
-        pattern:''
-      }
     }],
   Thread: {
     type: Schema.Types.ObjectId,

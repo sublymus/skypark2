@@ -12,7 +12,16 @@ let userSchema = SQuery.Schema({
     ref: AccountModel.modelName,
     //  required: true,
   },
-  messenger: {
+  managerProperty:{
+    type:String,
+    share:{
+      ony:['client:user'],
+      add:[]
+    },
+    access:'share',
+  },
+
+  messenger: { 
     type: Schema.Types.ObjectId,
     ref: MessengerModel.modelName,
     access: 'private'

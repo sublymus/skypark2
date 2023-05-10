@@ -10,7 +10,7 @@ export class CreationPage extends BaseComponent {
         }, data);
         const { _, $, $All, viewName } = this.mvc;
         this.view = _('div', viewName,
-            _('h1', 'title', 'Creation'),
+            _('h1', 'title', 'Model-service'),
             _('input@modelInput', ['type:text', 'class:model-input', 'placeholder:model path']),
             _('div', 'input-ctn',
                 _("textarea", ["rows:100", "cols:450"])

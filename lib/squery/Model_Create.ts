@@ -21,7 +21,11 @@ export const createFactory = (controller: ModelControllerSchema, option: ModelFr
         if(!more.__parentModel ) more.__parentModel = "";
         more.modelPath = option.modelPath;
 
-        if (!accessValidator(ctx, option.access, "controller")) {
+        if (!accessValidator({
+            ctx,
+            access:option.access,
+            type: "controller"
+            })) {
             return await callPost({
                 ctx,
                 more,

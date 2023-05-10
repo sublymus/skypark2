@@ -45,7 +45,7 @@ export class Home extends BaseComponent {
                     _('div@btn=signup', 'btn', 'SIGNUP'),
                     _('div@btn=login', 'btn', 'LOGIN'),
                     _('div@btn=entry-point', 'btn', 'ENTRY POINT'),
-                    _('div@btn=creation-page', 'btn', 'Creation'),
+                    _('div@btn=creation-page', 'btn', 'Model-service'),
                     _('div@btn=service-page', 'btn', 'Service'),
                     _('div@btn=deep-ctn', 'btn', 'DEEP'),
                 )
@@ -64,7 +64,10 @@ export class Home extends BaseComponent {
         this.controller = {
             ['@btn:click']: (btn, isSelected, e) => {
                 if (isSelected) {
+                    btn.classList.add('active');
                     this.emit('@page:change', $('.' + e.value))
+                }else{
+                    btn.classList.remove('active');
                 }
             },
             ['@page:change']: (page, isSelected) => {

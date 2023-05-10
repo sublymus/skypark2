@@ -16,7 +16,11 @@ export const updateFactory = (controller: ModelControllerSchema,option :ModelFro
         if(!more.signupId) more.signupId = ctx.signup?.id;
         more.__parentModel = "";
         more.modelPath = option.modelPath;
-        if (!accessValidator(ctx, option.access, "controller")) {
+        if (!accessValidator({
+          ctx,
+          access:option.access,
+          type: "controller"
+          })) {
           return await callPost({
             ctx,
             more,
@@ -61,14 +65,12 @@ export const updateFactory = (controller: ModelControllerSchema,option :ModelFro
 
               if (!ctx.data[p]) continue;
               else if (!Array.isArray(rule) && rule.ref) {
-                if (
-                  !accessValidator(
+                if ( !accessValidator({
                     ctx,
-                    rule.access,
-                    "property",
-                    ctx.__key == modelInstance.__key._id.toString()
-                  )
-                )
+                    access:rule.access,
+                    type: "property",
+                    isOwner:ctx.__key == modelInstance.__key._id.toString()
+                    }) )
                   continue;
 
                 const isStr = typeof ctx.data[p] == "string";
@@ -133,14 +135,12 @@ export const updateFactory = (controller: ModelControllerSchema,option :ModelFro
                   continue;
                 }
               } else if (Array.isArray(rule)) {
-                if (
-                  !accessValidator(
+                if (!accessValidator({
                     ctx,
-                    rule[0].access,
-                    "property",
-                    ctx.__key == modelInstance.__key._id.toString()
-                  )
-                )
+                    access:rule[0].access,
+                    type: "property",
+                    isOwner:ctx.__key == modelInstance.__key._id.toString()
+                    }) )
                   continue;
                 if (rule[0].ref) {
                   continue;
@@ -175,12 +175,12 @@ export const updateFactory = (controller: ModelControllerSchema,option :ModelFro
                   modelInstance[p] = ctx.data[p];
                 }
               } else {
-                const access = accessValidator(
+                const access = accessValidator({
                   ctx,
-                  rule.access,
-                  "property",
-                  ctx.__key == modelInstance.__key._id.toString()
-                );
+                  access:rule.access,
+                  type: "property",
+                  isOwner:ctx.__key == modelInstance.__key._id.toString()
+                  }) ;
                 Log(
                   "AboutUpdateAccess",
                   "<update>",

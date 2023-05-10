@@ -11,16 +11,20 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
         more: MoreSchema
     ): ResponseSchema => {
         const service = option.volatile ? "delete" : "destroy";
-        ctx = {...ctx};
+        ctx = { ...ctx };
         ctx.service = service;
         ctx.ctrlName = option.modelPath;
         if (!more) more = {};
         if (!more.savedlist) more.savedlist = [];
-        if(!more.signupId) more.signupId = ctx.signup?.id;
+        if (!more.signupId) more.signupId = ctx.signup?.id;
         more.__parentModel = "";
         more.modelPath = option.modelPath;
 
-        if (!accessValidator(ctx, option.access, "controller")) {
+        if (!accessValidator({
+            ctx,
+            access: option.access,
+            type: "controller"
+        })) {
             return await callPost({
                 ctx,
                 more,

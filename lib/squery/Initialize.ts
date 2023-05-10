@@ -62,7 +62,7 @@ export type ModelControllerSchema = {
 };
 export type ModelServiceAllowed = "create" | "read" | "list" | "update" | "delete";
 export type ModelServiceAvailable = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
-export type ModelAccessAvailable = 'private' | 'public' | 'secret' | 'admin' | 'default'|undefined;
+export type ModelAccessAvailable = 'private' | 'public' | 'secret' | 'admin' | 'default'| 'share' | undefined;
 export type ControllerAccesSchema = "public" | "share" | "admin" | "secret";
 export type EventPreSchema = {
   ctx: ContextSchema;
@@ -189,15 +189,25 @@ export const GlobalMiddlewares: GlobalMiddlewareSchema = [];
 export const ModelControllers: ModelControllersStorage = {};
 export const Controllers: ControllersStorage = {};
 export type SQueryMongooseSchema = Schema & { description: DescriptionSchema, model: any }
-export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId;
-export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId;
+export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId| Schema.Types.Mixed |Buffer | Map<String,Object> |Schema.Types.Map | BigInt | Schema.Types.Decimal128 | Schema | Schema.Types.UUID;
+export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId | typeof  Schema.Types.Mixed | typeof Buffer | typeof Map | typeof Schema.Types.Map | typeof BigInt | typeof Schema.Types.Decimal128 | typeof Schema |  typeof Schema.Types.UUID | DescriptionSchema | { [p:string]: TypeSchema | TypeSchema[]};
+type Share_ONY = {
+  ony:string[],
+};
+type Share_ADD = {
+  add:string[],
+};
+type Share_EXC = {
+  exc:string[],
+}
 export type TypeRuleSchema = {
   //TODO: bind bindbidirectional // ./_id  ; ../../fileType; 
   //
   // TODO: {
   // get:(v)=> value
   //}
-  difine?:[string , TypeRuleSchema],
+  //difine?:[string , TypeRuleSchema],
+ 
   type: TypeSchema//TypeSchema;
   impact?: boolean; //default: false ; true =>  si un id est suprimer dans une list; son doc sera suprimer dans la BD 
   //TODO: watch?: boolean;//default:false ; true =>  si un doc est suprimer, son id sera suprimer de tout les list qui l'on
@@ -214,9 +224,17 @@ export type TypeRuleSchema = {
   },
   ref?: string;
   default?: valueSchema;
-  bind?:any,
-  
+  share?:Share_ADD|Share_EXC|Share_ONY,
+  //bind?:any,
 
+  expires?:number,
+  index?:boolean,
+  sparse?:boolean,
+  select?:boolean,
+  transform?: Function | Promise<any>
+  immutable?:boolean, //  si <isNew: true> sera definie
+  alias?:string,
+  of?:string,
   refPath?: string;
   required?: boolean;
   match?: RegExp;
@@ -225,7 +243,7 @@ export type TypeRuleSchema = {
   lowerCase?: boolean;
   upperCase?: boolean;
   trim?: boolean;
-  enum?: String[] | Number[] | Boolean[] | Date[] | Array<TypeSchema>[] | mongoose.ObjectId[];
+  enum?: valueSchema[] | {values: valueSchema[] , message: string},
   minlength?: number | [number, string];
   maxlength?: number | [number, string];
   min?: number;

@@ -115,7 +115,7 @@ const CtrlManager = (option: SaveCtrlOptionSchema): CtrlMakerSchema => {
     }
     return Controllers[name] = ctrlMaker;
 }
-function ctrlAccessValidator(ctx: ContextSchema, access: string) {
+export function ctrlAccessValidator(ctx: ContextSchema, access: string) {
     access = access || 'any';
     return access == 'any' ? true : (access == ctx.__permission);
 }

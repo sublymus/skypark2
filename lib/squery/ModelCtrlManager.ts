@@ -153,7 +153,7 @@ function deepPopulate(
   service: ModelServiceAvailable,
   ref: string,
   info: PopulateSchema,
-  isUser?: boolean
+  isOwner?: boolean
 ) {
   const description: DescriptionSchema =
     ModelControllers[ref].option.schema.description;
@@ -169,23 +169,41 @@ function deepPopulate(
             path: p,
           };
           info.populate.push(info2);
-          deepPopulate(ctx, service, rule.ref, info2, isUser);
+          deepPopulate(ctx, service, rule.ref, info2, isOwner);
         }
       };
       if (!Array.isArray(rule)) {
-        if (!accessValidator(ctx, rule.access, "property", isUser, p)) {
+        if (!accessValidator({
+          ctx,
+          access:rule.access,
+          type: "property",
+          isOwner,
+          property:p
+          }) ) {
           info.select = info.select + " -" + p;
           continue;
         }
         if (rule.ref) exec(rule);
       } else if (Array.isArray(rule) && rule[0].ref) {
-        if (!accessValidator(ctx, rule[0].access, "property", isUser, p)) {
+        if (!accessValidator({
+          ctx,
+          access:rule[0].access,
+          type: "property",
+          isOwner,
+          property:p
+          })) {
           info.select = info.select + " -" + p;
           continue;
         }
         exec(rule[0]);
       } else if (Array.isArray(rule)) {
-        if (!accessValidator(ctx, rule[0].access, "property", isUser, p)) {
+        if (!accessValidator({
+          ctx,
+          access:rule[0].access,
+          type: "property",
+          isOwner,
+          property:p
+          })) {
           info.select = info.select + " -" + p;
           continue;
         }

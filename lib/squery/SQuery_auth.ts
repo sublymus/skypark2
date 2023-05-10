@@ -23,7 +23,7 @@ socket.request.headers.cookie = ..... // ecrase le cookies du header;
 export const SQuery_auth = (authDataOption: authDataOptionSchema) => {
   const authData: authDataSchema = {
     ...authDataOption,
-    __permission: `user:${authDataOption.signup}`,
+    __permission: `client:${authDataOption.signup}`,
   };
   authData.match.push("__permission");
   AuthDataMap[authData.signup] = authData;

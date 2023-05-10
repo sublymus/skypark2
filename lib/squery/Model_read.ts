@@ -16,7 +16,11 @@ export const readFactory = (controller: ModelControllerSchema, option: ModelFrom
     more.__parentModel = "";
     more.modelPath = option.modelPath;
     //Log('auth', { ctx, service, access: option.access, "controller": "" })
-    if (!accessValidator(ctx, option.access, "controller")) {
+    if (!accessValidator({
+      ctx,
+      access:option.access,
+      type: "controller"
+      })) {
       return await callPost({
         ctx,
         more,

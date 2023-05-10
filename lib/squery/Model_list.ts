@@ -12,7 +12,11 @@ export const listFactory = (controller: ModelControllerSchema, option: ModelFrom
     ctx = { ...ctx };
     ctx.service = service;
     ctx.ctrlName = option.modelPath;
-    if (!accessValidator(ctx, option.access, "controller")) {
+    if (!accessValidator({
+      ctx,
+      access:option.access,
+      type: "controller"
+      })) {
       return await callPost({
         ctx,
         more,
@@ -100,13 +104,13 @@ export const listFactory = (controller: ModelControllerSchema, option: ModelFrom
     // });
 
     if (
-      parentPropertyRule ?
-        accessValidator(
-          ctx,
-          parentPropertyRule?.access,
-          "property",
-          isParentUser
-        ) : false
+      parentPropertyRule &&
+      accessValidator({
+        ctx,
+        access:parentPropertyRule.access,
+        type: "property",
+        isOwner:isParentUser,
+        })
     ) {
 
       /***********************  AddId  ****************** */
@@ -278,12 +282,12 @@ export const listFactory = (controller: ModelControllerSchema, option: ModelFrom
       },
     } : { __key: ctx.__key };
     if (
-      parentProperty ? !accessValidator(
+      parentProperty && !accessValidator({
         ctx,
-        parentPropertyRule.access,
-        "property",
-        isParentUser
-      ) : false
+        access:parentPropertyRule.access,
+        type: "property",
+        isOwner:isParentUser
+        })
     )
       return await callPost({
         ctx,

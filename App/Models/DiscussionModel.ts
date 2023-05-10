@@ -22,10 +22,6 @@ let DiscussionSchema = SQuery.Schema({
   channel: {
     type: Schema.Types.ObjectId,
     ref: ChannelModel.modelName,
-    difine:['./channel/vectors',{
-      type:Schema.Types.ObjectId,
-      ref:MessageModel.modelName,
-    }],
     access: 'admin',
     strictAlien: true,
     impact: false,

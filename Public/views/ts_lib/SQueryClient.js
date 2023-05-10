@@ -102,11 +102,11 @@ const SQuery = {
     if (typeof modelPath != 'string') throw new Error('getDescription(' + modelPath + ') is not permit, parameter must be string');
     if (Descriptions[modelPath]) {
       return Descriptions[modelPath]
-    }else if(Config.dataStore.useStore){
-      const data = await Config.dataStore.getData('server:description:'+modelPath ,Descriptions[modelPath]);
+    } else if (Config.dataStore.useStore) {
+      const data = await Config.dataStore.getData('server:description:' + modelPath, Descriptions[modelPath]);
       if (data) {
         return Descriptions[modelPath] = data;
-      } 
+      }
     }
     return await new Promise((rev) => {
       // //console.//consolelog('********************');
@@ -116,35 +116,32 @@ const SQuery = {
         // //console.log('server:description', res);
         if (res.error) throw new Error(JSON.stringify(res));
         Descriptions[modelPath] = res.response;
-        Config.dataStore.setData('server:description:'+modelPath ,Descriptions[modelPath] )
+        Config.dataStore.setData('server:description:' + modelPath, Descriptions[modelPath])
         rev(Descriptions[modelPath]);
       })
     })
   },
   getDescriptions: async function () {
     let descriptions;
-    if (Config.dataStore.useStore) {
-      const data = await Config.dataStore.getData('server:descriptions');
-      if (data) {
+    const data = await Config.dataStore.getData('server:descriptions');
+    if (/*Config.dataStore.useStore*/ false && data) {
         descriptions = data;
-      } else {
-        descriptions = await new Promise((rev) => {
-          SQuery.emit('server:descriptions', {}, (res) => {
-            if (res.error) throw new Error(JSON.stringify(res));
-            rev(res.response);
-          })
-        });
-        Config.dataStore.setData('server:descriptions',descriptions);
-      }
+    }else {
+      descriptions = await new Promise((rev) => {
+        SQuery.emit('server:descriptions', {}, (res) => {
+          if (res.error) throw new Error(JSON.stringify(res));
+          rev(res.response);
+        })
+      });
+      Config.dataStore.setData('server:descriptions', descriptions);
     }
 
     for (const modelPath in descriptions) {
       if (Object.hasOwnProperty.call(descriptions, modelPath)) {
         Descriptions[modelPath] = descriptions[modelPath];
-        Config.dataStore.setData('server:description:'+modelPath ,descriptions[modelPath] );
+        Config.dataStore.setData('server:description:' + modelPath, descriptions[modelPath]);
       }
     }
-
     return Descriptions
   },
 
@@ -156,6 +153,18 @@ const SQuery = {
   },
   get dataStore() {
     return Config.dataStore;
+  },
+
+  service: async (ctrl,service, data) => {
+    return await new Promise((rev) => {
+      SQuery.emit(ctrl+':'+service, data, async (res) => {
+        if (res.error) {
+          rev(null);
+          throw new Error(JSON.stringify(res));
+        }
+        rev(res.response);
+      });
+    });
   }
 };
 
