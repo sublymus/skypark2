@@ -1,16 +1,18 @@
 export interface ConfigInterface {
-    execDir: string[],
+    execDir?: string[],
     afterExec?: string[],//TODO
     beforeExec?: string[],//TODO
+    fileDir?:string[],
     rootDir:string,
     DB_KEY?: string,
     TOKEN_KEY?: string,
     URL_KEY?: string,
 }
 let _conf :any= {
-    execDir: [],
+    execDir: ["/App/Models", "/App/Controllers", "/App/Tools", "/Start"],
     afterExec: [],//TODO
     beforeExec: [],//TODO
+    fileDir:['fs'],
     rootDir: '',
     DB_KEY: 'a',
     TOKEN_KEY: 'a',
@@ -31,3 +33,4 @@ export const Config: ConfigType ={
         }
     }
  }
+ 

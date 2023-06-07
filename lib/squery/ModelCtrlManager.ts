@@ -1,5 +1,7 @@
 import Log from "sublymus_logger";
+import { accessValidator } from "./AccessManager";
 import { ContextSchema } from "./Context";
+import { FileValidator } from "./FileManager";
 import {
   CtrlModelMakerSchema,
   DescriptionSchema,
@@ -7,35 +9,60 @@ import {
   EventPreSchema,
   ListenerPostSchema,
   ListenerPreSchema,
-  ModelServiceAvailable,
-  ModelControllers,
   ModelControllerSchema,
+  ModelControllers,
   ModelFrom_optionSchema,
   ModelInstanceSchema,
+  ModelServiceAvailable,
+  Model_optionSchema,
   MoreSchema,
+  PopulateAllSchema,
   PopulateSchema,
   ResponseSchema,
-  TypeRuleSchema,
-  ToolsInterface,
+  ResultSchema,
   Tools,
+  ToolsInterface,
+  TypeRuleSchema,
 } from "./Initialize";
-import { accessValidator } from "./AccessManager";
-import { FileValidator } from "./FileManager";
-import { deleteFactory } from "./Model_delete";
 import { createFactory } from "./Model_Create";
-import { readFactory } from "./Model_read";
+import { deleteFactory } from "./Model_delete";
 import { listFactory } from "./Model_list";
+import { readFactory } from "./Model_read";
 import { updateFactory } from "./Model_update";
+import mongoose from "mongoose";
+
+
+export const UNDIFINED_RESULT : ResultSchema= {
+status:404,
+message:'UNDEFINED_RESULT',
+error:'UNDEFINED_RESULT',
+code:'UNDEFINED_RESULT',
+}
+
 const MakeModelCtlForm: (
   options: ModelFrom_optionSchema
 ) => CtrlModelMakerSchema = (
   options: ModelFrom_optionSchema
 ): CtrlModelMakerSchema => {
-    const option: ModelFrom_optionSchema & { modelPath: string } = {
+
+ 
+   type CompletModel = mongoose.Model<any, unknown, unknown, unknown, any> &{__findOne: (filter?: any, projection?: any, options?: any, callback?: any)=>Promise<ModelInstanceSchema> };
+  const  completModel:CompletModel = options.model as CompletModel;
+  const option: Model_optionSchema= { 
       ...options,
+      volatile: options.volatile??false,
       modelPath: options.model.modelName,
+      model:completModel,
     };
     option.schema.model = option.model;
+    option.model.__findOne = async (filter?: any, projection?: any, options?: any, callback?: any): Promise<ModelInstanceSchema> => {
+      const instance: ModelInstanceSchema | null | undefined = await option.model.findOne(filter, projection, options, callback);
+     
+      //Log('instance',{result});
+      return instance as ModelInstanceSchema;
+    }
+
+
     const EventManager: {
       [p: string]: {
         pre: ListenerPreSchema[];
@@ -43,14 +70,16 @@ const MakeModelCtlForm: (
       };
     } = {};
 
-    const callPre: (e: EventPreSchema) => Promise<void> = async (
+
+
+    const callPre: (e: EventPreSchema) => Promise<void | ResultSchema> = async (
       e: EventPreSchema
     ) => {
       if (!EventManager[e.ctx.service]?.pre) return;
 
       for (const listener of EventManager[e.ctx.service].pre) {
         try {
-          if (listener) await listener(e);
+          if (listener) return await listener(e);
         } catch (error) {
           Log("ERROR_callPre", error);
         }
@@ -62,27 +91,38 @@ const MakeModelCtlForm: (
       try {
         if (!EventManager[e.ctx.service]?.post) return e.res;
         for (const listener of EventManager[e.ctx.service].post) {
-
-          if (listener) await listener(e);
-
+          if (listener){
+            const r = await listener(e);
+            if(r) return r ;
+          }  
         }
         return e.res;
       } catch (error) {
         Log("ERROR_callPost", error);
       }
+      return e.res;
     };
     const ctrlMaker = function () {
       const controller: ModelControllerSchema = {};
 
-      controller[option.volatile ? "create" : "store"] = createFactory(controller, option, callPost, callPre);
-
+      controller[option.volatile ? "create" : "store"] = createFactory(
+        controller,
+        option,
+        callPost,
+        callPre
+      );
       controller["read"] = readFactory(controller, option, callPost, callPre);
 
       controller["list"] = listFactory(controller, option, callPost, callPre);
 
       controller["update"] = updateFactory(controller, option, callPost, callPre);
 
-      controller[option.volatile ? "delete" : "destroy"] = deleteFactory(controller, option, callPost, callPre);
+      controller[option.volatile ? "delete" : "destroy"] = deleteFactory(
+        controller,
+        option,
+        callPost,
+        callPre
+      );
       return controller;
     };
 
@@ -105,7 +145,6 @@ const MakeModelCtlForm: (
       service: ModelServiceAvailable,
       listener: ListenerPostSchema
     ) => {
-
       if (!EventManager[service]) {
         EventManager[service] = {
           pre: [],
@@ -115,7 +154,7 @@ const MakeModelCtlForm: (
       EventManager[service].post.push(listener);
       return ctrlMaker;
     };
-    ctrlMaker.tools = {} as (ToolsInterface & { maker: CtrlModelMakerSchema });
+    ctrlMaker.tools = {} as ToolsInterface & { maker: CtrlModelMakerSchema };
     ctrlMaker.tools.maker = ctrlMaker;
 
     for (const tool in Tools) {
@@ -133,7 +172,10 @@ async function formatModelInstance(
   option: ModelFrom_optionSchema & { modelPath: string },
   modelInstance: ModelInstanceSchema
 ) {
-  const info: PopulateSchema = {};
+  const info: PopulateSchema = {
+    populate:[],
+    select:'',
+  };
   deepPopulate(
     ctx,
     service,
@@ -141,9 +183,9 @@ async function formatModelInstance(
     info,
     modelInstance.__key._id.toString() == ctx.__key
   );
-  await modelInstance.populate(info.populate);
-  const propertys = info.select.replaceAll(" ", "").split("-");
-  propertys.forEach((p) => {
+  await modelInstance.populate(info.populate||[]);
+  const propertys = info.select?.replaceAll(" ", "").split("-");
+  propertys?.forEach((p) => {
     modelInstance[p] = undefined;
   });
 }
@@ -153,10 +195,14 @@ function deepPopulate(
   service: ModelServiceAvailable,
   ref: string,
   info: PopulateSchema,
-  isOwner?: boolean
+  isOwner: boolean,
+  count?: {
+    count: number,
+    max: number
+  },
 ) {
-  const description: DescriptionSchema =
-    ModelControllers[ref].option.schema.description;
+  const description: DescriptionSchema|undefined =
+    ModelControllers[ref].option?.schema.description;
   info.populate = [];
   info.select = "";
   for (const p in description) {
@@ -164,46 +210,61 @@ function deepPopulate(
       const rule = description[p];
 
       const exec = (rule: TypeRuleSchema) => {
-        if (rule.populate == true) {
+        if (rule.deep && !count) {
+          count = {
+            count: 0,
+            max: rule.deep as number
+          }
+        }
+        if (count && (count.count < count.max)) {
+          count.count++;
           const info2 = {
             path: p,
           };
-          info.populate.push(info2);
-          deepPopulate(ctx, service, rule.ref, info2, isOwner);
+          info.populate?.push(info2);
+          deepPopulate(ctx, service, rule.ref||'', info2, isOwner, count);
         }
+
       };
       if (!Array.isArray(rule)) {
-        if (!accessValidator({
-          ctx,
-          access:rule.access,
-          type: "property",
-          isOwner,
-          property:p
-          }) ) {
+        rule
+        if (
+          !accessValidator({
+            ctx,
+            rule,
+            type: "property",
+            isOwner,
+            property: p,
+          })
+        ) {
           info.select = info.select + " -" + p;
           continue;
         }
         if (rule.ref) exec(rule);
       } else if (Array.isArray(rule) && rule[0].ref) {
-        if (!accessValidator({
-          ctx,
-          access:rule[0].access,
-          type: "property",
-          isOwner,
-          property:p
-          })) {
+        if (
+          !accessValidator({
+            ctx,
+            rule: rule[0],
+            type: "property",
+            isOwner,
+            property: p,
+          })
+        ) {
           info.select = info.select + " -" + p;
           continue;
         }
         exec(rule[0]);
       } else if (Array.isArray(rule)) {
-        if (!accessValidator({
-          ctx,
-          access:rule[0].access,
-          type: "property",
-          isOwner,
-          property:p
-          })) {
+        if (
+          !accessValidator({
+            ctx,
+            rule: rule[0],
+            type: "property",
+            isOwner,
+            property: p,
+          })
+        ) {
           info.select = info.select + " -" + p;
           continue;
         }
@@ -214,17 +275,19 @@ function deepPopulate(
 }
 async function backDestroy(ctx: ContextSchema, more: MoreSchema) {
   const promises: ResponseSchema[] = [];
-  more.savedlist.forEach((saved) => {
-    const p = saved.controller[saved.volatile ? "delete" : "destroy"]({
+  more?.savedlist?.forEach((saved) => {
+    const p = saved?.controller[saved.volatile ? "delete" : "destroy"]?.({
       ...ctx,
       data: {
         id: saved.modelId,
         __key: saved.__key,
       },
     });
-    return promises.push(p);
+    return p?promises.push(p):promises;
   });
   const log = await Promise.allSettled(promises);
+  console.log(log);
+
   more.savedlist = [];
   return;
 }
@@ -247,11 +310,24 @@ function parentInfo(parentModel: string): {
   };
 }
 
+// function InstanceRule(instance:ModelInstanceSchema){
+//   const parts = instance.__parentModel.split('_');
+//   const parentModelPath = parts?.[0];
+//   const parentId = parts?.[1];
+//   const parentProperty = parts?.[2];
+//   const instanceModelPatth = parts?.[2];
+//   const description: DescriptionSchema = ModelControllers[instanceModelPatth].option.schema.description;
+//   const propertyRule = description[in]
+// }
+// function collectRule(){
+
+// }
+
 export {
   MakeModelCtlForm,
   backDestroy,
   FileValidator,
+  // InstanceRule,
   formatModelInstance,
   parentInfo,
 };
-

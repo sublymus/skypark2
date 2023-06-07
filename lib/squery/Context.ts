@@ -1,5 +1,4 @@
 import { Socket } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
 
 type MoreProperty = {
   [p: string]: any;
@@ -13,10 +12,11 @@ export type AuthExtensionSchema = {
   };
 };
 export type authDataOptionSchema = {
-  login: string;
+  login: string; 
   match: string[];
   signup: string;
-  extension?: AuthExtensionSchema[];
+  loginExtension?:AuthExtensionSchema[];
+  signupExtension?: AuthExtensionSchema[];
 };
 export type authDataSchema = authDataOptionSchema & {
   __permission: string,
@@ -27,9 +27,10 @@ export type DataSchema = {
 
 export type ContextSchema = {
   ctrlName: string,
+  authData?: authDataSchema,
   service: string,
   data: DataSchema,
-  socket: Socket,
+  socket: Socket|null,
   signup:{
     modelPath:string,
     id:string

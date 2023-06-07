@@ -4,14 +4,14 @@ import { CtrlManager } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ModelInstanceSchema, ResponseSchema } from "../../lib/squery/Initialize";
 const Post: ControllerSchema = {
     allUserPost:async (ctx: ContextSchema): ResponseSchema => {
-    const arrayData = ModelControllers['post']()['list']({
+    const arrayData = ModelControllers['post']()['list']?.({
         ...ctx
     })
         return arrayData
     },
     comments: async (ctx: ContextSchema): ResponseSchema => {
         const { modelPath , id, property, newPostData } = ctx.data;
-        const parent: ModelInstanceSchema = await ModelControllers[modelPath]?.option.model.findOne({ _id: id });
+        const parent: ModelInstanceSchema|null = await ModelControllers[modelPath]?.option.model.findOne({ _id: id });
         if(!parent) return  {
             error: "NOT_FOUND",
             code: "NOT_FOUND",
@@ -21,7 +21,7 @@ const Post: ControllerSchema = {
         parent[property] = [...(parent[property] || [])];
         let newCommentId :any;
         if(ctx?.login.id){
-            const res = await ModelControllers['post']()['list']({
+            const res = await ModelControllers['post']()['list']?.({
                 ...ctx,
                 __permission: ctx[modelPath]?.[property]?.__permission||ctx.__permission,
                 data: {
@@ -33,7 +33,7 @@ const Post: ControllerSchema = {
                     }
                 }
             })
-            if(res.error) return res;
+            if(!res?.response) return res;
             newCommentId = res.response.added;
         }
         const deep = async (parent:ModelInstanceSchema , property:string, data: { allComments: number }) => {
@@ -42,8 +42,8 @@ const Post: ControllerSchema = {
                     data.allComments += parent[property].length;
                     const promise =parent[property].map((postId: any) => {
                         return new Promise(async (rev) => {
-                            const post: ModelInstanceSchema = await ModelControllers['post'].option.model.findOne({ _id: postId });
-                            await deep(post,'comments', data);
+                            const post: ModelInstanceSchema|null = await ModelControllers['post'].option.model.findOne({ _id: postId });
+                            if(post) await deep(post,'comments', data);
                             rev('');
                         })
                     });
@@ -74,8 +74,7 @@ const Post: ControllerSchema = {
     like: async (ctx: ContextSchema): ResponseSchema => {
         try {
             const { like, postId } = ctx.data;
-            const post: ModelInstanceSchema = await ModelControllers['post'].option.model.findOne({ _id: postId });
-            post['like'] = [...(post['like'] || [])];
+            const post: ModelInstanceSchema|null = await ModelControllers['post'].option.model.findOne({ _id: postId });
             if (!post) {
                 return {
                     error: "NOT_FOUND",
@@ -84,6 +83,7 @@ const Post: ControllerSchema = {
                     message: "Post not found"
                 }
             }
+            post['like'] = [...(post['like'] || [])];
             const getUserId = async (ctx: ContextSchema): Promise<string> => {
                 const currentUser = await ModelControllers[ctx.signup.modelPath].option.model.findOne({ _id: ctx.signup.id });
                 if (!currentUser) {
@@ -126,7 +126,7 @@ const Post: ControllerSchema = {
                 response: post['like'].length,
                 status: 200
             }
-        } catch (error) {
+        } catch (error:any) {
             return {
                 error: "OPERATION_FAILED",
                 status: 404,

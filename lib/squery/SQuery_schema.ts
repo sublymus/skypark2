@@ -1,10 +1,12 @@
-import { Schema } from "mongoose";
+import { access } from 'fs';
+import { FlatRecord, ResolveSchemaOptions, Schema, SchemaOptions } from "mongoose";
 import { DescriptionSchema, SQueryMongooseSchema } from "./Initialize";
 import { Global, SQuery } from "./SQuery";
 import mongoosePaginate from "mongoose-paginate-v2";
 import mongoose_unique_validator from "mongoose-unique-validator";
+import Log from "sublymus_logger";
 
-export const SQuery_Schema = (description: DescriptionSchema): SQueryMongooseSchema => {
+export const SQuery_Schema = (description: DescriptionSchema , options?:SchemaOptions<FlatRecord<any>, {}, {}, {}, {}> | ResolveSchemaOptions<{}>): SQueryMongooseSchema => {
     description.__parentModel = {
       type: String,
       access: "admin",
@@ -15,7 +17,7 @@ export const SQuery_Schema = (description: DescriptionSchema): SQueryMongooseSch
     };
   
     description.__permission = {
-      type: String,
+      type: String, 
       access: "secret",
     };
     description.__signupId = {
@@ -41,17 +43,32 @@ export const SQuery_Schema = (description: DescriptionSchema): SQueryMongooseSch
       type: Schema.Types.ObjectId,
       access: 'public'
     };
-    const schema = new Schema(description as any);
+    for (const p in description) {
+      if (Object.prototype.hasOwnProperty.call(description, p)) {
+        const rule = description[p];
+        if(Array.isArray(rule) && rule[0].type === SQuery.FileType){
+          if(!rule[0].file)
+           rule[0].file = {};
+        }
+      }
+    }
+    const schema = new Schema(description as any,{
+      ...options
+    });
+
     schema.plugin(mongoosePaginate);
     schema.plugin(mongoose_unique_validator);
   
     schema.pre("save", async function () {
       this.__updatedAt = Date.now();
-      this.__updatedProperty = this.modifiedPaths();
+      this.__updatedProperty = (this.modifiedPaths() as string[]).filter((updatedProperty)=>{
+        const rule = description[updatedProperty];
+        return Array.isArray(rule)? rule[0].access !=='secret': rule.access !=='secret';
+      });
     });
   
     schema.post("save", async function (doc: any) {
-      //Log('save+++++++', doc.__parentModel,);
+      Log('save+++++++', doc);
       // SQuery.emiter.when('update:' + doc._id.toString(), (val) => {
       //   Log('update:' + doc._id.toString(), val);
       // })
@@ -70,7 +87,7 @@ export const SQuery_Schema = (description: DescriptionSchema): SQueryMongooseSch
       //console.log(doc.__updatedProperty, canEmit);
       if (!canEmit) return;
   
-      Global.io.emit("update:" + doc._id.toString(), {
+      Global.io?.emit("update:" + doc._id.toString(), {
         id: doc._id.toString(),
         doc,
         properties: doc.__updatedProperty,

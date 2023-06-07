@@ -7,10 +7,10 @@ import { AuthDataMap } from "../../lib/squery/SQuery_auth";
 const client: ControllerSchema = {
     create: async (ctx: ContextSchema): ResponseSchema => {
         const token = await SQuery.cookies(ctx.socket, 'token');
-        const res = await ModelControllers['user']()['create']({
+        const res = await ModelControllers['user']()['create']?.({
             ...ctx,
         });
-        if (res.error) return res;
+        if (!res?.response) return res;
         await SQuery.cookies(ctx.socket, 'token', token);
         return res;
     },
@@ -51,8 +51,8 @@ const client: ControllerSchema = {
                 __permission: account.__permission,
             }
         });
-        if(LogRes.error) return LogRes;
-        const res = await ModelControllers[LogRes.response.login.modelPath]()['update']({
+        if(!LogRes?.response) return LogRes;
+        const res = await ModelControllers[LogRes.response.login.modelPath]()['update']?.({
             ...ctx,
             __key:account.__key,
             __permission : account.__permission,
@@ -61,7 +61,7 @@ const client: ControllerSchema = {
                 password: password1,
             }
         });
-        if(res.error) return res;
+        if(!res?.response) return res;
         
         return res;
     }
@@ -73,5 +73,3 @@ const maker = CtrlManager({
         like: "any"
     }
 });
-
-  

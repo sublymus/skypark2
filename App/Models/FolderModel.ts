@@ -25,55 +25,5 @@ MakeModelCtlForm({
   schema: folderSchema,
   model: FolderModel,
   volatile: true,
-}).pre('delete', async ({ ctx }) => {
-  const resR = await ModelControllers['refid']()['read']({
-    ...ctx,
-    data: {
-      modelPath: 'post',
-      id: '34568fd56a7cf8e54a5',
-    }
-  });
-  const resU = await ModelControllers['refid']()['update']({
-    ...ctx,
-    data: {
-      modelPath: 'post',
-      id: '34568fd56a7cf8e54a5',
-      data:{
-        likeCount: 345
-      }
-    }
-  });
-  const resL= await ModelControllers['refid']()['list']({
-    ...ctx,
-    data: {
-      modelPath: 'post',
-      data:{
-        addNew:[],
-        addId:[],
-        remove:[],
-        paging:{}
-      }
-    }
-  });
-  const resD = await ModelControllers['refid']()['delete']({
-    ...ctx,
-    data: {
-      modelPath: 'post',
-      id: '34568fd56a7cf8e54a5',
-    }
-  });
-  const resC = await ModelControllers['refid']()['create']({
-    ...ctx,
-    data: {
-      modelPath: 'post',
-      data:{
-        message: {
-          text: "Hello Its my",
-          file: []
-        },
-        likeCount: 2098
-      }
-    }
-  });
-});
+})
 export default FolderModel;

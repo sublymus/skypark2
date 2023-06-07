@@ -15,8 +15,7 @@ let userSchema = SQuery.Schema({
   managerProperty:{
     type:String,
     share:{
-      ony:['client:user'],
-      add:[]
+      only:['client:user']
     },
     access:'share',
   },

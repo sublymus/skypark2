@@ -1,26 +1,24 @@
-
+import { Server, Socket } from "socket.io";
+import { DefaultEventsMap } from "socket.io/dist/typed-events";
+import Log from "sublymus_logger";
+import { ContextSchema, DataSchema, authDataOptionSchema } from "./Context";
 import {
   Controllers,
   DescriptionSchema,
   GlobalMiddlewares,
   ModelControllers,
   ResultSchema,
+  SQueryMongooseSchema,
   UrlDataType,
 } from "./Initialize";
-import { Server, Socket } from "socket.io";
-import { DefaultEventsMap } from "socket.io/dist/typed-events";
-import Log from "sublymus_logger";
-import {
-  ContextSchema,
-  DataSchema,
-  authDataOptionSchema,
-} from "./Context";
-import EventEmiter from "./event/eventEmiter";
 import { SQuery_auth } from "./SQuery_auth";
 import { SQuery_cookies } from "./SQuery_cookies";
 import { SQuery_files } from "./SQuery_files";
 import { SQuery_io } from "./SQuery_io";
 import { SQuery_Schema } from "./SQuery_schema";
+import { SQuery_service } from "./SQuery_service";
+import EventEmiter from "./event/eventEmiter";
+import { FlatRecord, ResolveSchemaOptions, SchemaOptions } from "mongoose";
 
 type MapUserCtxSchema = {
   [p: string]: {
@@ -29,26 +27,50 @@ type MapUserCtxSchema = {
     isAvalaibleCtx: boolean;
   };
 };
-type MainType = ( socket: Socket )=>( (ctrlName: string, service: string) =>  (data: DataSchema, cb?: CallBack) => Promise<void>);
+type MainType = (
+  socket: Socket
+) => (
+  ctrlName: string,
+  service: AllowedModelService
+) => (data: DataSchema, cb?: CallBack) => Promise<void>;
 type GlobalSchema = {
-  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
+  io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>|null;
 };
-type SQuerySchema = (( socket: Socket )=> (ctrlName: string, service: string) => any) & {
+type SQuerySchema = ((
+  socket: Socket|null|undefined
+) => (
+  ctrlName: string,
+  service: string,
+) => (data: DataSchema, cb?: CallBack) => Promise<void>) & {
   emiter: EventEmiter;
-  io: ( server?: any ) => Server;
-  Schema: (description: DescriptionSchema) => any;
+  io: (server?: any) => Server|null;
+  Schema: (description: DescriptionSchema , options?:SchemaOptions<FlatRecord<any>, {}, {}, {}, {}> | ResolveSchemaOptions<{}>) => SQueryMongooseSchema;
   auth: (authData: authDataOptionSchema) => void;
   files: {
-    accessValidator: (url: string, cookies: any) => Promise<UrlDataType>
-  },
-  cookies(
-    socket: Socket,
-    key?: string,
-    value?: any
-  ): Promise<any>;
+    accessValidator: (url: string, cookies: any) => Promise<UrlDataType>;
+  };
+  service: (
+    ctrlName: string,
+    service: string, 
+    data: DataSchema,
+    ctx?: ContextSchema
+  ) => Promise<any>;
+  cookies(socket: Socket|null|undefined|string, key?: string, value?: any): Promise<any>;
+  FileType: {
+    url:typeof String,
+    size:typeof Number,
+    extension:typeof String,
+  }
 };
 export const MapUserCtx: MapUserCtxSchema = {};
-export const modelServiceEnabled = ["create", "read", "list", "update", "delete"];
+export type AllowedModelService = 'create'|'read'|'list'|'update'|'delete';
+export const modelServiceEnabled:AllowedModelService[] = [
+  "create",
+  "read",
+  "list",
+  "update",
+  "delete",
+];
 export type CallBack = (result: ResultSchema | void) => any;
 export const Global: GlobalSchema = {
   io: null,
@@ -78,19 +100,18 @@ export async function defineContext(
     __permission: token?.__permission || "any", ///  data.__permission = undefined
   };
   MapUserCtx[token?.__key] = {
-    ctx: ctx.socket.id,
+    ctx: ctx.socket?.id,
     exp: decoded.exp,
     isAvalaibleCtx: true,
   };
   return ctx;
 }
 
-const main : MainType=  function (
-  socket: Socket
-) {
-  return (ctrlName: string, service: string) => {
+const main: MainType = function (socket: Socket) {
+  return (ctrlName: string, service: AllowedModelService) => {
     return async (data: DataSchema, cb?: CallBack) => {
-      Log("squery:data", data, { ctrlName }, { service });
+      data = data || {};
+      Log("squery:data", {data}, { ctrlName }, { service });
 
       const ctx: ContextSchema = await defineContext(
         socket,
@@ -98,7 +119,7 @@ const main : MainType=  function (
         service,
         data
       );
-
+        Log('Cookie_result',await SQuery.cookies(socket?.request.headers.cookie ,'' , 'token'));
       const midList = [...GlobalMiddlewares];
 
       for (let i = 0; i < midList.length; i++) {
@@ -106,8 +127,9 @@ const main : MainType=  function (
 
         if (res !== undefined) return cb?.(res);
       }
-      let res: ResultSchema = null;
-      let modelRequest = !!(ModelControllers[ctrlName]?.()[service]) && modelServiceEnabled.includes(service);
+      let res: ResultSchema|undefined;
+      let modelRequest =
+        !!ModelControllers[ctrlName]?.()?.[service] && modelServiceEnabled.includes(service);
       try {
         if (modelRequest) {
           res = await ModelControllers[ctrlName]?.()[service]?.(ctx);
@@ -148,5 +170,10 @@ SQuery.files = SQuery_files;
 SQuery.cookies = SQuery_cookies;
 SQuery.io = SQuery_io;
 SQuery.Schema = SQuery_Schema;
-
+SQuery.service = SQuery_service;
+SQuery.FileType = {
+  url:String,
+  size:Number,
+  extension:String,
+}
 export { SQuery };

@@ -1,3 +1,4 @@
+import Log from "sublymus_logger";
 import { Config } from "./Config";
 import { ContextSchema } from "./Context";
 import { ModelAccessAvailable, ModelControllers, UrlDataType } from "./Initialize";
@@ -5,14 +6,18 @@ import { SQuery } from "./SQuery";
 import jwt from "jsonwebtoken";
 
 export const SQuery_files = {
-    accessValidator: async (url, cookie) => {
+    accessValidator: async (url:string ,cookie:any) => {
       let urlData: UrlDataType;
       try {
         if (!url) throw new Error('url is missing;');
-        url = url.substring(url.lastIndexOf('/') + 1, url.length)
-        urlData = jwt.verify(url, Config.conf.URL_KEY) as any;
+        
+        url =  url.substring(url.lastIndexOf('/') + 1).replace(url.substring(url.lastIndexOf('.')),'')
+        Log('url',{url}) 
+        urlData = jwt.verify(url, Config.conf.URL_KEY||'') as any;
+        Log('uurlDatarl',{urlData})
         if (!urlData) throw new Error('invalid url , urlData  is missing');
-        const rule = ModelControllers[urlData.modelPath]?.option.schema.description[urlData.property];
+        const rule = ModelControllers[urlData.modelPath]?.option?.schema.description[urlData.property];
+        Log('rule',{rule})
         if (!rule || !Array.isArray(rule)) throw new Error('invalid url, rule not found');
         let access: ModelAccessAvailable;
         access = rule[0].access;
@@ -21,7 +26,7 @@ export const SQuery_files = {
         const squery_session = JSON.parse(cookie.squery_session);
         if (!squery_session) throw new Error('invalid squery_session');
         let decoded: any = {};
-        decoded = jwt.verify(squery_session, Config.conf.TOKEN_KEY) || {};
+        decoded = jwt.verify(squery_session, Config.conf.TOKEN_KEY||'') || {};
         const token = decoded.token
         if (!token) throw new Error('invalid token');
         const ctx: ContextSchema = {
@@ -38,18 +43,18 @@ export const SQuery_files = {
           data: {
             id: urlData.id,
           },
-          socket: null,
+          socket:null,
           __key: token.__key, /// pour le moment data.__key = cookies[__key]
           __permission: token.__permission || "any", ///  data.__permission = undefined
         };
   
-        const res = await ModelControllers[urlData.modelPath]()['read'](ctx)
-        if (res.error) throw new Error(JSON.stringify(res));
+        const res = await ModelControllers[urlData.modelPath]()['read']?.(ctx)
+        if (!res?.response) throw new Error(JSON.stringify(res));
         if (!res.response[urlData.property]) throw new Error('access not allowed');
         return urlData;
   
-      } catch (error) {
-        throw new Error(error);
+      } catch (error:any) {
+        throw new Error(error.message);
       }
     }
   }

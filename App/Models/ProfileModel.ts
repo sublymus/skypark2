@@ -9,7 +9,7 @@ let profileSchema = SQuery.Schema({
     file: {
       size: [1, 100_000_000],
       length: [0, 4],
-      dir: Config.conf.rootDir + '/tamp',
+      dir: [Config.conf.rootDir,'tamp'],
     }
   }],
 

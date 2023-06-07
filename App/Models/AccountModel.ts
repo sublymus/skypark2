@@ -32,8 +32,8 @@ let accountSchema = SQuery.Schema({
     type: String,
     required: true,
     access: "private",
-    get: (v: string) => v.length,
-    set: (v: string) => v, // crypter
+    // get: (v) => (v as String).length,
+    // set: (v) => v, // crypter
   },
   telephone: {
     type: String,

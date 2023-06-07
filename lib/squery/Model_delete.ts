@@ -2,19 +2,19 @@ import Log from "sublymus_logger";
 import { accessValidator } from "./AccessManager";
 import STATUS from "./Errors/STATUS";
 import { FileValidator } from "./FileManager";
-import { DescriptionSchema, EventPostSchema, EventPreSchema, ModelControllerSchema, ModelControllers, ModelFrom_optionSchema, ModelInstanceSchema, MoreSchema, ResponseSchema } from "./Initialize";
+import { DescriptionSchema, EventPostSchema, EventPreSchema, ModelControllerSchema, ModelControllers, ModelFrom_optionSchema, ModelInstanceSchema, Model_optionSchema, MoreSchema, ResponseSchema, ResultSchema } from "./Initialize";
 import { ContextSchema } from "./Context";
 
-export const deleteFactory = (controller: ModelControllerSchema, option: ModelFrom_optionSchema & { modelPath: string }, callPost: (e: EventPostSchema) => ResponseSchema, callPre: (e: EventPreSchema) => Promise<void>) => {
+export const deleteFactory = (controller: ModelControllerSchema, option: Model_optionSchema, callPost: (e: EventPostSchema) => ResponseSchema, callPre: (e: EventPreSchema) => Promise<void | ResultSchema>) => {
     return async (
         ctx: ContextSchema,
-        more: MoreSchema
+        more?: MoreSchema
     ): ResponseSchema => {
         const service = option.volatile ? "delete" : "destroy";
         ctx = { ...ctx };
         ctx.service = service;
         ctx.ctrlName = option.modelPath;
-        if (!more) more = {};
+        if (!more) more = {}; 
         if (!more.savedlist) more.savedlist = [];
         if (!more.signupId) more.signupId = ctx.signup?.id;
         more.__parentModel = "";
@@ -22,7 +22,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
 
         if (!accessValidator({
             ctx,
-            access: option.access,
+            rule: option,
             type: "controller"
         })) {
             return await callPost({
@@ -36,14 +36,15 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
                 },
             });
         }
-        await callPre({
+        const preRes = await callPre({
             ctx,
             more,
         });
-        let modelInstance: ModelInstanceSchema;
+        if (preRes) return preRes
+        let modelInstance: ModelInstanceSchema|null|undefined;
         const description: DescriptionSchema = option.schema.description;
         try {
-            modelInstance = await option.model.findOne({
+            modelInstance = await option.model.__findOne({
                 _id: ctx.data.id,
                 __key: ctx.__key,
             });
@@ -67,14 +68,14 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
                     const rule = description[p];
                     if (!Array.isArray(rule) && rule.ref && rule.impact != false) {
                         const ctrl = ModelControllers[rule.ref]();
-                        const res = await (ctrl.delete || ctrl.destroy)({
+                        const res = await (ctrl.delete || ctrl.destroy)?.({
                             ...ctx,
                             data: {
                                 __key: ctx.__key,
                                 id: modelInstance[p],
                             },
                         });
-                        if (res.error) {
+                        if (!res?.response) {
                             //////// tres important ///////////
                         }
                     } else if (Array.isArray(rule) && rule[0].ref) {
@@ -88,7 +89,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
                         //         },
                         //     });
                         // }
-                        const res = await ModelControllers[rule[0].ref]().list({
+                        const res = await ModelControllers[rule[0].ref]().list?.({
                             ...ctx,
                             data: {
                                 remove: modelInstance[p] || [],
@@ -110,7 +111,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
                                     property: p
                                 }
                             );
-                        } catch (error) {
+                        } catch (error:any) {
                             return await callPost({
                                 ctx,
                                 more,
@@ -126,7 +127,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
                     }
                 }
             }
-        } catch (error) {
+        } catch (error:any) {
             return await callPost({
                 ctx,
                 more,
@@ -141,7 +142,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: ModelFr
         }
         try {
             modelInstance.remove();
-        } catch (error) {
+        } catch (error:any) {
             return await callPost({
                 ctx,
                 more,

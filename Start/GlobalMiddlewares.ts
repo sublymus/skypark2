@@ -5,10 +5,4 @@ import { MapUserCtx, SQuery } from "../lib/squery/SQuery";
 
 GlobalMiddlewares.push(async (ctx: ContextSchema) => {
 
-  try {
-   
-  } catch (error) {
-    Log("GlobalMiddlewares_jwtError", error.message);
-  }
-
 });

@@ -33,7 +33,7 @@ const messenger: ControllerSchema = {
             let channel: any;
             if (!discussion) {
 
-                const resChannel = await ModelControllers['channel']()['create']({
+                const resChannel = await ModelControllers['channel']()['create']?.({
                     ...ctx,
                     data: {
                         name: "Channel",
@@ -43,7 +43,7 @@ const messenger: ControllerSchema = {
                     }
                 });
 
-                if (resChannel.error) return resChannel;
+                if (!resChannel?.response) return resChannel;
                 channel = resChannel.response.toString();
             } else {
                 channel = discussion.channel.toString();
@@ -57,7 +57,8 @@ const messenger: ControllerSchema = {
             /** si le sender ne dispose pas d'une discussion avec le receiver on le cree*/
             const senderDiscussion = await ModelControllers['discussion'].option.model.findOne({ __key: ctx.__key, receiver: receiverId, sender: ctx.login.id });
             if (!senderDiscussion) {
-                const res = await ModelControllers["discussion"]()['list']({
+                const res = await ModelControllers["discussion"]()['list']?.({
+                    
                     ...ctx,
                     data: {
                         addNew: [{
@@ -72,7 +73,7 @@ const messenger: ControllerSchema = {
                         }
                     }
                 });
-                if (res.error) return res
+                if (!res?.response) return res
             }
             const receiverDiscussion = await ModelControllers['discussion'].option.model.findOne({ __key: receiverAccount.__key.toString(), receiver: receiverId, sender: ctx.login.id });
             if (!receiverDiscussion) {
@@ -86,10 +87,10 @@ const messenger: ControllerSchema = {
                         extractorPath: '../messenger'
                     }
                 })
-                if (resExtractor.error) {
+                if (!resExtractor?.response) {
                     return resExtractor
                 }
-                const res = await ModelControllers["discussion"]()['list']({
+                const res = await ModelControllers["discussion"]()['list']?.({
                     ...ctx,
                     __key: receiverAccount.__key,
                     __permission: receiverAccount.__permission,
@@ -107,7 +108,7 @@ const messenger: ControllerSchema = {
                     }
                 });
 
-                if (res.error) return res
+                if (!res?.response) return res
             }
             return {
                 code: "OPERATION_SUCCESS",
@@ -118,7 +119,7 @@ const messenger: ControllerSchema = {
                 },
                 status: 200
             }
-        } catch (error) {
+        } catch (error:any) {
             return {
                 error: "Messenger.createDiscussion:ERROR",
                 status: 404,
@@ -134,7 +135,7 @@ const messenger: ControllerSchema = {
             const clientDisscussion = await ModelControllers['discussion'].option.model.findOne({ _id: discussionId });
             if (clientDisscussion) {
                 const ctrl = ModelControllers['discussion']();
-                const resDeleteDiscussion = await ModelControllers["discussion"]()['list']({
+                const resDeleteDiscussion = await ModelControllers["discussion"]()['list']?.({
                     ...ctx,
                     data: {
                         remove: [discussionId],
@@ -145,7 +146,7 @@ const messenger: ControllerSchema = {
                         }
                     }
                 });
-                if (resDeleteDiscussion.error) {
+                if (!resDeleteDiscussion?.response) {
                     Log('ERROR_resDeleteDiscussion', resDeleteDiscussion);
                     return resDeleteDiscussion;
                 }
@@ -153,7 +154,7 @@ const messenger: ControllerSchema = {
                 if (!disscussion) {
                     const channel = await ModelControllers['channel'].option.model.findOne({ id: clientDisscussion.channel });
                     if (channel) {
-                        const resDeleteChannel = await (ctrl.delete || ctrl.destroy)({
+                        const resDeleteChannel = await (ctrl.delete || ctrl.destroy)?.({
                             ...ctx,
                             __key: channel.__key,
                             __permission:'admin',
@@ -161,7 +162,7 @@ const messenger: ControllerSchema = {
                                 id: channel._id,
                             }
                         });
-                        if (resDeleteChannel.error) Log('ERROR_resDeleteChannel', resDeleteChannel);
+                        if (!resDeleteChannel?.response) Log('ERROR_resDeleteChannel', resDeleteChannel);
                     }
 
                 }
@@ -172,7 +173,7 @@ const messenger: ControllerSchema = {
                 response: 0,
                 status: 200
             }
-        } catch (error) {
+        } catch (error:any) {
             return {
                 error: "OPERATION_FAILED2",
                 status: 404,

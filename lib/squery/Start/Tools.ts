@@ -7,7 +7,7 @@ declare module "../Initialize" {
     }
 }
 
-type assigneToNewListElementType = {
+type assigneToNewListElementType = { 
     parentModelPath: string;
     parentListProperty: string;
     targetProperty: string;
@@ -35,12 +35,12 @@ const assigneToNewListElement = function (this:{maker:CtrlModelMakerSchema}, dat
                 }
             })
             Log('User_LIST', { resExtractor })
-            if (resExtractor.error) return;
-            const sourcRes = await ModelControllers[resExtractor.response.modelPath]()['read']({
+            if (!resExtractor?.response) return;
+            const sourcRes = await ModelControllers[resExtractor.response.modelPath]()['read']?.({
                 ...ctx,
                 data: { id: resExtractor.response.id }
             });
-            const sourceInstance = sourcRes.response;
+            const sourceInstance = sourcRes?.response;
             Log('User_LIST', { sourceInstance })
             if (!sourceInstance) return;
 
@@ -59,11 +59,11 @@ const assigneToNewListElement = function (this:{maker:CtrlModelMakerSchema}, dat
                             }
                         })
                         //Log('User_LIST_foreach', { resExtractor })
-                        if (resExtractor.error) return
-                        const targetInstance = await ModelControllers[resExtractor.response.modelPath].option.model.findOne({ _id: resExtractor.response.id });
+                        if (!resExtractor?.response) return
+                        const targetInstance = await ModelControllers[resExtractor.response.modelPath].option?.model.findOne({ _id: resExtractor.response.id });
                         //Log('User_LIST_foreach', { targetInstance })
                         if (!targetInstance) return;
-                        targetInstance[data.targetProperty] = data.map ? data.map(sourceInstance[data.sourceProperty], data) : sourceInstance[data.sourceProperty];
+                        targetInstance[data.targetProperty] = data.map ? data.map(sourceInstance[data.sourceProperty||''], data) : sourceInstance[data.sourceProperty||''];
                         await targetInstance.save();
                     }
                 } catch (error) {
