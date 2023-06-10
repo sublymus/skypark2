@@ -1,9 +1,15 @@
-html , body #root{
-width: 100vw;
-height: 100vh;
-overflow: hidden;
+:root {
+  --nav-pages-ctn-height: 350px;
 }
-*{
+
+html,
+body #root {
+  width: 100vw;
+  height: 100vh;
+  overflow: scroll;
+}
+
+* {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
@@ -13,7 +19,7 @@ overflow: hidden;
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #8888885b #c4cdcf00;
+  scrollbar-color: #8888885b;
 }
 
 /* Chrome, Edge and Safari */
@@ -49,16 +55,37 @@ overflow: hidden;
   background-color: #71717141;
 }
 
-.ctn{
+.ctn {
   width: 100%;
   height: 100%;
 }
+
 .app {
-  color:rgb(69, 93, 117);
+  color: rgb(69, 93, 117);
   font-size: 18px;
   letter-spacing: 0.08em;
   background: rgba(51, 68, 85, 0.034);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+}
+
+.blurry {
+  transition: 200ms;
+  filter: blur(4px);
+}
+
+input:hover {
+  transition: 200ms;
+  background: #49556b44;
+}
+input {
+  transition: 200ms;
+  all: unset;
+  width: 100%;
+  height: 55px;
+  padding: 0 10px;
+  border-radius: 15px;
+  border: 1px solid rgba(51, 68, 85, 0.164);
+  background: #71717117;
 }

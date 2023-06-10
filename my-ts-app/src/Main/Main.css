@@ -181,9 +181,8 @@
     width: 50%;
     min-width: 400px;
     max-width: 500px;
-    height: 100%;
     background: rgb(255, 255, 255);
-    border-top-left-radius: 10px;
+    border-top-left-radius: 20px;
     overflow: hidden;
     bottom: 0;
     right: 0;
@@ -193,6 +192,7 @@
     width: 100%;
     height: 250px;
     position: relative;
+    min-height: 150px;
 }
 
 .main .nav-bar .size {
@@ -266,9 +266,50 @@
     margin-top: 10px;
 }
 
+
+.main .nav-bar .onglet-pages {
+    margin-top: 20px;
+    min-height: 30px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.main .nav-bar .onglet-pages div:hover {
+    background: rgba(51, 68, 85, 0.486);
+}
+
+.main .nav-bar .onglet-pages div.active {
+    background: rgba(51, 68, 85, 0.548);
+}
+
+.main .nav-bar .onglet-pages div {
+    padding: 10px 15px;
+    height: 50px;
+    min-width: 120px;
+    margin: 5px;
+    background: rgba(51, 68, 85, 0.219);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.main .nav-bar .pages-ctn {
+    display: flex;
+    flex-direction: column;
+    /* background:  */
+    width: 100%;
+    height: calc(100% - var(--nav-pages-ctn-height)) ;
+}
+
 .main .nav-bar .user-info {
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    height: 100%;
     margin-top: 20px;
     border-top: 1px solid rgba(51, 68, 85, 0.267);
 }
@@ -276,6 +317,7 @@
 .main .nav-bar .user-info-item {
     width: 100%;
     height: 40px;
+    min-height: 40px;
     margin-top: 7px;
     background: rgba(51, 68, 85, 0.041);
     display: flex;
@@ -287,41 +329,100 @@
     width: 200px;
 
 }
-.main .nav-bar .pages-ctn{
+
+
+
+.main .nav-bar .page-messenger {
     display: flex;
     flex-direction: column;
+    background: rgba(119, 47, 14, 0.048);
+    width: 100%;
+    height: 100%;
 }
-.main .nav-bar .onglet-pages {
-    margin-top: 20px;
-    height: 50px;
-    overflow-x: auto;
-    overflow-y: hidden;
+
+.main .nav-bar .messages {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 15px 10px;
+    height: calc(100%);
+    margin-bottom: 70px;
+    overflow-y: scroll;
+}
+
+.main .nav-bar .writer {
+    background: rgba(85, 70, 51, 0.308);
+    width: 100%;
+    height: 75px;
+    position: absolute; 
+    bottom: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.main  .nav-bar .onglet-pages div:hover {
-    background: rgba(51, 68, 85, 0.486);
-}
-.main  .nav-bar .onglet-pages div.active {
-    background: rgba(51, 68, 85, 0.548);
+.main .nav-bar .writer textarea {
+    all: unset;
+    margin-left: 5px;
+    background: rgb(255, 255, 255);
+    border: 1px solid rgba(83, 97, 110, 0.26);
+    padding: 3px 10px;
+    height: 60px;
+    border-radius: 5px;
+    width: calc(100% - 100px);
 }
 
-.main .nav-bar .onglet-pages div {
-    padding: 10px 15px;
-    height: 50px;
-    min-width: 120px;
-    margin: 5px;
-    background:rgba(51, 68, 85, 0.219);
-    border-radius: 10px;
+.main .nav-bar .writer .icon {
+    width : 60px;
+    height: 60px;
+    background: no-repeat center/70% url(../img/paper.png),rgba(51, 68, 85, 0.274);
+    border-radius: 50%;
+    transition: 300ms;
+}
+.main .nav-bar .writer .icon:hover {
+    transition: 300ms;
+    filter: hue-rotate(-30deg);
+    background: no-repeat center/70% url(../img/paper.png),rgba(51, 68, 85, 0.432);
+ }
+
+.main .nav-bar .message {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    width: 350px;
+    margin: 5px;
 }
 
-.main .nav-bar .page-messenger{
+.main .nav-bar .message .icon {
+    min-width: 50px;
+    height: 50px;
+    position: relative;
+    top: -15px;
     background: #345;
-    width: 100%;
-    height: 100%;
+    border-radius: 50%;
+}
+
+.main .nav-bar .message.left {
+    align-self: flex-start;
+}
+
+.main .nav-bar .message.left .text {
+    padding: 5px;
+    background: rgba(105, 60, 0, 0.096);
+    border-top-right-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.main .nav-bar .message.right {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.main .nav-bar .message.right .text {
+    padding: 5px;
+    background: rgba(1, 121, 17, 0.082);
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }

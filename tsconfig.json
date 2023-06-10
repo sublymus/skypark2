@@ -1,19 +1,19 @@
 {
   "include": [
     "./**/*.ts",
-    "*.ts",
-    "Public/views/p.js",
-    "Start/Controllers.ts",
-    "Public/views/ts_lib/SQueryClient.js"
+    "*.ts"
+  ],
+  "exclude": [
+    "node_modules"
   ],
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "commonjs",
     "esModuleInterop": true,
     "target": "ESNext",
     "moduleResolution": "node",
     "strict": true,
-    "outDir": "dist",
     "rootDir": "./",
+    "outDir": "build",
     "sourceMap": true,
     "jsx": "preserve"
   },

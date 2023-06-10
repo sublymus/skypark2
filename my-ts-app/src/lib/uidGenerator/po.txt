@@ -1,0 +1,26 @@
+
+const socket = io('http://192.168.1.2:3500');
+
+(async () => {
+  let u: any = await Keychain.getGenericPassword();
+  console.log(u);
+  
+  socket.io.opts.extraHeaders = {
+    ...socket.io.opts.extraHeaders,
+    cookie: u.password,
+  };
+})();
+
+socket.on('storeCookie', async cookie => {
+  await Keychain.resetGenericPassword();
+  try {
+    await Keychain.setGenericPassword('cookie', cookie);
+    socket.io.opts.extraHeaders = {
+      ...socket.io.opts.extraHeaders,
+      cookie,
+    };
+    console.log('Cookie stored successfully');
+  } catch (error) {
+    console.log('Error storing cookie:', error);
+  }
+});

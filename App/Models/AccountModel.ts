@@ -5,7 +5,6 @@ import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
-import Log from "sublymus_logger";
 let accountSchema = SQuery.Schema({
   name: {
     type: String,
