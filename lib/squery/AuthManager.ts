@@ -12,6 +12,8 @@ export class AuthManager {
         error: "OPERATION_FAILED",
         ...(await STATUS.OPERATION_FAILED(ctx)),
       };
+      //loginExtension: [LoginConfirmartion],
+      //signupExtension: [EmailConfirmartion],
     }
     let loginModelInstance = null;
     Log("login", ctx.data);
@@ -86,16 +88,7 @@ export class AuthManager {
       __signupId: loginModelInstance.__signupId.toString(),
     };
 
-    Log("AVANT_LE_cookies", {
-      modelPath: token.__loginModelPath,
-      id: token.__loginId,
-    });
     await SQuery.cookies(socket, "token", token);
-
-    Log("APLE_cookies", {
-      modelPath: token.__loginModelPath,
-      id: token.__loginId,
-    });
 
     return {
       response: {

@@ -119,6 +119,7 @@ const main: MainType = function (socket: Socket) {
         service,
         data
       );
+        Log('Cookie_result',await SQuery.cookies(socket?.request.headers.cookie ,'' , 'token'));
       const midList = [...GlobalMiddlewares];
 
       for (let i = 0; i < midList.length; i++) {
@@ -145,7 +146,7 @@ const main: MainType = function (socket: Socket) {
           message: "ERROR_CTRL_UNDEFINED",
         });
       }
-      Log('**==>>',res)
+
       if (MapUserCtx[ctx.__key]) MapUserCtx[ctx.__key].isAvalaibleCtx = false;
       if (res === undefined) {
         return cb?.({

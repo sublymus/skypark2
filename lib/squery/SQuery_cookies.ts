@@ -51,7 +51,6 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
             .join("; ") +
           "; " +
           cookieToken;
-          Log('koki',socket.request.headers.cookie)
       } catch (error) {
         Log('ERROR_COOKIES',{ error });
         rev(null);
