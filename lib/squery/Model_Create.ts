@@ -14,7 +14,7 @@ import {
   ModelInstanceSchema,
   Model_optionSchema,
   MoreSchema,
-  ResponseSchema, 
+  ResponseSchema,
   ResultSchema,
 } from "./Initialize";
 import { FileValidator, backDestroy } from "./ModelCtrlManager";
@@ -372,12 +372,12 @@ export const createFactory = (
             });
             if (!res?.response) {
               await backDestroy(ctx, more);
-              //Log('log', { res })
+              Log('logA', { res })
               return await callPost({
                 ctx,
                 more,
                 res:{
-                  error:'',
+                  error:'NOT_CREATED',
                   ...await STATUS.NOT_CREATED(ctx),
                 },
               });
@@ -402,6 +402,7 @@ export const createFactory = (
             );
           } catch (error:any) {
             await backDestroy(ctx, more);
+            Log('logB', '_____')
             return await callPost({
               ctx,
               more,
@@ -449,6 +450,7 @@ export const createFactory = (
       //Log('error', error);
       await backDestroy(ctx, more);
       more.modelInstance = modelInstance;
+      Log('logC', '_____')
       return await callPost({
         ctx,
         more,

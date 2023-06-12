@@ -48,7 +48,7 @@ const MakeModelCtlForm: (
  
    type CompletModel = mongoose.Model<any, unknown, unknown, unknown, any> &{__findOne: (filter?: any, projection?: any, options?: any, callback?: any)=>Promise<ModelInstanceSchema> };
   const  completModel:CompletModel = options.model as CompletModel;
-  const option: Model_optionSchema= { 
+  const option: Model_optionSchema= {
       ...options,
       volatile: options.volatile??false,
       modelPath: options.model.modelName,
@@ -93,13 +93,17 @@ const MakeModelCtlForm: (
         for (const listener of EventManager[e.ctx.service].post) {
           if (listener){
             const r = await listener(e);
+            Log('res__', r);
+            
             if(r) return r ;
           }  
         }
+        Log('res__', e.res);
         return e.res;
       } catch (error) {
         Log("ERROR_callPost", error);
       }
+      Log('res__', e.res);
       return e.res;
     };
     const ctrlMaker = function () {
@@ -286,7 +290,7 @@ async function backDestroy(ctx: ContextSchema, more: MoreSchema) {
     return p?promises.push(p):promises;
   });
   const log = await Promise.allSettled(promises);
-  console.log(log);
+  Log('backDestroy',log);
 
   more.savedlist = [];
   return;

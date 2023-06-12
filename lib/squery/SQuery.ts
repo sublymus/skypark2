@@ -51,7 +51,7 @@ type SQuerySchema = ((
   };
   service: (
     ctrlName: string,
-    service: string, 
+    service: string,
     data: DataSchema,
     ctx?: ContextSchema
   ) => Promise<any>;

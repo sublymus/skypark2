@@ -12,7 +12,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
     ctx = { ...ctx };
     ctx.service = service;
     ctx.ctrlName = option.modelPath;
-    if (!accessValidator({ 
+    if (!accessValidator({
       ctx,
       rule: option,
       type: "controller"

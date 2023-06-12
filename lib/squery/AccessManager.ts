@@ -98,7 +98,7 @@ export function accessValidator(option: {
   
   let clientPermission = ctx.__permission?.startsWith("client:") ? "client" : (ctx.__permission || 'any');
 
-  if (clientPermission == "client") { 
+  if (clientPermission == "client") {
     if (share && typeof share !== 'string') {
       if (Array.isArray(share.only) && share.only.includes(ctx.__permission)) {
         clientPermission = isOwner?'owner':'shared';

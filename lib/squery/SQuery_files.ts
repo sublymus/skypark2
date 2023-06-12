@@ -12,7 +12,7 @@ export const SQuery_files = {
         if (!url) throw new Error('url is missing;');
         
         url =  url.substring(url.lastIndexOf('/') + 1).replace(url.substring(url.lastIndexOf('.')),'')
-        Log('url',{url}) 
+        Log('url',{url})
         urlData = jwt.verify(url, Config.conf.URL_KEY||'') as any;
         Log('uurlDatarl',{urlData})
         if (!urlData) throw new Error('invalid url , urlData  is missing');

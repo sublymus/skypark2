@@ -14,7 +14,7 @@ NB: 1 -au lance de l'app le le cookies est passer dans le header, un user deja l
     2 -au login, le cookies est passer au client, mais ne passe pas automatiquement dans le header du socket,
     3 - le cookies est aussi mis dans le header lors du login.
     4 - la lecture du cookies provient de ce qui est ajouter par le server;
-NB:  *** ajout une nouveau cookies dans le header; 
+NB:  *** ajout une nouveau cookies dans le header;
 socket.request.headers["set-cookie"] = serialize("token", JSON.stringify(token), {
       maxAge: Date.now() + 24 * 60 * 60 * 1000,
     });

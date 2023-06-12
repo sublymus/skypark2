@@ -19,7 +19,7 @@ export class AuthManager {
 
     try {
       let filter: any = {};
-      authData.match.forEach((property:any) => {
+      authData.match.forEach((property) => {
         if (!data[property])
           throw new Error(
             "ILLEGAL_ARGUMEMNT property <" +
@@ -85,7 +85,7 @@ export class AuthManager {
       __signupModelPath: authData.signup,
       __signupId: loginModelInstance.__signupId.toString(),
     };
- 
+
     Log("AVANT_LE_cookies", {
       modelPath: token.__loginModelPath,
       id: token.__loginId,

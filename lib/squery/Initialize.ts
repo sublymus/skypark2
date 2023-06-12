@@ -12,7 +12,7 @@ export type InstanceDataPathsType = {
   size: number,
   extension: string,
 }
-export type FileSchema = { 
+export type FileSchema = {
   type: string;
   size: number;
   fileName: string;

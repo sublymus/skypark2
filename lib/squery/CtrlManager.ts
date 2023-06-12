@@ -8,7 +8,7 @@ import { UNDIFINED_RESULT } from "./ModelCtrlManager";
 NB:  les nom de model sont en lowercase : my_controller is well
 
 8888888888888888888*/
- 
+
 const CtrlManager = (option: SaveCtrlOptionSchema): CtrlMakerSchema => {
     let ctrl: ControllerSchema;
     let name: string='';

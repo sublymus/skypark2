@@ -9,7 +9,6 @@ import {
   ModelControllers,
   MoreSchema,
   ResponseSchema,
-  RuleSchema,
 } from "../Initialize";
 import { parentInfo } from "../ModelCtrlManager";
 import { SQuery } from "../SQuery";
@@ -49,16 +48,14 @@ const server: ControllerSchema = {
           service: "read",
         },
         type: "controller",
-        rule: {
-          
-        },
+        rule: ModelControllers[ctx.data.modelPath]?.option,
       });
       //Log('Description_valid_access:', valid, '; ctrlAccess:', ModelControllers[ctx.data.modelPath]?.option.access, '; __permission =', ctx.__permission, '; modelPath:',ctx.data.modelPath)
 
       if (!valid) throw new Error("ACCESS_REFUSED:" + ctx.data.modelPath);
 
       const description: DescriptionSchema = {
-        ...ModelControllers[ctx.data.modelPath]?.option?.schema.description,
+        ...ModelControllers[ctx.data.modelPath]?.option.schema.description,
       };
 
       for (const key in description) {
@@ -219,8 +216,8 @@ const server: ControllerSchema = {
       }
       let currentDoc = res.response;
       let currentModelPath = modelPath;
-      let currentDescription: DescriptionSchema |undefined=
-        ModelControllers[modelPath].option?.schema.description;
+      let currentDescription: DescriptionSchema =
+        ModelControllers[modelPath].option.schema.description;
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
         accu += part + "/";
@@ -268,10 +265,10 @@ const server: ControllerSchema = {
           currentDoc = res.response;
           currentModelPath = info.parentModelPath;
           currentDescription =
-            ModelControllers[info.parentModelPath].option?.schema.description;
+            ModelControllers[info.parentModelPath].option.schema.description;
         } else if (isValidProperty(part)) {
           canUpToParent = false;
-          const rule:RuleSchema |undefined= currentDescription?.[part];
+          const rule = currentDescription[part];
           if (!rule) {
             throw new Error("currentPath : " + accu + " <-- is not found;   ");
           } else if (Array.isArray(rule) && rule[0].ref) {
@@ -314,7 +311,7 @@ const server: ControllerSchema = {
           currentDoc = res.response;
           currentModelPath = rule.ref||'';
           currentDescription =
-            ModelControllers[rule.ref||''].option?.schema.description;
+            ModelControllers[rule.ref||''].option.schema.description;
         } else {
           throw new Error(illegalMessage);
         }
@@ -345,5 +342,5 @@ const ctrlMaker = CtrlManager({
   ctrl: { server },
   access: {
     description: "any",
-  }, 
+  },
 });

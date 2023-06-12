@@ -57,12 +57,16 @@ const SQuery = {
     return await new Promise((rev) => {
       SQuery.emit("server:currentUser", {}, async (res) => {
         if (res.error) rev(null); //throw new Error(JSON.stringify(res));
+        console.log(
+          {res}
+        );
         const userModel = await SQuery.model(res.response.signup.modelPath);
         if (!userModel) rev(null); //throw new Error("Model is null for modelPath : " + res.modelPath);
         const userInstance = await userModel.newInstance({
           id: res.response.signup.id,
         });
         Global.userInstance = userInstance;
+        console.log(userInstance);
         rev(userInstance);
       });
     });

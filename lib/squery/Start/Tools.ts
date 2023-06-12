@@ -7,7 +7,7 @@ declare module "../Initialize" {
     }
 }
 
-type assigneToNewListElementType = { 
+type assigneToNewListElementType = {
     parentModelPath: string;
     parentListProperty: string;
     targetProperty: string;

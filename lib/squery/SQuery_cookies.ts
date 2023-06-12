@@ -15,7 +15,7 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
   }
   if (key && value) decoded[key] = value;
   if (!key && !value) return decoded;
-  if (!value && key) return decoded[key]; 
+  if (!value && key) return decoded[key];
   if (value && !key) return;
 
   if(!(source instanceof Socket)) return key? decoded[key]:undefined;

@@ -7,7 +7,7 @@ const excDir = Config.conf.execDir||[];
 [
   ...systemDir,
   ...excDir.map((link) => {
-    return path.join(...link.split("/")); 
+    return path.join(...link.split("/"));
   }),
 ].forEach(exec);
 

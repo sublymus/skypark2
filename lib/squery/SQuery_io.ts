@@ -6,17 +6,13 @@ import { Server, Socket } from "socket.io";
 import Log from "sublymus_logger";
 import { AuthDataMap } from "./SQuery_auth";
 
-export const SQuery_io = (server: any) => { 
+export const SQuery_io = (server: any) => {
     /********************    Cookies   *********************** */
     if (!server) {
       return Global.io;
     }
     const io = new Server(server, {
       maxHttpBufferSize: 1e10,
-      cors: {    
-        origin: ["http://localhost:3000", /** ... */ ],    
-        methods: ["GET", "POST"]  
-      },
       cookie: {
         name: "io",
         path: "/",

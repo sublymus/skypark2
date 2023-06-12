@@ -10,4 +10,3 @@ export const SQuery_service = (ctrlName:string, service:string, data:DataSchema,
         });
     })
 };
- 

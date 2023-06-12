@@ -12,7 +12,7 @@ export type AuthExtensionSchema = {
   };
 };
 export type authDataOptionSchema = {
-  login: string; 
+  login: string;
   match: string[];
   signup: string;
   loginExtension?:AuthExtensionSchema[];

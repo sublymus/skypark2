@@ -17,7 +17,7 @@ export const SQuery_Schema = (description: DescriptionSchema , options?:SchemaOp
     };
   
     description.__permission = {
-      type: String, 
+      type: String,
       access: "secret",
     };
     description.__signupId = {
@@ -63,7 +63,8 @@ export const SQuery_Schema = (description: DescriptionSchema , options?:SchemaOp
       this.__updatedAt = Date.now();
       this.__updatedProperty = (this.modifiedPaths() as string[]).filter((updatedProperty)=>{
         const rule = description[updatedProperty];
-        return Array.isArray(rule)? rule[0].access !=='secret': rule.access !=='secret';
+        Log('********',{ updatedProperty , rule });
+        return Array.isArray(rule) ? rule[0].access !=='secret': rule?.access !=='secret';
       });
     });
   
