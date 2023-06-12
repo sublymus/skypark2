@@ -16,8 +16,10 @@ TODO: folder:{
     // configurer les symboles
 }
 TODO: befor after autoexecute ,
-TODO: access permission shared  niveau Model et niveau Instance
-#TODO:  SQuery file access au fichier..
+TODO: access permission shared  niveau Model 
+TODO: et niveau Instance
+
+__SQuery file access au fichier..
 
 =======================================  access  ==================================================
 -access:property {ref:modelPath,access:private} il est mieux de definir en plus les property du ref comme etant private

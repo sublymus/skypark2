@@ -15,7 +15,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
     let lastInstanceUpdateAt = 0;
     const refresh = async () => {
         await new Promise((rev) => {
-            SQuery.emit( modelPath + ':read', {
+            SQuery.emit(modelPath + ':read', {
                 id: id,
             }, async (res) => {
                 if (res.error) throw new Error(JSON.stringify(res));
@@ -54,7 +54,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
         cache = {}
         await refresh();
     }
-
+console.log('cache',cache);
     SQuery.on('update:' + cache._id, async (data) => {
         //console.log('update:' + cache._id, data);
         cache = data.doc;
@@ -64,7 +64,13 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
     });
     //////
     async function emitRefresh(properties) {
-        emiter.emit('refresh', instance);
+        let Objproperties = {};
+
+        for (let index = 0; index < properties.length; index++) {
+            const property = properties[index];
+            Objproperties[property] = await (instance[property]);
+        }
+        emiter.emit('refresh', Objproperties);
         if (properties) {
             properties.forEach(async (p) => {
                 emiter.emit('refresh:' + p, {
@@ -122,7 +128,7 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                                 lastPropertyUpdateAt = lastInstanceUpdateAt;
                                 firstRead = false
                             }
-                            return propertyCache[property];
+                            return [...propertyCache[property]];
                         } else {
                             if (firstRead || lastPropertyUpdateAt != lastInstanceUpdateAt) {
                                 propertyCache[property] = cache[property];
@@ -142,9 +148,14 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                             return await ai.update(value);
                         } else if (rule[0] && rule[0].file) {
                             const files = [];
+                            console.log(value);
                             for (const p in value) {
                                 if (Object.hasOwnProperty.call(value, p)) {
                                     const file = value[p];
+                                    if(file.url) {
+                                        files.push(file);
+                                        continue;
+                                    };
                                     const fileData = {
                                         fileName: file.name || file.fileName,
                                         size: file.size,
@@ -157,13 +168,14 @@ export async function createInstanceFrom({ modelPath, id, Model }) {
                             }
                             //console.log(files);
                             value = files;
+                            console.log({value});
                         }
-                        const result = await Validator(description[property], value);
-                        if (result.value == undefined) {
-                            // console.log('result.value == undefined');
-                            await emitRefresh([property])
-                            throw new Error('Invalide Value :' + value + ' \n because : ' + result.message);
-                        }
+                        // const result = await Validator(description[property], value);
+                        // if (result.value == undefined) {
+                        //     // console.log('result.value == undefined');
+                        //     await emitRefresh([property])
+                        //     throw new Error('Invalide Value :' + value + ' \n because : ' + result.message);
+                        // }
                         try {
 
                             await instance.update({

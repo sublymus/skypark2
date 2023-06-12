@@ -14,16 +14,16 @@ export class Home extends BaseComponent {
     constructor() {
         super();
         SQuery.dataStore = {
-            useStore:true,
-            updateTimeOut:500,
-            setData:async(key , data)=>{
-               try {
-                 localStorage.setItem(key , JSON.stringify(data));
-               } catch (error) {
-                console.error(error);
-               }
+            useStore: false,
+            updateTimeOut: 500,
+            setData: async (key, data) => {
+                try {
+                    localStorage.setItem(key, JSON.stringify(data));
+                } catch (error) {
+                    console.error(error);
+                }
             },
-            getData:async(key )=>{
+            getData: async (key) => {
                 try {
                     return JSON.parse(localStorage.getItem(key))
                 } catch (error) {
@@ -66,7 +66,7 @@ export class Home extends BaseComponent {
                 if (isSelected) {
                     btn.classList.add('active');
                     this.emit('@page:change', $('.' + e.value))
-                }else{
+                } else {
                     btn.classList.remove('active');
                 }
             },

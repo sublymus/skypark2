@@ -33,3 +33,9 @@
     border-radius:10px;
     background: #41a05f;
 }
+.signup .btnSend{
+    padding: 10px 25px;
+    color: aliceblue;
+    border-radius:10px;
+    background: #418aa0;
+}

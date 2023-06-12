@@ -4,8 +4,6 @@ const ValidationMap = {
     Date: ["min", "max", "enum", "required"],
     Array: ["length", "required"],
   };
-  
-  
   const validations = {
     minlength: (value, requirement) => {
       let isValide = false;

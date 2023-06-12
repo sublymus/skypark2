@@ -48,6 +48,9 @@ export class Login extends BaseComponent {
                         id: res.response.login.id,
                     })
                 });
+                SQuery.on("log",res => {
+                    alert('server/login/'+res);
+                });
             },
             [viewName]: () => {
                 this.when('error', (error) => {

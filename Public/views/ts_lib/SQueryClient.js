@@ -12,6 +12,7 @@ const socket = io(null, {
 
 
 socket.on("storeCookie", (cookie, cb) => {
+  console.log(cookie);
   document.cookie = cookie;
   console.log("document.cookie :  ", document.cookie);
   cb(document.cookie);
@@ -57,16 +58,12 @@ const SQuery = {
     return await new Promise((rev) => {
       SQuery.emit("server:currentUser", {}, async (res) => {
         if (res.error) rev(null); //throw new Error(JSON.stringify(res));
-        console.log(
-          {res}
-        );
         const userModel = await SQuery.model(res.response.signup.modelPath);
         if (!userModel) rev(null); //throw new Error("Model is null for modelPath : " + res.modelPath);
         const userInstance = await userModel.newInstance({
           id: res.response.signup.id,
         });
         Global.userInstance = userInstance;
-        console.log(userInstance);
         rev(userInstance);
       });
     });
@@ -84,23 +81,25 @@ const SQuery = {
       throw new Error("DISCONNECT FROM SERVER");
     }
   },
-  emit: (event, ...arg) => {
+  emit: (event, data , listener) => {
     if (typeof event != "string")
       throw new Error(
         "cannot emit with following event : " +
         event +
         "; event value must be string"
       );
-    socket.emit(event, ...arg);
+    socket.emit(event, data , listener);
   },
-  on: (event, ...arg) => {
+  on: (event, listerner) => {
     if (typeof event != "string")
       throw new Error(
         "cannot emit with following event : " +
         event +
         "; event value must be string"
       );
-    socket.on(event, ...arg);
+    socket.on(event, (...data)=>{
+      listerner(...data);
+    });
   },
   getDescription: async function (modelPath) {
     if (typeof modelPath != 'string') throw new Error('getDescription(' + modelPath + ') is not permit, parameter must be string');

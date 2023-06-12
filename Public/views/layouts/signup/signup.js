@@ -66,9 +66,22 @@ export class Signup extends BaseComponent {
                     alert("vous avez " + data.expireAt + " pour entrez le code");
                     let btnSend = $(".btnSend");
                     btnSend.style.backgroundColor = "yellow";
-                    btnSend.addEventListener("click", () => {
-                        cb(document.querySelector(".number").value);
+                   
+                });
+                let i = 0;
+                let t = 0;
+                SQuery.on("ert", (data, cb) => {
+                    i = data.i;
+                    console.log('ert', data);
+                    $(".btnSend").textContent = `i: ${i} - t: ${t}`;
+                    $(".btnSend").addEventListener("click", () => {
+                        cb(`i:${i*10}_`);
                     });
+                });
+                SQuery.on("time", (data, cb) => {
+                    t = data.t;
+                    console.log('time', data);
+                    $(".btnSend").textContent = `i: ${i} - t: ${t}`;
                 });
                 this.when("type", (type) => {
                     //console.log("wertyui");

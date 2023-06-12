@@ -1,7 +1,7 @@
 import { SQuery } from "../lib/squery/SQuery";
 SQuery.auth({
   login: "account",
- // extension: [EmailConfirmartion],
+  //extension: [EmailConfirmartion],
   match: ["email", "password"],
   signup: "user",
 });

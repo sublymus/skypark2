@@ -5,7 +5,6 @@ import path from "node:path";
 import Log from "sublymus_logger";
 import { Config } from "./Config";
 import { ContextSchema } from "./Context"
-import mime from 'mime-types';
 import {
   FileSchema,
   InstanceDataPathsType,

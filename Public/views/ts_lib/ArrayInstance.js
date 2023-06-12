@@ -58,7 +58,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
  
          }
          options.paging.query = {
-             __parentModel: parentModel + '_' + parentId + '_' + property,
+             __parentModel: parentModel + '_' + parentId + '_' + property+'_'+itemModelPath,
          }
  
          return await new Promise((rev) => {

@@ -31,10 +31,25 @@ export class AuthManager {
 
         filter[property] = data[property];
       });
+      
+      
+      
       loginModelInstance = await ModelControllers[
         authData.login
-      ].option?.model.findOne(filter);
+      ].option?.model.findOne({
+        "email": "m@gmail.com",
+        "password": "azert",
+      });
+
+
+
+
       Log("loginModelInstance", loginModelInstance);
+
+
+
+
+
     } catch (error:any) {
       Log("ERROR_loginModelInstance", error);
       //  console.log('ERROR_loginModelInstance', error);
