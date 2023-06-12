@@ -21,20 +21,26 @@ export const SQuery_io = (server: any) => {
       },
     });
     Global.io = io;
-    const setPermission: ListenerPreSchema = async ({ ctx, more }) => {
-      ctx.data.__permission = ctx.__permission;
-      ctx.data.__signupId = more?.__signupId;
-    };
+    
     const setAuthValues = (authData: authDataSchema) => {
       const preCreateSignupListener: ListenerPreSchema = async ({
         ctx,
         more,
       }) => {
+        Log('Auth_debug',{authData})
         ctx.__permission = authData.__permission;
         ctx.__key = new mongoose.Types.ObjectId().toString(); ///// cle d'auth
+        Log('Auth_debug:more1',{more})
         if(more)more.__signupId = more.modelId;
+        Log('Auth_debug:more2',{more , ctx})
       };
       return preCreateSignupListener;
+    };
+    const setPermission: ListenerPreSchema = async ({ ctx, more }) => {
+      Log('Auth_debug:account.data',{data:ctx.data , more})
+      ctx.data.__permission = ctx.authData?.__permission|| ctx.__permission;
+      ctx.data.__signupId = more?.__signupId;
+      Log('Auth_debug:account.data2',{data:ctx.data , more})
     };
     const setLoginCookie = (authData: authDataSchema) => {
       const postCreateLoginListener: ListenerPostSchema = async ({
@@ -52,6 +58,7 @@ export const SQuery_io = (server: any) => {
           __loginId: res.response,
           __loginModelPath: authData.login,
         };
+        Log('Auth_debug',{token})
         await SQuery.cookies(ctx.socket, "token", token);
       };
       return postCreateLoginListener;
@@ -63,7 +70,10 @@ export const SQuery_io = (server: any) => {
       if (firstConnection) {
         firstConnection = false;
         const readylist:string[] = [];
+
+        Log('Auth_debug',{AuthDataMap})
         for (const key in AuthDataMap) {
+          Log('Auth_debug',{key})
           if (Object.prototype.hasOwnProperty.call(AuthDataMap, key)) {
             const authData = AuthDataMap[key];
             const signupCtrl = ModelControllers[authData.signup]();

@@ -6,23 +6,26 @@ export const load = {
   user: {
     create: {
       account: {
-        name: "Pedri",
-        password: "2569",
-        telephone: "+2250565848273",
-        carte: "3456876509871235",
-        imgProfile: [],
-      },
-      contacts: [],
-      //currentTransaction:'',
-      transactions: [],
-      messenger: {
-        opened: [],
-        closed: [],
-      },
-      preference: {
-        nigthMode: true,
-        currentDevise: "rub",
-        watcthDifference: "rub/xof",
+        name: 'baron',
+        email: 'a@gmail.com',
+        userTarg: 'm',
+        status: 'property',
+        password: 'a',
+        telephone: '12345678',
+        address: {
+
+          room: '34',
+          city: 'Weston',
+          door: '80',
+          etage: '8',
+          description: 'rigth',
+        },
+        profile: {
+
+          imgProfile: [],
+
+          banner: [],
+        },
       },
     },
   },

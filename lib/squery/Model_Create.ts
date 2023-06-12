@@ -33,7 +33,6 @@ export const createFactory = (
     ctx.ctrlName = "" + option.modelPath;
     if (!more) more = {};
     if (!more.savedlist) more.savedlist = [];
-    if (!more.signupId) more.signupId = ctx.signup?.id;
     if (!more.__parentModel) more.__parentModel = "";
     more.modelPath = option.modelPath;
 
@@ -63,7 +62,7 @@ export const createFactory = (
     const preRes = await callPre({
       ctx,
       more,
-    });
+    }); 
     if(preRes) return preRes
 
     const accu:MoreSchema = {};

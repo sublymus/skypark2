@@ -9,7 +9,7 @@ let addressSchema = SQuery.Schema({
   location: {
     type: String,
     trim: true,
-    required: true,
+   // required: true,
     emit:false
   },
   quarter: {

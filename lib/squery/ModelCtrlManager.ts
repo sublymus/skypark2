@@ -79,7 +79,8 @@ const MakeModelCtlForm: (
 
       for (const listener of EventManager[e.ctx.service].pre) {
         try {
-          if (listener) return await listener(e);
+          const res = await listener(e);
+          if(res) return res;
         } catch (error) {
           Log("ERROR_callPre", error);
         }

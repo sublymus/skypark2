@@ -35,7 +35,6 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       savedlist: [],
       __parentModel: paging?.query?.__parentModel,
       modelPath: option.modelPath,
-      signupId: ctx.signup?.id,
     };
 
     const preRes = await callPre({

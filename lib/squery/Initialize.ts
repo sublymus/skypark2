@@ -48,7 +48,6 @@ export type MoreSchema = {
   modelInstance?: any,
   lastInstance?: any,
   modelId?: string,
-  signupId?: string,
   __parentModel?: string,
 };
 export type ControlSchema = (

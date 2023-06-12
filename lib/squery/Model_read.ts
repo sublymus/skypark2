@@ -12,7 +12,6 @@ export const readFactory = (controller: ModelControllerSchema, option: Model_opt
     ctx.ctrlName = option.modelPath;
     if (!more) more = {};
     if (!more.savedlist) more.savedlist = [];
-    if (!more.signupId) more.signupId = ctx.signup?.id;
     more.__parentModel = "";
     more.modelPath = option.modelPath;
     //Log('auth', { ctx, service, access: option.access, "controller": "" })

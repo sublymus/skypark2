@@ -13,7 +13,6 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
     ctx.ctrlName = option.modelPath;
     if (!more) more = {};
     if (!more.savedlist) more.savedlist = [];
-    if (!more.signupId) more.signupId = ctx.signup?.id;
     more.__parentModel = "";
     more.modelPath = option.modelPath;
     if (!accessValidator({
