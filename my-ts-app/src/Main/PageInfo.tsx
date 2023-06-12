@@ -21,11 +21,7 @@ function PageInfo() {
                 <div className="value">{focusedUser?.account.telephone}</div>
             </div>
             <div className='user-info-item'>
-                <div className="label">Telephone</div>
-                <div className="value">{focusedUser?.account.telephone}</div>
-            </div>
-            <div className='user-info-item'>
-                <div className="label">Telephone</div>
+                <div className="label">Room</div>
                 <div className="value">{focusedUser?.account.address.room}</div>
             </div>
             <div className='user-info-item'>

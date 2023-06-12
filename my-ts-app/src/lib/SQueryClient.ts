@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import { Config } from "./Config";
 import { createModelFrom } from "./Model";
 const Descriptions: any = {};
-const socket = io({
+const socket = io('http://localhost:3500',{
   extraHeaders: {},
 });
 

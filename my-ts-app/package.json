@@ -21,7 +21,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "BUILD_PATH='../Public/app' react-scripts build",
+    "build": "BUILD_PATH='../Public/app           ```````````````````````````````````````````````````````````````````````````' react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

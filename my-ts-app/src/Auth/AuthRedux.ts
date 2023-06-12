@@ -18,12 +18,20 @@ export const fetchLoginManager = createAsyncThunk(
             return console.log('ERROR account : res=> ', res);
         }
         const entreprise = await manager.entreprise;
-        if (!entreprise) {
-            return console.log('ERROR entreprise : res=> ', res);
-        }
+        // if (!entreprise) {
+        //     return console.log('ERROR entreprise : res=> ', res);
+        // }
+        const profile = account.profile;
+
         console.log({ manager, account, entreprise });
 
-        return manager.$cache
+        return {
+            ...manager.$cache,
+            account:{
+                ...account,
+                
+            }
+        }
     }
 )
 
@@ -47,8 +55,8 @@ const _manager: any = {
             city: "Rostov on don",
         },
         profile: {
-            imgProfile: 'https://source.unsplash.com/random/?Cryptocurrency&1',
-            banner: 'https://source.unsplash.com/random/?Cryptocurrency&1',
+            imgProfile: ['https://source.unsplash.com/random/?Cryptocurrency&1'],
+            banner: ['https://source.unsplash.com/random/?Cryptocurrency&1'],
             message: "*** BEST ****",
         }
     }

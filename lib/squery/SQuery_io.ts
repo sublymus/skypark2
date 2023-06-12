@@ -13,6 +13,9 @@ export const SQuery_io = (server: any) => {
     }
     const io = new Server(server, {
       maxHttpBufferSize: 1e10,
+      cors:{
+        origin:['http://localhost:3000']
+      },
       cookie: {
         name: "io",
         path: "/",

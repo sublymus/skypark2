@@ -10,8 +10,8 @@ function Auth() {
     const { openAuth } = useSelector((state: RooState) => state.auth);
     const [name, setName] = useState('')
     const [lastName, setLastName] = useState('');;
-    const [email, setEmail] = useState('');
-    const [pass, setPass] = useState('');
+    const [email, setEmail] = useState('m@gmail.com');
+    const [pass, setPass] = useState('m');
     return (
         <div className="auth" onClick={(e) => {
             if ((e.target as HTMLElement).className == 'auth') dispatch(setOpenAuth('none'));
