@@ -50,7 +50,7 @@ const MakeModelCtlForm: (
   const  completModel:CompletModel = options.model as CompletModel;
   const option: Model_optionSchema= {
       ...options,
-      volatile: options.volatile??false,
+      volatile: options.volatile??true,
       modelPath: options.model.modelName,
       model:completModel,
     };

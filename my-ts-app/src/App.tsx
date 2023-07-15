@@ -3,10 +3,14 @@ import './App.css';
 import Main from './Main/Main';
 import TopBar from './TopBar/TopBar';
 import Auth from './Auth/Auth';
-import { RooState } from './AppRedux';
+// import { RooState } from './AppStore';
+import { AuthStore } from './Auth/AuthStore';
+import UserForm from './UserData/UserForm';
+import { UserFormStore } from './UserData/UserFormStore';
 
 function App() {
-  const { openAuth } = useSelector((state: RooState) => state.auth)
+  const { openAuth } = AuthStore();
+  const {openedForm}= UserFormStore()
   return (
     <div className="app ctn">
 
@@ -14,6 +18,9 @@ function App() {
       <Main></Main>
       {
         openAuth !== "none" ? <Auth></Auth> : null 
+      }
+      {
+        openedForm !== "none" ? <UserForm></UserForm> : null 
       }
     </div>
   );

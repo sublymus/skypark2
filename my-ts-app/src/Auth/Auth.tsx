@@ -1,31 +1,28 @@
 
-import { useDispatch, useSelector } from 'react-redux';
-import { RooState, RootDispatch } from '../AppRedux';
 import './Auth.css';
-import { fetchLoginManager, setOpenAuth } from './AuthRedux';
 import { useState } from 'react';
+import { AuthStore } from './AuthStore';
 
 function Auth() {
-    const dispatch: RootDispatch = useDispatch();
-    const { openAuth } = useSelector((state: RooState) => state.auth);
+    const { openAuth ,setOpenAuth , fetchLoginManager} = AuthStore()
     const [name, setName] = useState('')
     const [lastName, setLastName] = useState('');;
-    const [email, setEmail] = useState('m@gmail.com');
-    const [pass, setPass] = useState('m');
+    const [email, setEmail] = useState('m0@gmail.com');
+    const [pass, setPass] = useState('m0');
     return (
         <div className="auth" onClick={(e) => {
-            if ((e.target as HTMLElement).className == 'auth') dispatch(setOpenAuth('none'));
+           if ((e.target as HTMLElement).className == 'auth') setOpenAuth('none');
         }}>
             <div className="auth-ctn">
                 <div className="close" onClick={() => {
-                    dispatch(setOpenAuth('none'))
+                   setOpenAuth('none')
                 }}></div>
                 <div className="image">
                 </div>
                 <div className="form">
                     <h1 className="auth-title">{openAuth == 'login' ? "Sign In" : 'Create account'}</h1>
                     <h5 className="auth-prompt">{openAuth == 'login' ? 'Create account for another manager' : 'Connect you account?'} <span onClick={() => {
-                        dispatch(setOpenAuth(openAuth == 'login' ? 'signup' : 'login'))
+                       setOpenAuth(openAuth == 'login' ? 'signup' : 'login')
                     }}>{openAuth == 'login' ? 'Create here' : 'Login here'}</span></h5>
                     <div className="google" style={{ display: openAuth == 'login' ? 'flex' : 'none' }}>
                         <div className="icon"></div>
@@ -48,10 +45,10 @@ function Auth() {
                     }}></input>
                     <h5 className="auth-forget" style={{ display: openAuth == 'login' ? 'flex' : 'none' }}>Forgot Password?</h5>
                     <div className="auth-submit" onClick={() => {
-                        dispatch(fetchLoginManager({
+                        fetchLoginManager({
                             email: email,
                             password: pass
-                        }))
+                        })
                     }}>{openAuth == 'login' ? "Sign In" : "Sign Up"}</div>
                 </div>
             </div>

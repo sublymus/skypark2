@@ -1,6 +1,6 @@
 import EventEmiter, { listenerSchema } from "./event/eventEmiter";
 import { createInstanceFrom } from "./Instance";
-import SQuery from "./SQueryClient";
+import SQuery, { socket } from "./SQueryClient";
 
 const ArrayCache: any = {};
 
@@ -38,7 +38,7 @@ export async function createArrayInstanceFrom({
   }
 
   const arrayInstance: any = {};
-  SQuery.on(
+  socket.on(
     "list/" + parentModel + "/" + property + ":" + parentId,
     async (data: { added: any; removed: any }) => {
       const modifData = {
@@ -73,8 +73,8 @@ export async function createArrayInstanceFrom({
     };
 
     return await new Promise((rev) => {
-      if (SQuery.socket.connected) {
-        SQuery.emit(
+      if (socket.connected) {
+        socket.emit(
           itemModelPath + ":list",
           {
             ...options,

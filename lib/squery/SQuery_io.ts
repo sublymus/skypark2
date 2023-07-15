@@ -42,6 +42,7 @@ export const SQuery_io = (server: any) => {
     const setPermission: ListenerPreSchema = async ({ ctx, more }) => {
       Log('Auth_debug:account.data',{data:ctx.data , more})
       ctx.data.__permission = ctx.authData?.__permission|| ctx.__permission;
+      Log('##################',ctx.data.__permission  , ctx.authData?.__permission , ctx.__permission)
       ctx.data.__signupId = more?.__signupId;
       Log('Auth_debug:account.data2',{data:ctx.data , more})
     };
@@ -54,14 +55,14 @@ export const SQuery_io = (server: any) => {
         if (res.error) return Log("Giga_ERROR", res);
         const token = {
           __key: ctx.__key,
-          __permission: authData.__permission, // any non loguer, user loguer , admin loguer admin
+          __permission: ctx.__permission, // any non loguer, user loguer , admin loguer admin
           __signupId: more?.__signupId,
           __signupModelPath: authData.signup,
           __email: more?.modelInstance.email,
           __loginId: res.response,
           __loginModelPath: authData.login,
         };
-        Log('Auth_debug',{token})
+        Log('*******Auth_debug',{token , authData , ctx})
         await SQuery.cookies(ctx.socket, "token", token);
       };
       return postCreateLoginListener;

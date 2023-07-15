@@ -13,8 +13,8 @@ let EntrepiseSchema = SQuery.Schema({
   managers: [{
     type: Schema.Types.ObjectId,
     //ref: ConstructionManagerModel.modelName,
-    ref: EntrepriseManagerModel.modelName,
-    strictAlien: true,
+    ref: ManagerModel.modelName,
+    alien: true,
     impact:false,
   }],
   quarters: [{
@@ -28,7 +28,7 @@ let EntrepiseSchema = SQuery.Schema({
     ref: AddressModel.modelName,
   },
   telephone: [{
-    type: Number,
+    type: String,
   }],
   email: {
     type: String,
@@ -41,7 +41,7 @@ let EntrepiseSchema = SQuery.Schema({
     ref: ProfileModel.modelName,
   },
   creationDate: {
-    type: Date,
+    type: Number,
   },
 });
 
@@ -52,10 +52,6 @@ const ctrlMaker = MakeModelCtlForm({
   model: EntrepiseModel,
   volatile: true,
 });
-
-ctrlMaker.pre('create', async ({ ctx }) => {
-
-})
 
 
 export default EntrepiseModel;

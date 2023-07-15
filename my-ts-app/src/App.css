@@ -89,3 +89,18 @@ input {
   border: 1px solid rgba(51, 68, 85, 0.164);
   background: #71717117;
 }
+
+
+  
+select {
+  background-color: #0563af;
+  color: white;
+  padding: 5px;
+  width: 150px;
+  border: none;
+  font-size: 20px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+  -webkit-appearance: button;
+  appearance: button;
+  outline: none;
+}

@@ -47,10 +47,18 @@ let accountSchema = SQuery.Schema({
     type: Schema.Types.ObjectId,
     ref: FavoritesModel.modelName,
     access: "private",
+    default:{
+      folders: [],
+      likeList: []
+    }
   },
   profile: {
     type: Schema.Types.ObjectId,
     ref: ProfileModel.modelName,
+    default:{
+      imgProfile: [],
+      banner: [],
+    }
   },
 });
 
@@ -59,7 +67,6 @@ const AccountModel = mongoose.model("account", accountSchema);
 const maker = MakeModelCtlForm({
   schema: accountSchema,
   model: AccountModel,
-  volatile: false,
 })
 maker.pre("store", async function youyou ({ ctx })  {
   const userTarg = getTarg(ctx);

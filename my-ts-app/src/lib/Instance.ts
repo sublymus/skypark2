@@ -1,12 +1,36 @@
+import { Descriptions } from './../Descriptions';
+import { SQuery } from '../AppStore';
+
 import { createArrayInstanceFrom } from "./ArrayInstance";
 import { Config } from "./Config";
-import SQuery from "./SQueryClient";
+import { DescriptionSchema, DescriptionsType, TypeRuleSchema, getDescription, socket } from "./SQueryClient";
 import { Validator } from "./Validation";
 import EventEmiter from "./event/eventEmiter";
 
+interface Model {
+
+}
+
+
+export interface BaseInstance {
+  update: (data: any) => void
+  when: (event: string, listener: any, changeRequired: boolean) => this;
+  extractor: (extractorPath: string) => Promise<BaseInstance | null>;
+  $modelPath: string;
+  $parentModelPath: string | undefined;
+  $parentId: string | undefined;
+  $parentProperty: string | undefined;
+  $model: Model;
+  $id: string;
+  $cache: object;
+  newParentInstance: () => Promise<BaseInstance | null>;
+}
+
 const InstanceCache: any = {};
 
-export async function createInstanceFrom({ modelPath, id, Model }: any) {
+export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) {
+
+  const description = await getDescription(modelPath)
   if (!id || !modelPath) {
     console.error("id = " + id, "modelPath = " + modelPath);
     return null;
@@ -15,7 +39,7 @@ export async function createInstanceFrom({ modelPath, id, Model }: any) {
   let lastInstanceUpdateAt = 0;
   const refresh = async () => {
     await new Promise((rev) => {
-      SQuery.emit(
+      socket.emit(
         modelPath + ":read",
         {
           id: id,
@@ -49,7 +73,6 @@ export async function createInstanceFrom({ modelPath, id, Model }: any) {
 
   let propertyCache: any = {};
   const instance: any = {};
-  const description = await SQuery.getDescription(modelPath);
   const emiter = new EventEmiter();
 
   if (!cache) {
@@ -57,7 +80,7 @@ export async function createInstanceFrom({ modelPath, id, Model }: any) {
     await refresh();
   }
 
-  SQuery.on("update:" + cache._id, async (data: any) => {
+  socket.on("update:" + cache._id, async (data: any) => {
     console.log("update:" + cache._id, data);
     cache = data.doc;
     Config.dataStore.setData(modelPath + ":" + id, cache);
@@ -110,6 +133,8 @@ export async function createInstanceFrom({ modelPath, id, Model }: any) {
         [property]: {
           get: async function () {
             if (rule.ref) {
+              console.log(propertyCache[property]);
+              
               if (firstRead || lastPropertyUpdateAt != lastInstanceUpdateAt) {
                 propertyCache[property] = await createInstanceFrom({
                   modelPath: rule.ref,
@@ -201,7 +226,7 @@ export async function createInstanceFrom({ modelPath, id, Model }: any) {
     }
   }
   instance.update = async (data: any) => {
-    SQuery.emit(
+    socket.emit(
       modelPath + ":update",
       {
         ...data,
@@ -223,8 +248,8 @@ export async function createInstanceFrom({ modelPath, id, Model }: any) {
   instance.extractor = async (extractorPath: string) => {
     if (extractorPath == "./") return instance;
     if (extractorPath == "../") return await instance.newParentInstance();
-    return await new Promise((rev) => {
-      SQuery.emit(
+    return await new Promise((rev) => { 
+      socket.emit(
         "server:extractor",
         {
           modelPath,
@@ -252,11 +277,11 @@ export async function createInstanceFrom({ modelPath, id, Model }: any) {
       );
     });
   };
-  const parts = (await instance.__parentModel).split("_");
+  const parts = (await instance.__parentModel)?.split("_");
   instance.$modelPath = modelPath;
-  instance.$parentModelPath = parts[0];
-  instance.$parentId = parts[1];
-  instance.$parentProperty = parts[2];
+  instance.$parentModelPath = parts?.[0];
+  instance.$parentId = parts?.[1];
+  instance.$parentProperty = parts?.[2];
   instance.$model = Model;
   instance.$id = id;
   instance.$cache = cache || {};

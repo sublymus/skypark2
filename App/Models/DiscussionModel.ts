@@ -3,7 +3,6 @@ import Log from "sublymus_logger";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AccountModel from "./AccountModel";
-import ChannelModel from "./ChannelModel";
 import MessageModel from "./MessageModel";
 
 let DiscussionSchema = SQuery.Schema({
@@ -19,13 +18,12 @@ let DiscussionSchema = SQuery.Schema({
     strictAlien: true,
     impact: false,
   },
-  channel: {
+  channel: [{
     type: Schema.Types.ObjectId,
-    ref: ChannelModel.modelName,
-    access: 'admin',
-    strictAlien: true,
-    impact: false,
-  },
+    ref: 'post',
+    access: 'public',
+    impact: true,
+  }],
 });
 
 const DiscussionModel = mongoose.model("discussion", DiscussionSchema);

@@ -46,9 +46,15 @@ export const SQuery_Schema = (description: DescriptionSchema , options?:SchemaOp
     for (const p in description) {
       if (Object.prototype.hasOwnProperty.call(description, p)) {
         const rule = description[p];
+        
         if(Array.isArray(rule) && rule[0].type === SQuery.FileType){
           if(!rule[0].file)
            rule[0].file = {};
+        }
+         if(Array.isArray(rule)){
+          delete rule[0].default
+        }else{
+          delete rule.default
         }
       }
     }

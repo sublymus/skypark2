@@ -5,11 +5,10 @@ import { Config } from "../../lib/squery/Config";
 let profileSchema = SQuery.Schema({
 
   imgProfile: [{
-    type: String,
+    type: SQuery.FileType,
     file: {
       size: [1, 100_000_000],
-      length: [0, 4],
-      dir: [Config.conf.rootDir,'tamp'],
+      length: [0, 4]
     }
   }],
 

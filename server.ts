@@ -9,7 +9,7 @@ import Log from "sublymus_logger";
 import cookieParser from 'cookie-parser';
 import { Config } from "./lib/squery/Config";
 
-const start = ['static','asset-manifest','favicon','logo','manifest','robots','index']
+const start = ['static', 'asset-manifest', 'favicon', 'logo', 'manifest', 'robots', 'index']
 
 const app = express();
 const server = app.listen(Config.conf.PORT, () => {
@@ -18,7 +18,7 @@ const server = app.listen(Config.conf.PORT, () => {
 
 app.use(cookieParser());
 app.use(cors({
-  origin:'*'
+  origin: '*'
 }));
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "Public/app/index.html"));
@@ -38,8 +38,8 @@ app.get("*", async (req, res) => {
       return res.status(404).send('File Not Found')
     }
   }
-  const app = start.find(path=>req.path.startsWith('/'+path))
-  const filePath = path.join(__dirname, `Public/${app?'app':'views'}`, req.path);
+  const app = start.find(path => req.path.startsWith('/' + path))
+  const filePath = path.join(__dirname, `Public/${app ? 'app' : 'views'}`, req.path);
   res.sendFile(filePath);
 });
 
@@ -48,6 +48,7 @@ SQuery.emiter.when('ert', (val) => {
   console.log(val);
 
 })
+
 io?.on("connection", (socket: Socket) => {
   SQuery.emiter.emit('ert', socket.id)
   console.log("user is connect");
@@ -55,6 +56,3 @@ io?.on("connection", (socket: Socket) => {
     console.log("user is disconnect");
   });
 });
-
-
-

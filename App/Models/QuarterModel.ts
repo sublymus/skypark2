@@ -3,7 +3,6 @@ import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import ActivityModel from "./ActivityModel";
 import BuildingModel from "./BuildingModel";
-import ChannelModel from "./ChannelModel";
 
 let QuarterSchema = SQuery.Schema({
 
@@ -20,11 +19,12 @@ let QuarterSchema = SQuery.Schema({
         ref: BuildingModel.modelName,
         alien: true,
     }],
-    Thread: {
+    Thread: [{
         type: Schema.Types.ObjectId,
-        ref: ChannelModel.modelName,
-        strictAlien : true
-    },
+        ref: 'post',
+        access: 'public',
+        impact: true,
+    }],
     activities: [{
         type: Schema.Types.ObjectId,
         ref: ActivityModel.modelName,

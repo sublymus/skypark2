@@ -1,7 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import ChannelModel from "./ChannelModel";
 import DiscussionModel from "./DiscussionModel";
 
 let MessengerSchema = SQuery.Schema({
@@ -9,15 +8,12 @@ let MessengerSchema = SQuery.Schema({
     {
       type: Schema.Types.ObjectId,
       ref: DiscussionModel.modelName,
-      access: "public",
     },
   ],
-  archives: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: ChannelModel.modelName,
-    },
-  ],
+  archives:  [{
+    type: Schema.Types.ObjectId,
+    ref: DiscussionModel.modelName,
+  }],
 });
 
 const MessengerModel = mongoose.model("messenger", MessengerSchema);
@@ -25,7 +21,6 @@ const MessengerModel = mongoose.model("messenger", MessengerSchema);
 MakeModelCtlForm({
   schema: MessengerSchema,
   model: MessengerModel,
-  volatile: false,
 });
 
 export default MessengerModel;

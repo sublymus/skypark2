@@ -1,29 +1,27 @@
-
-import { useDispatch, useSelector } from 'react-redux';
-import { RooState, RootDispatch } from '../AppRedux';
 import './TopBar.css';
-import { setOpenAuth } from '../Auth/AuthRedux';
+import { AuthStore } from '../Auth/AuthStore';
+import { UserFormStore } from '../UserData/UserFormStore';
 
 function TopBar() {
-    const dispatch: RootDispatch = useDispatch();
-    const {openAuth} = useSelector((state:RooState)=>state.auth)
+    const{setOpenAuth , openAuth , id , account}= AuthStore();
+    const {openedForm , setOpenedForm} =UserFormStore()
     return (
-        <div className={"top-bar "+(openAuth!=='none'?"blurry":'')}>
+        <div className={"top-bar "+(openAuth!=='none'?"blurry":openedForm!=='none'?"blurry":'')}>
             <div className='top-ctn'>
                 <div className='menu'></div>
                 <div className='logo'>SKYPARK</div>
                 <div className='.top-auth '>
-                    <div className='not-connect'>
-                        <div className='login-btn' onClick={() => {
-                       dispatch(setOpenAuth('login'));
+                    <div className='not-connect' style={{display:id?'none':'flex'}}>
+                        <div className='login-btn' onClick={async() => {
+                       setOpenAuth('login');
                     }}>Login</div>
-                        <div className='signup-btn' onClick={() => {
-                       dispatch(setOpenAuth('signup'));
+                        <div className='signup-btn' onClick={async() => {
+                       setOpenAuth('signup');
                     }}>Create account</div>
                     </div>
-                    <div className='connect'>
+                    <div className='connect'style={{display:id?'flex':'none'}}>
+                        <div className='name'>{account.name}</div>
                         <div className='icon'></div>
-                        <div className='name'></div>
                     </div>
                 </div>
             </div>

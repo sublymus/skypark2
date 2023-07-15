@@ -7,14 +7,14 @@ import { ModelControllers } from "../../lib/squery/Initialize";
 let folderSchema = SQuery.Schema({
 
   refIds: [{
-    type: Schema.Types.ObjectId,// __parentModel: 'user_64438c3a5f4ed54dc6cef9e7_account_account'
-    alien: true,
-    ref: 'refid',
+    type:{
+      modelPath:String,
+      id:String
+    },
   }],
   folderName: {
     type: String,
     required: true,
-    emit: false
   },
 
 });

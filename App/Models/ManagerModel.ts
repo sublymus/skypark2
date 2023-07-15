@@ -6,10 +6,7 @@ import UserModel from "./UserModel";
 
 const managerSchema = SQuery.Schema({
   ...(UserModel.schema as SQueryMongooseSchema).description,
-  entreprise: {
-    type: Schema.Types.ObjectId,
-    ref: 'entrepise',
-  }
+  
 });
 export const ManagerModel = mongoose.model("manager", managerSchema);
 

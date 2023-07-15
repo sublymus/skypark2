@@ -1,9 +1,9 @@
 import { createInstanceFrom } from "./Instance";
-import SQuery from "./SQueryClient";
+import  { DescriptionSchema, DescriptionsType, socket } from "./SQueryClient";
 import { Validator } from "./Validation";
 import { listenerSchema } from "./event/eventEmiter";
 
-type Instance = {
+export type Instance = {
   $modelPath: string;
   $id: string;
   $parentProperty: string;
@@ -29,35 +29,34 @@ type ArrayInstance = {
   update: any;
   when: any;
 };
-type ModelSchema = {
+type ModelSchema<F extends (...arg:any[])=> any> = {
   description: { [str: string]: any };
   create: (value: { [str: string]: any }) => Promise<Instance | null>;
-  newInstance: (value: { id: string }) => Promise<Instance | null>;
+  newInstance: <T extends DescriptionSchema>(value: { id: string }) => Promise<ReturnType<F> | null>;
   newParentInstance: (data: {
     childInstance: Instance;
   }) => Promise<Instance | null>;
   update: (value: { id: string; [str: string]: any }) => Promise<any>;
 };
-export async function createModelFrom(modelPath: string): Promise<ModelSchema> {
+export async function createModelFrom<key extends keyof DescriptionsType>(modelPath: key , description:DescriptionSchema , {getInstanceType , model}:any): Promise<ModelSchema<typeof getInstanceType>> {
   const Model: any = {};
-  const description: any = await SQuery.getDescription(modelPath);
   Model.description = description;
   Model.create = async (data: any, errorCb: any): Promise<Instance | null> => {
     ///// verifier si chaque donner est bien rentrer
 
     if (!errorCb) errorCb = (e: any) => console.error(e);
     //NEW_ADD
-    const validation = await Validator(description, data);
-    if (validation.message) {
-      // console.error(validation);
-      errorCb({
-        properties: validation,
-      });
-      return null;
-    }
+    // const validation = await Validator(description, data);
+    // if (validation.message) {
+    //   // console.error(validation);
+    //   errorCb({
+    //     properties: validation,
+    //   });
+    //   return null;
+    // }
     return await new Promise((rev) => {
       try {
-        SQuery.emit(modelPath + ":create", data, async (res: any) => {
+        socket.emit(modelPath + ":create", data, async (res: any) => {
           try {
             if (res.error) {
               errorCb(res);
@@ -114,7 +113,7 @@ export async function createModelFrom(modelPath: string): Promise<ModelSchema> {
       try {
         parentId = await childInstance["$parentId"];
         parentModelPath = await childInstance["$parentModelPath"];
-        const parentModel = await SQuery.model(parentModelPath);
+        const parentModel = await model(parentModelPath);
         parentInstance = await parentModel.newInstance({ id: parentId });
       } catch (e) {
         errorCb(e);
@@ -126,14 +125,14 @@ export async function createModelFrom(modelPath: string): Promise<ModelSchema> {
     return parentInstance;
   };
   Model.update = async (data: any): Promise<any> => {
-    const result = await Validator(description, data);
-    if (result.value == undefined) {
-      // await emitRefresh([property])
-      throw new Error("Invalide Value because : " + result.message);
-    }
+    // const result = await Validator(description, data);
+    // if (result.value == undefined) {
+    //   // await emitRefresh([property])
+    //   throw new Error("Invalide Value because : " + result.message);
+    // }
     return await new Promise((rev, rej) => {
       try {
-        SQuery.emit(modelPath + ":update", data, (res: any) => {
+        socket.emit(modelPath + ":update", data, (res: any) => {
           try {
             if (res.error) {
               console.error(res);

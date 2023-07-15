@@ -1,7 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import ChannelModel from "./ChannelModel";
 import ProfileModel from "./ProfileModel";
 
 let ActivitySchema = SQuery.Schema({
@@ -10,10 +9,12 @@ let ActivitySchema = SQuery.Schema({
     ref: ProfileModel.modelName,
     required: true,
   },
-  channel: {
+  channel: [{
     type: Schema.Types.ObjectId,
-    ref: ChannelModel.modelName,
-  },
+    ref: 'post',
+    access: 'public',
+    impact: true,
+  }],
   name: {
     type: String,
     required: true,
@@ -21,12 +22,12 @@ let ActivitySchema = SQuery.Schema({
   description: {
     type: String,
   },
-  icon:[{
-    required:true,
-    type:String,
-    file:{
-      size:800_000,
-      type:['image/png']
+  icon: [{
+    required: true,
+    type: String,
+    file: {
+      size: 800_000,
+      type: ['image/png']
     }
   }]
 });

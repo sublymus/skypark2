@@ -119,7 +119,7 @@ const main: MainType = function (socket: Socket) {
         service,
         data
       );
-        Log('Cookie_result',await SQuery.cookies(socket?.request.headers.cookie ,'' , 'token'));
+        Log('Cookie_result',await SQuery.cookies(socket?.request.headers.cookie));
       const midList = [...GlobalMiddlewares];
 
       for (let i = 0; i < midList.length; i++) {
