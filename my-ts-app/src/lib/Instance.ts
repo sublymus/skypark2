@@ -5,7 +5,7 @@ import { createArrayInstanceFrom } from "./ArrayInstance";
 import { Config } from "./Config";
 import { DescriptionSchema, DescriptionsType, TypeRuleSchema, getDescription, socket } from "./SQueryClient";
 import { Validator } from "./Validation";
-import EventEmiter from "./event/eventEmiter";
+import EventEmiter, { EventInfo, listenerSchema } from "./event/eventEmiter";
 
 interface Model {
 
@@ -14,7 +14,9 @@ interface Model {
 
 export interface BaseInstance<T> {
   update: (data: any) => void
-  when: (event: string, listener: any, changeRequired?: boolean) => this;
+  when: (event: keyof {
+    [key in keyof T as (`refresh:${key &string}`| `refresh`)]: any
+  }, listener: ((v:Partial<T>, e : EventInfo<Partial<T>> )=>void), changeRequired?: boolean) => this;
   extractor: (extractorPath: string) => Promise<BaseInstance<T> | null>;
   $modelPath: string;
   $parentModelPath: string | undefined;
@@ -32,7 +34,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
 
   const description = await getDescription(modelPath)
   if (!id || !modelPath) {
-    console.error("id = " + id, "modelPath = " + modelPath);
+    console.log(`you are trying to read a undefined property, modelPath :${modelPath} , id:${id}`);
     return null;
   }
   let cache: any;
@@ -45,7 +47,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
           id: id,
         },
         async (res: any) => {
-          if (res.error) throw new Error(JSON.stringify(res));
+          if (res.error) return console.log(`ERROR_SERVER_RESULT`,JSON.stringify(res));
           cache = res.response;
           Config.dataStore.setData(modelPath + ":" + id, cache);
           lastInstanceUpdateAt = cache.__updatedAt;
@@ -71,7 +73,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
     }
   }
 
-  let propertyCache: any = {};
+ 
   const instance: any = {};
   const emiter = new EventEmiter();
 
@@ -93,7 +95,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
 
     for (let index = 0; index < properties.length; index++) {
       const property = properties[index];
-      Objproperties[property] = await (instance[property] as Promise<any>);
+      Objproperties[property] = cache[property];
     }
     // properties.forEach(async (property: any) => {
     // });
@@ -131,6 +133,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
       const rule = description[property];
       let lastPropertyUpdateAt = 0;
       let firstRead = true;
+      let propertyCache: any = {}; 
       Object.defineProperties(instance, {
         [property]: {
           get: async function () {

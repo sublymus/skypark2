@@ -107,38 +107,23 @@ export const AppStore = create<AppState>((set: setType) => ({
         set(() => ({ userList }))
     },
     LABO: async () => {
-
-        const model = await SQuery.model('building');
-        model.create({
         
-            city:String,
-            name:String,
-            users:[{
+        ///////  SQuery.model
+        
+        const model = await SQuery.model('address');
+
+        //TODO model.delete  model.update   model.newInstance
+        const i = await model.create({
             
-            }]
-            // arrRef: [{
-
-            // }],
-            // favorites: {
-
-            // },
-            // address: {
-            //     quarter: {
-            //         Thread: [{
-            //             like: [{
-
-            //             }]
-
-            //         }]
-            //     },
-            //     building: {
-
-            //     }
-            // },
-            // email: {
-
-            // }
+            building:{
+             users:[],
+             Thread:{
+                
+             }
+            }
         });
+
+        
     }
 }))
 

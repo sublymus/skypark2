@@ -96,8 +96,7 @@ export const Descriptions = {
     },
     address: {
       type: String,
-      ref: 'address' as const,
-      required: true as const
+      ref: 'address' as const
     },
     profile: {
       type: String,
@@ -114,7 +113,7 @@ export const Descriptions = {
     num: {
       type: Number,
     },
-    int: {
+    bigint: {
       type: BigInt,
     },
     arrSimple: [{
@@ -128,7 +127,7 @@ export const Descriptions = {
     }],
     arrRef: [{
       type: String,
-      ref: 'profile' as const,
+      ref: 'address' as const,
     }],
     obj: [{
       type: {
@@ -143,7 +142,7 @@ export const Descriptions = {
     ,
     map2: {
       type: Map,
-      of: ''
+      of: 0
     }
   },
   activity: {
@@ -326,7 +325,8 @@ export const Descriptions = {
   },
   quarter: {
     name: {
-      type: String
+      type: String,
+      required:true
     },
     city: {
       type: String,
@@ -418,6 +418,7 @@ export const Descriptions = {
 
     message: {
       type: String,
+      required:true
     },
 
   },

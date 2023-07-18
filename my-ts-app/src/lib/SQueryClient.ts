@@ -135,15 +135,15 @@ export const getDescription = async function (modelPath: string) {
 export function createSQueryFrom<D extends DescriptionsType, C extends { [key in keyof D]: C[key] }>(Descriptions: D, CacheValues: C) {
   type ModelType<K extends keyof D> = D[K];
   type SortType<K extends keyof D> = {
-    [key in D[K]as `${string & key}`]: 1 | -1
-  }
+    [key in keyof D[K]]?: 1 | -1
+  } & { [key: string]: any }
   type QueryType<K extends keyof D> = {
-    [key in D[K]as `${string & key}`]: any
+    [key in keyof  D[K]]?: any
   } & { [key: string]: any };
   type ArrayUpdateOption<K extends keyof D> = {
-    addId: [],
-    addNew: [],
-    remove: [],
+    addId: string[],
+    addNew: {[key in keyof Partial<D[K]>]: CreateAbstractModel<K, key>}[],
+    remove: string[],
     paging: {
       page: number,
       limit: number,
@@ -177,6 +177,9 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
   }
 
   type PropertyTypeOf<T extends DescriptionSchema , key extends keyof T, p extends keyof TypeRuleSchema> = T[key] extends TypeRuleSchema[] ? T[key][0][p] : T[key] extends TypeRuleSchema ? T[key][p] : any;
+ 
+  type MapValue<o extends keyof TypeRuleSchema ,T extends DescriptionSchema,key extends keyof T> = Map<string, PropertyTypeOf<T,key, o>>
+  type Value<I extends keyof TypeRuleSchema ,T extends DescriptionSchema, key extends keyof T> = T[key] extends { ref: infer U } ? (U extends keyof D ? Promise<ReturnType<typeof getInstanceType<(D)[U], U>>> : never) : T[key] extends { type: typeof String } ? String : T[key] extends { type: typeof Number } ? Number : T[key] extends { type: typeof Boolean } ? Boolean : T[key] extends { type: typeof BigInt } ? BigInt : T[key] extends { type: typeof Map } ? MapValue<'of',T,string & key> : PropertyTypeOf<T,string & key, I>;
   
   function getInstanceType<T extends DescriptionSchema, K extends keyof D>() {
 
@@ -186,31 +189,28 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
 
       // type MapValue<T, key extends keyof T> = Map<string, Exclude<typeof t, MapConstructor>>
       
-      type MapValue<key extends keyof T> = Map<string, PropertyTypeOf<T,key, o>>
-      //type OF  = 'of' as keyof DataRuleSchema ;
+     //type OF  = 'of' as keyof DataRuleSchema ;
 
-      type Value<T extends DescriptionSchema, key extends keyof T> = T[key] extends { ref: infer U } ? (U extends keyof D ? Promise<ReturnType<typeof getInstanceType<(D)[U], U>>> : never) : T[key] extends { type: typeof String } ? String : T[key] extends { type: typeof Number } ? Number : T[key] extends { type: typeof Boolean } ? Boolean : T[key] extends { type: typeof BigInt } ? BigInt : T[key] extends { type: typeof Map } ? MapValue<string & key> : PropertyTypeOf<T,string & key, k>;
-      type ArrayValue<T extends DescriptionSchema, key extends keyof T> = T[key] extends Array<{ file: object }> ? (FileType | UrlData)[] : T[key] extends Array<{ ref: infer U }> ? (U extends keyof D ? Promise<ArrayInstance<U>> : never) : T[key] extends Array<{ type: typeof String }> ? String[] : T[key] extends Array<{ type: typeof Number }> ? Number[] : T[key] extends Array<{ type: typeof Boolean }> ? Boolean[] : T[key] extends Array<{ type: typeof BigInt }> ? BigInt[] : T[key] extends Array<{ type: typeof Map }> ? MapValue<string & key>[] : PropertyTypeOf<T,string & key, k>[]
+      type ArrayValue<T extends DescriptionSchema, key extends keyof T> = T[key] extends Array<{ file: object }> ? (FileType | UrlData)[] : T[key] extends Array<{ ref: infer U }> ? (U extends keyof D ? Promise<ArrayInstance<U>> : never) : T[key] extends Array<{ type: typeof String }> ? String[] : T[key] extends Array<{ type: typeof Number }> ? Number[] : T[key] extends Array<{ type: typeof Boolean }> ? Boolean[] : T[key] extends Array<{ type: typeof BigInt }> ? BigInt[] : T[key] extends Array<{ type: typeof Map }> ? MapValue<'of',T,string & key>[] : PropertyTypeOf<T,string & key, k>[]
 
       type instance = {
-        [key in keyof T as `${string & key}`]: (T[key] extends Array<object> ? (T[key] extends Array<{ required: true }> ? ArrayValue<T, key> : ArrayValue<T, key> | undefined) : (T[key] extends { required: true } ? Value<T, key> : Value<T, key> | undefined)) ///(T[key] extends {required :true } ?(Value<T , key>) : (Value<T , key>) |undefined )
+        [key in keyof T as `${string & key}`]: (T[key] extends Array<object> ? (T[key] extends Array<{ required: true }> ? ArrayValue<T, key> : ArrayValue<T, key> | undefined) : (T[key] extends { required: true } ? Value<'type',T, key> : Value<'type',T, key> | undefined)) ///(T[key] extends {required :true } ?(Value<T , key>) : (Value<T , key>) |undefined )
       }
 
-      const obj = {} as (instance & BaseInstance<typeof CacheValues[K]>);
+      const obj = {} as (instance & BaseInstance<C[K]>);
       return obj;
     })
 
     return fun<'type', 'of'>();
   }
   
+  type CreateModel<I extends keyof TypeRuleSchema , K extends keyof D , key extends keyof D[K]> =  D[K][key] extends {ref: infer U} ?(U extends keyof D ? string|{[t in  keyof Partial<D[U]>]: CreateAbstractModel<U,t>} :never): D[K][key]  extends Array<{file: {}} >? FileType[]: Value<I,D[K],key>;
+  type CreateArryModel<I extends keyof TypeRuleSchema , K extends keyof D , key extends keyof D[K]> =  D[K][key]  extends Array<{file: {}}>? FileType[]: D[K][key]  extends Array<{ref: infer U} >? (U extends keyof D? (string | {[t in keyof Partial< D[U]>]: CreateAbstractModel<U , t>})[]: never): Value<I,D[K],'type'>[];
   
-  type CreateModel<I extends keyof TypeRuleSchema , K extends keyof D , key extends keyof D[K]> =  D[K][key] extends {ref: infer U} ?(U extends keyof D ? string|{[t in  keyof Partial<D[U]>]: CreateModel<'type',U,t>} :never): D[K][key]  extends Array<{file: {}} >? FileType[]: PropertyTypeOf<D[K],string & key, I>;
-  
-  type CreateArryModel<I extends keyof TypeRuleSchema , K extends keyof D , key extends keyof D[K]> =  D[K][key]  extends Array<{file: {}}>? FileType[]: D[K][key]  extends Array<{ref: infer U} >? (U extends keyof Partial<D>? (string | {[t in keyof Partial< D[U]>]: CreateModel<'type',U , t>})[]: never): PropertyTypeOf<D[K],string & key, I>[] ;
   type CreateAbstractModel<K extends keyof D ,  key extends keyof D[K]> =  (D[K][key] extends Array<object> ? (D[K][key] extends Array<{ required: true }> ? CreateArryModel<'type',K, key> : CreateArryModel<'type',K, key> | undefined) : (D[K][key] extends { required: true } ? CreateModel<'type',K , key>  : CreateModel<'type',K , key>  | undefined));
   
   type ModelSchema<K extends keyof D> = {
-    description: { [k in keyof K]: any };
+    description: D[K];
     create: (value:{[key in keyof Partial<D[K]>]: CreateAbstractModel<K, key>}) => Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>>>;
     newInstance: (value: {id:string}) => Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>>>;
     newParentInstance: <key extends keyof D>(data: {
@@ -326,29 +326,27 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
         );
       });
     },
-    newInstance: async<K extends keyof D>(modelPath: K, data: { id: string }): Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>>> => {
+    newInstance: async<K extends keyof D>(modelPath: K, data: { id: string }) => {
       const model = await SQuery.model(modelPath as keyof D & string);
       const instance = await model.newInstance(data);
-      type InstanceType = ReturnType<typeof getInstanceType<typeof Descriptions[typeof modelPath], K>>;
-      return (instance as InstanceType);
+      type InstanceType = ReturnType<typeof getInstanceType<D[K], K>>;
+      return (instance as InstanceType| null);
     },
     cacheFrom: <Q extends {
-      [key in keyof Q]:  key extends keyof D ? BaseInstance<typeof CacheValues[key]>|undefined|null: never
+      [key in keyof Q]:  key extends keyof D ? BaseInstance<C[key]>|undefined|null: never
     }>(instanceCollector: Q ) => {
       
       type Result = {
-        [key in keyof Q]:  key extends keyof D ?  typeof CacheValues[key]:undefined;
+        [key in keyof Q]:  key extends keyof D ?  C[key]:undefined;
       }
-
       const caches :any ={};
       for (const key in instanceCollector) {
         if (Object.prototype.hasOwnProperty.call(instanceCollector, key)) {
           const instance = instanceCollector[key];
-          if(instance)
+          if(instance) CacheValues[key]
           caches[key.replace('_','')] = (instance as BaseInstance<typeof CacheValues[typeof key]>).$cache
         }
       }
-     
       return caches as Result
     }
 

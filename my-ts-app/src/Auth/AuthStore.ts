@@ -1,4 +1,5 @@
-import { AppStore, SQuery } from "../AppStore";
+import { SQuery } from './../AppStore';
+import { Descriptions } from './../Descriptions';
 import { SQueryType } from "../SQreryType";
 import { AccountInterface, AddressInterface, EntrepriseInterface, MessengerInterface, ProfileInterface, ManagerInterface, CacheValues } from "../Descriptions";
 
@@ -64,40 +65,41 @@ export const AuthStore = create<AuthState>((set: setType) => ({
 
     },
     fetchLoginManager: async (loginData: { email: string, password: string }) => {
-        console.log('fetchLoginManager')
+
         const res = await SQuery.service<typeof SQueryType.login>('login', 'manager', loginData);
+
         if (!res?.response || !res?.response?.signup.id) {
             return console.log('ERROR Loging : res=> ', res);
         }
 
         const manager = await SQuery.newInstance('manager', { id: res?.response?.signup.id });
-        console.log({ manager });
-
-        const entreprise = await manager.entreprise;
-        console.log({ entreprise });
+        if (!manager) return
 
         const account = await manager.account;
 
-        account.when('refresh', (v: any) =>
-            set(({ account: a }) => ({ account: { ...a, ...v } }))
-            , false)
+        const entreprise = await manager.entreprise;
+        const messenger = await manager.messenger;
 
-        console.log({ account });
-        const address = await account.address;
-        (await (await (await address.quarter)?.supervisor)?.page(1))?.itemsInstance?.forEach(q => {
-
-        });
-        console.log({ address });
         const profile = await account.profile;
+        const address = await account.address;
 
-        profile.when('refresh', (v: any) =>
-            set(({ profile: p }) => ({ profile: { ...p, ...v } }))
-            , false)
-        console.log({ profile });
-
-        const astro :string= ''
+       // SQuery.bind(profile , set);                
+        profile.when('refresh' , (v)=>{
+            set(({profile}) => ({profile:{
+                ...profile,
+                ...v
+            }}));
+        })
         
-        set(() => ({ openAuth: 'none', id: manager.$id, ...SQuery.cacheFrom({ account, address, profile, manager, entreprise })}))
+        entreprise?.when('refresh' , (v)=>{
+            set(({entreprise}) => ({entreprise:{
+                ...entreprise,
+                ...v
+            }}));
+        })
+
+        set(({ }) => ({ id: manager.$id, ...SQuery.cacheFrom({ account, entreprise, messenger, address, manager , profile }) }))
+
     }
 }))
 
