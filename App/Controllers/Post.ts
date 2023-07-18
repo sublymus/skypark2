@@ -139,7 +139,7 @@ const Post: ControllerSchema = {
 
 
 CtrlManager({
-    ctrl: { Post },
+    ctrl: { post:Post },
     access: {
         like: "any"
     }

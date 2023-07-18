@@ -19,9 +19,9 @@ export class Signup extends BaseComponent {
             _("h1", "title", "SIGNUP"),
             _("select@type", "type",
                 _('option', ['value:user'], 'User'),
-                _('option', ['value:superadmin'], 'Admin'),
+                _('option', ['value:admin'], 'Admin'),
                 _('option', ['value:manager'], 'Manager'),
-                _('option', ['value:entreprisemanager'], 'Entreprise Manager'),
+                _('option', ['value:supervisor'], 'Supervisor'),
             ),
             _("div", "input-ctn",
                 _("textarea", ["rows:100", "cols:450"])

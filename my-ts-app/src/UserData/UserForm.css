@@ -1,0 +1,146 @@
+.user-form {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    background: rgba(255, 255, 255, 0.322);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+
+.user-form-ctn {
+    position: relative;
+    width: 900px;
+    height: 600px;
+    background: rgb(255, 255, 255);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.user-form .close:hover {
+    background: no-repeat center/60% url('../img/close.png'), rgba(219, 219, 219, 0.11);
+    filter: invert(20%);
+    transition: 200ms;
+}
+
+.user-form .close {
+    transition: 200ms;
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: no-repeat;
+    top: 20px;
+    right: 20px;
+    filter: invert(30%);
+    border-radius: 50%;
+    background: no-repeat center/60% url('../img/close.png');
+}
+
+.user-form .image {
+    width: 50%;
+    height: 100%;
+    background: no-repeat center/cover url(../img/sign-up-concept-illustration_114360-7965.avif);
+}
+
+.user-form .form {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.user-form  .form-title {
+    margin-top: 50px;
+}
+
+.user-form .form-prompt {
+    font-weight: 400;
+    margin-top: 10px;
+}
+
+.user-form .separator {
+    width: 95%;
+    margin-top: 20px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    border-radius: 15px;
+}
+.user-form .separator::before {
+    content: "";
+    flex: 1;
+    margin-right: 10px;
+    border-top: 1px solid rgba(68, 85, 102, 0.151);
+}
+
+.user-form .separator::after {
+    content: "";
+    flex: 1;
+    margin-left: 10px;
+    border-top: 1px solid rgba(68, 85, 102, 0.151);
+}
+.user-form input {
+    width: calc(90% - 20px);
+    height: 45px;
+    margin-top: 20px;
+}
+
+.user-form .name-ctn {
+    width: 90%;
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    border-radius: 15px;
+}
+
+.user-form .form-name {
+    width: calc(45% - 20px);
+    height: 55px;
+}
+
+.user-form .form-last-name {
+    width: calc(50% - 20px);
+    height: 55px;
+}
+
+.user-form-ctn .form >  select {
+    margin-top: 10px;
+    width: 250px;
+    background: rgb(32, 72, 112);
+  }
+
+.user-form .room-info{
+    display: flex;
+    align-items: center;
+    width: 80%;
+    margin-top: 10px;
+}
+.user-form .room-info input{
+    width: 70px;
+    height: 30px;
+    margin-top: 5px;
+}
+
+.user-form .room-info> div{
+    width: 100px;
+    height: 70px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+.user-form .room-info> div select {
+    width: 150px;
+  }
+ 
+  

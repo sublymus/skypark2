@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import { Config } from "../../lib/squery/Config";
+
 let profileSchema = SQuery.Schema({
 
   imgProfile: [{
@@ -14,7 +14,7 @@ let profileSchema = SQuery.Schema({
 
   banner: [{
     access:'private',
-    type: String,
+    type: SQuery.FileType,
     file: {
       length: [0, 4],
     }

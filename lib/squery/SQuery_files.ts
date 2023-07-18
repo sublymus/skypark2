@@ -9,10 +9,10 @@ export const SQuery_files = {
     accessValidator: async (url:string ,cookie:any) => {
       let urlData: UrlDataType;
       try {
+        Log('url',{url})
         if (!url) throw new Error('url is missing;');
         
         url =  url.substring(url.lastIndexOf('/') + 1).replace(url.substring(url.lastIndexOf('.')),'')
-        Log('url',{url})
         urlData = jwt.verify(url, Config.conf.URL_KEY||'') as any;
         Log('uurlDatarl',{urlData})
         if (!urlData) throw new Error('invalid url , urlData  is missing');

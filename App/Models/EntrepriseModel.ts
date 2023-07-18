@@ -3,25 +3,31 @@ import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import BuildingModel from "./BuildingModel";
-import ConstructionManagerModel from "./EntrepriseManagerModel";
+import ConstructionManagerModel from "./SupervisorModel";
 import ProfileModel from "./ProfileModel";
 import ManagerModel from "./ManagerModel";
 import QuarterModel from "./QuarterModel";
-import EntrepriseManagerModel from "./EntrepriseManagerModel";
+import EntrepriseManagerModel from "./SupervisorModel";
 
 let EntrepiseSchema = SQuery.Schema({
   managers: [{
     type: Schema.Types.ObjectId,
     //ref: ConstructionManagerModel.modelName,
     ref: ManagerModel.modelName,
-    alien: true,
     impact:false,
+    access:'share',
+    share:{
+      only:['client:manager', 'client:admin']
+    }
   }],
   quarters: [{
     type: Schema.Types.ObjectId,
     ref: QuarterModel.modelName,
-    strictAlien: true,
     impact:false,
+    access:'share',
+    share:{
+      only:['client:manager', 'client:admin']
+    }
   }],
   address: {
     type: Schema.Types.ObjectId,
@@ -35,6 +41,9 @@ let EntrepiseSchema = SQuery.Schema({
   },
   webPageUrl: {
     type: String,
+  },
+  name:{
+    type:String,
   },
   profile: {
     type: Schema.Types.ObjectId,
@@ -50,7 +59,6 @@ const EntrepiseModel = mongoose.model("entreprise", EntrepiseSchema);
 const ctrlMaker = MakeModelCtlForm({
   schema: EntrepiseSchema,
   model: EntrepiseModel,
-  volatile: true,
 });
 
 

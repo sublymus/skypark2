@@ -199,7 +199,7 @@ export interface ModelToolsInterface {
 
 }
 export interface ToolsInterface {
-  [key: string]: (this: { maker: CtrlModelMakerSchema | CtrlMakerSchema }, data: unknown) => void
+  [key: string]: (this: { maker: CtrlModelMakerSchema | CtrlMakerSchema }, data: any) => void
 }
 export const Tools: ToolsInterface = {} as ToolsInterface
 export const GlobalMiddlewares: GlobalMiddlewareSchema = [];
@@ -231,7 +231,7 @@ export type TypeRuleSchema = {
     dir?: string[];
   },
   ref?: string;
-  default?: valueSchema;
+  _default?: valueSchema;
   share?: {
     target?: {
       maxMember: number,
@@ -245,7 +245,7 @@ export type TypeRuleSchema = {
   //bind?:any,
   deep?: Number,
 
-
+  default?: valueSchema;
   populate?: boolean;// 
   expires?: number,
   index?: boolean,

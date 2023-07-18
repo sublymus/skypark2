@@ -3,14 +3,13 @@ import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import BuildingModel from "./BuildingModel";
 import QuarterModel from "./QuarterModel";
+import PadiezdModel from "./PadiezdModel";
 
 let addressSchema = SQuery.Schema({
 
-  location: {
+  localisation: {
     type: String,
     trim: true,
-   // required: true,
-    emit:false
   },
   quarter: {
     type: Schema.Types.ObjectId,
@@ -34,10 +33,9 @@ let addressSchema = SQuery.Schema({
     type: String,
     required: true,
   },
-  door: {
-    type: String,
-    trim: true,
-    required: true,
+  padiezd: {
+    type: Schema.Types.ObjectId,
+    ref: PadiezdModel.modelName,
   },
   etage: {
     type: String,

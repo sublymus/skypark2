@@ -14,14 +14,12 @@ let PostSchema = SQuery.Schema({
     access:'secret',
     impact:false,
     required:true,
-    default:[],
   }],
   comments: [ {
       type: Schema.Types.ObjectId,
       access:'admin',
       ref: "post",
       required:true,
-      default:[],
     }],
 });
 
@@ -29,8 +27,7 @@ const PostModel = mongoose.model("post", PostSchema);
 
 const maker = MakeModelCtlForm({
   schema: PostSchema,
-  model: PostModel,
-  volatile: true,
+  model: PostModel
 });
 
 

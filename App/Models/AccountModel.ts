@@ -25,7 +25,7 @@ let accountSchema = SQuery.Schema({
     unique: true,
   },
   status: {
-    type: String,
+    type: String,// proprietaire, locataire, superviseur , manageur
   },
   password: {
     type: String,
@@ -37,14 +37,13 @@ let accountSchema = SQuery.Schema({
   telephone: {
     type: String,
     required: true,
-    access: "private",
   },
   address: {
     type: Schema.Types.ObjectId,
     ref: AddressModel.modelName,
   },
   favorites: {
-    type: Schema.Types.ObjectId,
+    type:Schema.Types.ObjectId,
     ref: FavoritesModel.modelName,
     access: "private",
     default:{

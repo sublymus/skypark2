@@ -104,3 +104,7 @@ select {
   appearance: button;
   outline: none;
 }
+
+.user-default-icon{
+  background: no-repeat center/cover url(./img/user.png);
+}

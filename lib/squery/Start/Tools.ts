@@ -3,7 +3,7 @@ import { Controllers, CtrlModelMakerSchema, ListenerPostSchema, ModelControllers
 
 declare module "../Initialize" {
     export interface ToolsInterface {
-        assigneToNewListElement: (this:{maker:CtrlModelMakerSchema},data: assigneToNewListElementType) => void
+        'assigneToNewListElement': (this:{maker:CtrlModelMakerSchema},data: assigneToNewListElementType) => void
     }
 }
 

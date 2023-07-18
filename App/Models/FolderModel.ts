@@ -1,8 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import { ModelControllers } from "../../lib/squery/Initialize";
-
 
 let folderSchema = SQuery.Schema({
 
@@ -23,7 +21,6 @@ const FolderModel = mongoose.model("folder", folderSchema);
 
 MakeModelCtlForm({
   schema: folderSchema,
-  model: FolderModel,
-  volatile: true,
+  model: FolderModel
 })
 export default FolderModel;

@@ -29,8 +29,7 @@ const MessageModel = mongoose.model("message", MessageSchema);
 
 const ctrlMaker = MakeModelCtlForm({
     schema: MessageSchema,
-    model: MessageModel,
-    volatile: true,
+    model: MessageModel
 });
 ctrlMaker.pre('create', async ({ ctx }) => {
     if (ctx.__permission == 'admin') return;

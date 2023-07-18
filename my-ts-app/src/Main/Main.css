@@ -6,7 +6,7 @@
     position: relative;
 }
 
-.main .buildings {
+.main .quarters {
     display: flex;
     flex-direction: column;
     width: 50%;
@@ -15,7 +15,7 @@
     height: 100%;
 }
 
-.main .buildings .building {
+.main .quarters .quarter {
     width: 100%;
     height: 60px;
     margin-top: 10px;
@@ -28,8 +28,8 @@
     transition: 200ms;
 }
 
-.main .buildings .building:hover,
-.main .building.active {
+.main .quarters .quarter:hover,
+.main .quarter.active {
     background: rgba(83, 99, 116, 0.178);
     transition: 200ms;
 }
@@ -80,6 +80,8 @@
     border: 1px solid #345;
     border-radius: 10px;
     display: flex;
+    position: relative;
+    width: 160px;
 }
 
 .main .filter-ctn .filter:hover {
@@ -93,12 +95,50 @@
     background: no-repeat center/40% url(../img/arrow-down-sign-to-navigate.png);
 }
 
+.main .filter-ctn .filter>div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    z-index: 2;
+    width: 200px;
+    background: rgb(255, 255, 255);
+    left: -20px;
+    top: 50px;
+    border-radius: 10px;
+}
+
+.main .filter-ctn .filter>div>div {
+    padding: 10px 0;
+    width: 100%;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.main .filter-ctn .filter>div>div:hover {
+    background: rgba(51, 68, 85, 0.075);
+}
+
 .main .list-padiezds {
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
     height: 80px;
 
+}
+
+.main .list-padiezds div.rest-filter {
+    width: 40px;
+    max-width: 40px;
+    min-width: 40px;
+    height: 40px;
+    background: no-repeat center/60% url(../img/reload.png), #fff;
+    transition: 200ms;
+}
+
+.main .list-padiezds div.rest-filter:hover {
+    transition: 200ms;
+    background: no-repeat center/100% url(../img/reload.png), #feffebf6;
 }
 
 .main .list-padiezds div {
@@ -135,6 +175,7 @@
     display: flex;
     align-items: center;
     padding-right: 20px;
+    border-radius: 5px;
 }
 
 .main .list .user-item:hover {
@@ -148,6 +189,9 @@
     max-height: 70px;
     overflow-y: auto;
     border-radius: 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 80%;
 }
 
 .main .list .ctn-1 {

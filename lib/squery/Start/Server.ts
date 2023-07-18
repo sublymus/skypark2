@@ -14,6 +14,11 @@ import { parentInfo } from "../ModelCtrlManager";
 import { SQuery } from "../SQuery";
 
 const server: ControllerSchema = {
+  disconnection:async (ctx: ContextSchema): ResponseSchema =>{
+    await SQuery.cookies(ctx.socket, "token" ,{});
+    //ctx.socket?.disconnect(true);
+    return
+  },
   currentUser: async (ctx: ContextSchema): ResponseSchema => {
     const token = await SQuery.cookies(ctx.socket, "token");
     return {

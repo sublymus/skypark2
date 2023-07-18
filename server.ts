@@ -28,7 +28,7 @@ app.get("/test", (req, res) => {
 });
 
 app.get("*", async (req, res) => {
-  if (req.path.startsWith('/tamp') || req.path.startsWith('/temp')) {
+  if (req.path.startsWith('/fs') ) {
     try {
       const urlData = await SQuery.files.accessValidator(req.url, req.cookies)
       if (!urlData) return res.status(404).send('File Not Found')
@@ -55,4 +55,9 @@ io?.on("connection", (socket: Socket) => {
   socket.on("disconnect", () => {
     console.log("user is disconnect");
   });
+});
+
+Log.define('defffff',{
+  visible:true,
+  style:['green','white','underscore']
 });

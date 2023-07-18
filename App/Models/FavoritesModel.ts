@@ -8,9 +8,7 @@ let favoritesSchema = SQuery.Schema({
   folders: [{
     type: Schema.Types.ObjectId,
     ref: FolderModel.modelName,
-    //impact: true,
-    //access: "public",
-    //: true,
+    impact: true,
   }],
   likeList: [{
     type: Schema.Types.ObjectId,
@@ -23,7 +21,6 @@ const FavoritesModel = mongoose.model("favorites", favoritesSchema);
 MakeModelCtlForm({
   schema: favoritesSchema,
   model: FavoritesModel,
-  volatile: false,
 });
 
 export default FavoritesModel;

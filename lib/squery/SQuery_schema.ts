@@ -52,8 +52,10 @@ export const SQuery_Schema = (description: DescriptionSchema , options?:SchemaOp
            rule[0].file = {};
         }
          if(Array.isArray(rule)){
+          rule[0]._default =  rule[0].default
           delete rule[0].default
         }else{
+          rule._default = rule.default
           delete rule.default
         }
       }

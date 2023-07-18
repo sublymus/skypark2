@@ -1,0 +1,59 @@
+{
+    "name": "ABOBO",
+    "city": "ABOBO-Center",
+    "supervisor": [
+        {
+            "account": {
+                "name": "supervisorABOBO",
+                "email": "supervisorABOBO@gmail.com",
+                "status": "supervisor",
+                "password": "supervisor",
+                "telephone": "12345678",
+                "address": {
+                    "room": "101",
+                    "city": "gestion",
+                    "padiezd": "2",
+                    "etage": "8",
+                    "description": "rigth"
+                }
+            }
+        }
+    ],
+    "padiezdList": [
+        {
+            "number": 1,
+            
+            "users": [
+                {
+                    "account": {
+                        "name": "baron",
+                        "email": "pad1-u1ABOBO@gmail.com",
+                        "status": "property",
+                        "password": "u1",
+                        "telephone": "12345678",
+                        "address": {
+                            "room": "34",
+                            "city": "Weston",
+                            "padiezd": "80",
+                            "etage": "8",
+                            "description": "rigth"
+                        }
+                    }
+                }],
+            "channel": []
+        },
+        {
+            "number": 2,
+            "users": [],
+            "channel": []
+        }
+    ],
+    "buildings": [
+        {
+            "name": "ABOBO BE1",
+            "city": "ABOBO-Center"
+        }
+    ],
+    "Thread": [],
+    "activities": []
+}

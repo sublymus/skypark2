@@ -1,47 +1,14 @@
-import { createInstanceFrom } from "./Instance";
+import { BaseInstance, createInstanceFrom } from "./Instance";
 import  { DescriptionSchema, DescriptionsType, socket } from "./SQueryClient";
 import { Validator } from "./Validation";
 import { listenerSchema } from "./event/eventEmiter";
 
-export type Instance = {
-  $modelPath: string;
-  $id: string;
-  $parentProperty: string;
-  $parentId: string;
-  $parentModelPath: string;
-  $cache: { [Pr: string]: any };
-  newParentInstance: () => Promise<Instance | null>;
-  extractor: (extractorPath: string) => Promise<Instance | null>;
-  update: (data: { id: string; [property: string]: any }) => Promise<void>;
-  when: (
-    event: string,
-    listener: listenerSchema,
-    changeRequired?: boolean
-  ) => void;
-  [p: string]: any;
-};
-type ArrayInstance = {
-  back: any;
-  next: any;
-  page: any;
-  $itemModelPath: any;
-  last: any;
-  update: any;
-  when: any;
-};
-type ModelSchema<F extends (...arg:any[])=> any> = {
-  description: { [str: string]: any };
-  create: (value: { [str: string]: any }) => Promise<Instance | null>;
-  newInstance: <T extends DescriptionSchema>(value: { id: string }) => Promise<ReturnType<F> | null>;
-  newParentInstance: (data: {
-    childInstance: Instance;
-  }) => Promise<Instance | null>;
-  update: (value: { id: string; [str: string]: any }) => Promise<any>;
-};
-export async function createModelFrom<key extends keyof DescriptionsType>(modelPath: key , description:DescriptionSchema , {getInstanceType , model}:any): Promise<ModelSchema<typeof getInstanceType>> {
+
+
+export async function createModelFrom<key extends keyof DescriptionsType>(modelPath: key , description:DescriptionSchema , {getInstanceType , model}:any): Promise<any> {
   const Model: any = {};
   Model.description = description;
-  Model.create = async (data: any, errorCb: any): Promise<Instance | null> => {
+  Model.create = async (data: any, errorCb: any): Promise<any> => {
     ///// verifier si chaque donner est bien rentrer
 
     if (!errorCb) errorCb = (e: any) => console.error(e);
@@ -78,7 +45,7 @@ export async function createModelFrom<key extends keyof DescriptionsType>(modelP
   Model.newInstance = async (
     data: any,
     errorCb: any
-  ): Promise<Instance | null> => {
+  ): Promise<any> => {
     if (!errorCb) errorCb = (e: any) => console.error(e);
     let instance = null;
     try {

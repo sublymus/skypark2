@@ -29,7 +29,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       });
     }
     let { paging, addNew, addId, remove } = ctx.data;
-    let parentModelInstance: ModelInstanceSchema|null|undefined;
+    let parentModelInstance: ModelInstanceSchema | null | undefined;
     more = {
       ...more,
       savedlist: [],
@@ -47,14 +47,14 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
     paging = paging || {};
     //   Log('remove', { remove })
     const parts = more.__parentModel?.split("_");
-    const parentModelPath = parts?.[0]||'';
-    const parentId = parts?.[1]||'';
-    const parentProperty = parts?.[2]||'';
-    let added:string[] = [];
-    let removed:string[] = [];
+    const parentModelPath = parts?.[0] || '';
+    const parentId = parts?.[1] || '';
+    const parentProperty = parts?.[2] || '';
+    let added: string[] = [];
+    let removed: string[] = [];
     //Log("__parentModel", parts);
-   
-    const parentDescription: DescriptionSchema|undefined=
+
+    const parentDescription: DescriptionSchema | undefined =
       ModelControllers[parentModelPath]?.option?.schema.description;
     let parentPropertyRule = parentDescription?.[parentProperty];
     if (Array.isArray(parentPropertyRule)) {
@@ -87,9 +87,9 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
     if (
       parentPropertyRule &&
       accessValidator({
-        ctx:{
+        ctx: {
           ...ctx,
-          service:'update',
+          service: 'update',
         },
         rule: parentPropertyRule,
         type: "property",
@@ -115,8 +115,8 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
           },
         });
       }
-      
-  
+
+
 
       /***********************  AddId  ****************** */
       const isAlien = !!(
@@ -139,7 +139,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
                 return rej(null);
               }
               let canAdd = true;
-              parentModelInstance?.[parentProperty].forEach((idInLis:string) => {
+              parentModelInstance?.[parentProperty].forEach((idInLis: string) => {
                 if (idInLis == id) canAdd = false;
               });
               rev(canAdd ? id : null);
@@ -158,6 +158,57 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
           });
         validAddId.push(...validResult);
       }
+
+
+      /***********************  remove : in DB - > in List ****************** */
+      try {
+        //Log("try", { remove, parentProperty });
+        //Log('remove', { remove })
+        if (Array.isArray(remove)) {
+          for (const id of remove) {
+            const impact = parentPropertyRule.impact != false;
+            let res: ResultSchema | undefined;
+            //Log("impact", { impact, parentProperty, parentPropertyRule });
+            if (impact) {
+              res = await ModelControllers[option.modelPath]().delete?.(
+                {
+                  ...ctx,
+                  data: { id },
+                },
+                more
+              );
+              // Log("List_remove_res", res);
+              if (!res?.response) continue;
+            }
+            let include = false;
+            if (parentModelInstance) parentModelInstance[parentProperty] = parentModelInstance[
+              parentProperty
+            ].filter((some_id: string) => {
+              const equals = some_id == id;
+              if (equals) {
+                include = true;
+              }
+              return !(equals);
+            });
+            if (include) {
+              removed = [...(removed || []), id];
+            }
+          }
+        }
+      } catch (error: any) {
+        await backDestroy(ctx, more);
+        return await callPost({
+          ctx,
+          more,
+          res: {
+            error: "OPERATION_FAILED4",
+            ...(await STATUS.OPERATION_FAILED(ctx, {
+              target: option.modelPath.toLocaleUpperCase(),
+              message: error.message,
+            })),
+          },
+        });
+      }
       /***********************  AddNew  ****************** */
       Log("strictAlien", parentPropertyRule.strictAlien);
       Log("addNew_is_array", Array.isArray(addNew));
@@ -175,7 +226,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
               },
               { ...more },
             );
-            Log('________',res)
+            Log('________', res)
             if (!res?.response) rej(null);
             else rev(res.response);
           });
@@ -192,78 +243,29 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       } else {
       }
 
-      /***********************  remove : in DB - > in List ****************** */
-      try {
-        //Log("try", { remove, parentProperty });
-        //Log('remove', { remove })
-        if (Array.isArray(remove)) {
-          for (const id of remove) {
-            const impact = parentPropertyRule.impact != false;
-            let res: ResultSchema|undefined;
-            //Log("impact", { impact, parentProperty, parentPropertyRule });
-            if (impact) {
-              res = await ModelControllers[option.modelPath]().delete?.(
-                {
-                  ...ctx,
-                  data: { id },
-                },
-                more
-              );
-              // Log("List_remove_res", res);
-              if (!res?.response) continue;
-            }
-            let include = false;
-            if(parentModelInstance)parentModelInstance[parentProperty] = parentModelInstance[
-              parentProperty
-            ].filter((some_id: string) => {
-              const equals = some_id == id;
-              if (equals) {
-                include = true;
-              }
-              return !(equals);
-            });
-            if (include) {
-              removed = [...(removed || []), id];
-            }
-          }
-        }
-      } catch (error:any) {
-        await backDestroy(ctx, more);
-        return await callPost({
-          ctx,
-          more,
-          res: {
-            error: "OPERATION_FAILED4",
-            ...(await STATUS.OPERATION_FAILED(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
-              message: error.message,
-            })),
-          },
-        });
-      }
       const hasNewId = validAddNew.length > 0 ||
         validAddId.length > 0
       const canSave = hasNewId ||
         (Array.isArray(remove) && remove.length > 0);
-        Log('added',{added ,validAddNew , addId, addNew,  validAddId, canSave , hasNewId})
+      Log('added', { added, validAddNew, addId, addNew, validAddId, canSave, hasNewId })
       if (canSave) {
         try {
           if (hasNewId) {
-            if(parentModelInstance)parentModelInstance[parentProperty].push([
+            if (parentModelInstance) parentModelInstance[parentProperty].push([
               ...validAddNew,
               ...validAddId,
             ]);
           }
           await parentModelInstance?.save();
           added = [...validAddNew, ...validAddId];
-          Log('added',{added})
+          Log('added', { added })
           if (parentPropertyRule.emit != false) {
             SQuery.io()?.emit('list/' + parentModelPath + '/' + parentProperty + ':' + parentId, {
               added,
               removed
             })
           }
-        } catch (error:any) {
+        } catch (error: any) {
           await backDestroy(ctx, more);
           return await callPost({
             ctx,
@@ -290,9 +292,9 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
     } : { __key: ctx.__key };
     if (
       parentPropertyRule && !accessValidator({
-        ctx:{
+        ctx: {
           ...ctx,
-          service:'list',
+          service: 'list',
         },
         rule: parentPropertyRule,
         type: "property",
@@ -344,15 +346,15 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
         query,
         options
       );
-      Log('werty', {pagingData , ...query, options})
+      Log('werty', { pagingData, ...query, options })
       pagingData.added = added;
       pagingData.removed = removed;
-      
+
       const promise = pagingData.items.map((item: any) => {
         return formatModelInstance(ctx, service, option, item);
       });
       await Promise.allSettled(promise);
-    } catch (error:any) {
+    } catch (error: any) {
       return await callPost({
         ctx,
         more,

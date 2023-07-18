@@ -28,8 +28,7 @@ const PadiezdModel = mongoose.model("padiezd", PadiezdSchema);
 
 const maker = MakeModelCtlForm({
   schema: PadiezdSchema,
-  model: PadiezdModel,
-  volatile: true,
+  model: PadiezdModel
 });
 
 export default PadiezdModel;

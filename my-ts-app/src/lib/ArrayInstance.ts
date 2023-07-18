@@ -187,7 +187,7 @@ export async function createArrayInstanceFrom({
   arrayInstance.when = (
     event: string,
     listener: listenerSchema,
-    changeRequired: boolean | undefined
+    changeRequired?: boolean | undefined
   ) => {
     emiter.when(event, listener, changeRequired);
   };

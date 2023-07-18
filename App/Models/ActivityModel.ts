@@ -22,9 +22,9 @@ let ActivitySchema = SQuery.Schema({
   description: {
     type: String,
   },
-  icon: [{
+  icons: [{
     required: true,
-    type: String,
+    type: SQuery.FileType,
     file: {
       size: 800_000,
       type: ['image/png']

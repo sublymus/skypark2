@@ -10,3 +10,9 @@ SQuery.auth({
   match: ["email", "password"],
   signup: "manager",
 });
+
+SQuery.auth({
+  login: "admin",
+  match: ["email", "password"],
+  signup: "admin",
+});

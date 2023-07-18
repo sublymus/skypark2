@@ -239,15 +239,17 @@ function createPath(file:FileSchema , ruleFileDir:string , rule:TypeRuleSchema ,
   const dataPath =
     jwt.sign(
       {
-        realPath: path.replace(Config.conf.rootDir, ""),
+        realPath: path,
         ...instanceData,
         createdAt: Date.now(),
       },
       Config.conf.URL_KEY || ''
     ) + "." +extension;
-  let p = (rule.file?.dir || []).filter((p, i) => i > 0).join("/") + "/" + dataPath;
+  let p = (rule.file?.dir || []).join("/") + "/" + dataPath;
   p = p.startsWith("/") ? p : "/" + p;
   Log("path**", p);
+  Log("rule.file?.dir**", rule.file?.dir);
+  Log("dataPath**", dataPath);
   return  {
     url:p,
     size: file.buffer?.length||file.size,

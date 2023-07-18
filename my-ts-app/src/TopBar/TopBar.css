@@ -31,11 +31,36 @@
 }
 
 .top-auth {
+    position: relative;
     height: 50px;
     margin-right: 10px;
     border-radius: 15px;
 }
-
+.top-auth .auth-option{
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    position: absolute;
+    z-index: 2;
+    width: 200px;
+    background: rgb(255, 255, 255);
+    right: 0;
+    top: 50px;
+    border-radius: 10px;
+    overflow: hidden;
+   
+}
+.top-auth .auth-option  div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    width: 100%;
+    cursor: pointer;
+}
+.top-auth .auth-option  div:hover {
+    background:rgba(51, 68, 85, 0.116);
+}
 .top-bar .not-connect {
     display: flex;
     align-items: center;
@@ -71,12 +96,14 @@
     margin-right: 50px;
 }
 
+.top-bar .connect-icon{
+    background: no-repeat center/cover url(../img/login-illustration.jpg)
+}
 .top-bar .connect .icon{
     margin-left: 5px;
     width: 60px;
     height: 60px;
     border-radius: 15px;
-    background: no-repeat center/cover url(../img/login-illustration.jpg)
 }
 .top-bar .connect .name{
     padding: 0.5em;

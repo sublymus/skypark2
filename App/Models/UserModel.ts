@@ -9,7 +9,7 @@ import MessengerModel from "./MessengerModel";
 let userSchema = SQuery.Schema({
   account: {
     type: Schema.Types.ObjectId,
-    ref: AccountModel.modelName,
+    ref: 'account',
     required: true,
   },
   messenger: { 
@@ -24,6 +24,7 @@ let userSchema = SQuery.Schema({
   entreprise: {
     type: Schema.Types.ObjectId,
     ref: 'entreprise',
+    strictAlien:true
   }
 });
 
@@ -31,9 +32,9 @@ let userSchema = SQuery.Schema({
 
 const maker = MakeModelCtlForm({
   model: UserModel,
-  schema: userSchema,
-  volatile: true,
-})
+  schema: userSchema
+});
+
 maker.tools.assigneToNewListElement({
   parentModelPath: 'padiezd',
   parentListProperty: 'users',

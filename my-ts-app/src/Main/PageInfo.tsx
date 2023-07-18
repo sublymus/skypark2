@@ -1,9 +1,8 @@
+import { MainStore } from "./MainStore";
 
-// import { RooState, RootDispatch } from "../AppStore";
-// import { useSelector, useDispatch } from 'react-redux';
-// import { setInfoSize, setSelectedPage } from "./MainStore";
 
 function PageInfo() {
+    const { infoSize, selectedPage, focusedUser, setInfoSize, setSelectedPage } = MainStore()
     // const { buildings, currentBuildingId, selectedPage, focusedUser } = useSelector((state: RooState) => state.main)
     // const building = buildings.find((b) => b.id == currentBuildingId);
     return (<></>

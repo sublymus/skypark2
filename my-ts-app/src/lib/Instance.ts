@@ -12,18 +12,18 @@ interface Model {
 }
 
 
-export interface BaseInstance {
+export interface BaseInstance<T> {
   update: (data: any) => void
-  when: (event: string, listener: any, changeRequired: boolean) => this;
-  extractor: (extractorPath: string) => Promise<BaseInstance | null>;
+  when: (event: string, listener: any, changeRequired?: boolean) => this;
+  extractor: (extractorPath: string) => Promise<BaseInstance<T> | null>;
   $modelPath: string;
   $parentModelPath: string | undefined;
   $parentId: string | undefined;
   $parentProperty: string | undefined;
   $model: Model;
   $id: string;
-  $cache: object;
-  newParentInstance: () => Promise<BaseInstance | null>;
+  $cache: T;
+  newParentInstance: () => Promise<BaseInstance<T> | null>;
 }
 
 const InstanceCache: any = {};
@@ -98,6 +98,8 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
     // properties.forEach(async (property: any) => {
     // });
     emiter.emit("refresh", Objproperties);
+    console.log("refresh", Objproperties);
+    
     if (properties) {
       properties.forEach(async (p: any) => {
         emiter.emit("refresh:" + p, {
@@ -242,7 +244,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
       }
     );
   };
-  instance.when = (event: string, listener: any, changeRequired: boolean) => {
+  instance.when = (event: string, listener: any, changeRequired?: boolean) => {
     emiter.when(event, listener, changeRequired);
   };
   instance.extractor = async (extractorPath: string) => {

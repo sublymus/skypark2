@@ -8,5 +8,8 @@ export const SQueryType = {
         modelPath: '',
         id: '',
       },
+    },
+    disconnect:{
+      
     }
   };

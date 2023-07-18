@@ -7,10 +7,13 @@ import Auth from './Auth/Auth';
 import { AuthStore } from './Auth/AuthStore';
 import UserForm from './UserData/UserForm';
 import { UserFormStore } from './UserData/UserFormStore';
+import { useEffect } from 'react';
+import { AppStore } from './AppStore';
 
 function App() {
   const { openAuth } = AuthStore();
   const {openedForm}= UserFormStore()
+  
   return (
     <div className="app ctn">
 

@@ -1,5 +1,59 @@
 /*
 
+
+BUG: ordre d'utilisation du model dans le schema.
+
+BUG: le defaulte ne marche pas.
+
+BUG: le backdestroy laisse a dessirer.
+
+BUG: dans le cookies a la creation => io=XFNfoB5OjoTMuFSTAAAO;                   Max-Age=1689498209816;                  Max-Age=1689498214475;                 Max-Age=1689498214538;                Max-Age=1689498214597;               Max-Age=1689498214681;              Max-Age=1689498214748;             Max-Age=1689498214821;            Max-Age=1689498214878;           Max-Age=1689498214958;          Max-Age=1689498215112;         Max-Age=1689499251491;        Max-Age=1689499258093;       Max-Age=1689499258139;      Max-Age=1689499258190;     Max-Age=1689499258239;    Max-Age=1689499258275;   Max-Age=1689499258316;  Max-Age=1689499258347; squery_session=%22eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbiI6eyJfX2tleSI6IjY0YjI2NGZhMjJjNmYzM2M0MzUxZWEyNyIsIl9fcGVybWlzc2lvbiI6ImNsaWVudDp1c2VyIiwiX19zaWdudXBJZCI6IjY0YjI2NGZhMjJjNmYzM2M0MzUxZWEyNiIsIl9fc2lnbnVwTW9kZWxQYXRoIjoidXNlciIsIl9fZW1haWwiOiJwYWQyLXUzQGdtYWlsLmNvbSIsIl9fbG9naW5JZCI6IjY0YjI2NGZhMjJjNmYzM2M0MzUxZWEyOCIsIl9fbG9naW5Nb2RlbFBhdGgiOiJhY2NvdW50In0sImlhdCI6MTY4OTMzNDQ5OH0.P7Dcm4Yb00x98RYpmSKJuo0OEjIleGK91HlmY-mHbwk%22; Max-Age=1689499258394 
+
+BUG: token: {
+    __key: '64b37c361cf5f8620b2acf4a',
+    __permission: 'client:manager',
+    __signupId: '64b37c361cf5f8620b2acf49',
+    __signupModelPath: 'user',   < < <  = = = = = = = = = =  lors de la creation de manager dans la property managers de entreprise
+    __email: 'm4@gmail.com',
+    __loginId: '64b37c361cf5f8620b2acf4b',
+    __loginModelPath: 'account'
+  },
+  iat: 1689482644
+
+TODO: access controller
+
+TODO: le generateur de Descrition.
+
+TODO: first parent "ModelName"./soucre  -> "listeElement"./destination/property
+
+TODO: pour les option du rule, les properties boolean doivent etre activer( passer a true) donc le nom doit correspondre a un truc a activer.
+
+TODO: impact != false => dontImpact == true
+
+TODO: le event du prepost doit suivre la forme suivante : " e1 e2 e3" 
+
+TODO: access , seul a voir mais ne peut pas modifier.
+
+TODO: proprieter virtuel qu'on peut pas modifier et qui est un ensemble de query , un object de proprieter queryObj ou une fonction  qui retourne un queryObj
+
+TODO: auth add uptade cookies on singup
+
+TODO: rassenmbler les n parent d'un model donner dans un tableau, du plus proche au plus eloigner
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+
 socket map 
 
 TODO: treminal=> npm squery create:controller

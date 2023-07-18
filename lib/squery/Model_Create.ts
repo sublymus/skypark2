@@ -23,7 +23,7 @@ export const createFactory = (
   controller: ModelControllerSchema,
   option: Model_optionSchema,
   callPost: (e: EventPostSchema) => ResponseSchema,
-  callPre: (e: EventPreSchema) => Promise<void| ResultSchema>
+  callPre: (e: EventPreSchema) => Promise<void | ResultSchema>
 ) => {
 
   return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
@@ -62,11 +62,11 @@ export const createFactory = (
     const preRes = await callPre({
       ctx,
       more,
-    }); 
-    if(preRes) return preRes
+    });
+    if (preRes) return preRes
 
-    const accu:MoreSchema = {};
-    let modelInstance: ModelInstanceSchema|null=null;
+    const accu: MoreSchema = {};
+    let modelInstance: ModelInstanceSchema | null = null;
 
     if (!ctx.__key)
       return callPost({
@@ -80,11 +80,19 @@ export const createFactory = (
         },
       });
     for (const property in description) {
+      const rule = description[property];
+      if (ctx.data?.[property] == undefined) {
+        if (Array.isArray(rule)) {
+          ctx.data[property] = rule[0]?._default || [];
+        } else {
+          ctx.data[property] = rule?._default;
+        }
+      }
       if (
         Object.prototype.hasOwnProperty.call(description, property) &&
         ctx.data[property] != undefined
       ) {
-        const rule = description[property];
+
         Log("log2", {
           property,
           value: ctx.data[property],
@@ -94,7 +102,7 @@ export const createFactory = (
           const isStr = typeof ctx.data[property] == "string";
 
           const isAlien = !!(rule.alien || rule.strictAlien);
-          Log('vraiment!!',{isStr , isAlien , strict : rule.strictAlien , value : ctx.data[property] , property});
+          Log('vraiment!!', { isStr, isAlien, strict: rule.strictAlien, value: ctx.data[property], property });
           // Log(
           //     "alien",
           //     "strictAlien: ",
@@ -132,18 +140,19 @@ export const createFactory = (
           } else if (isAlien && isStr) {
             try {
               const alienId = ctx.data[property];
-              const validId = (
-                await Controllers["server"]()["instanceId"]({
-                  ...ctx,
-                  data: {
-                    id: alienId,
-                    modelPath: rule.ref,
-                  },
-                })
-              )?.response;
-              if (validId) {
-                accu[property] = alienId;
-              }
+              // const validId = (
+              //   await Controllers["server"]()["instanceId"]({
+              //     ...ctx,
+              //     data: {
+              //       id: alienId,
+              //       modelPath: rule.ref,
+              //     },
+              //   })
+              // )?.response;
+              // if (validId) {
+              //   accu[property] = alienId;
+              // }
+              accu[property] = alienId;
             } catch (error) {
               await backDestroy(ctx, more);
               return await callPost({
@@ -375,8 +384,8 @@ export const createFactory = (
               return await callPost({
                 ctx,
                 more,
-                res:{
-                  error:'NOT_CREATED',
+                res: {
+                  error: 'NOT_CREATED',
                   ...await STATUS.NOT_CREATED(ctx),
                 },
               });
@@ -399,7 +408,7 @@ export const createFactory = (
                 property: property,
               }
             );
-          } catch (error:any) {
+          } catch (error: any) {
             await backDestroy(ctx, more);
             Log('logB', '_____')
             return await callPost({
@@ -418,12 +427,12 @@ export const createFactory = (
           accu[property] = ctx.data[property];
         }
       } else {
-        const rule = description[property];
-        if (Array.isArray(rule)) {
-          accu[property] = rule[0].default || [];
-        } else {
-          accu[property] = rule.default;
-        }
+        // const rule = description[property];
+        // if (Array.isArray(rule)) {
+        //   accu[property] = rule[0].default || [];
+        // } else {
+        //   accu[property] = rule.default;
+        // }
       }
     }
     accu["__key"] = ctx.__key;
@@ -436,8 +445,8 @@ export const createFactory = (
         ...accu,
         _id: modelId,
       });
-      if(!modelInstance) throw new Error("modelInstance is null");
-      
+      if (!modelInstance) throw new Error("modelInstance is null");
+
       await modelInstance?.save();
       more.savedlist.push({
         modelId,
@@ -445,7 +454,7 @@ export const createFactory = (
         volatile: option.volatile,
         controller,
       });
-    } catch (error:any) {
+    } catch (error: any) {
       //Log('error', error);
       await backDestroy(ctx, more);
       more.modelInstance = modelInstance;

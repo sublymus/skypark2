@@ -8,19 +8,19 @@ import MessageModel from "./MessageModel";
 let DiscussionSchema = SQuery.Schema({
   receiver: {
     type: Schema.Types.ObjectId,
-    ref: AccountModel.modelName,
+    ref: 'account',
     strictAlien: true,
     impact: false,
   },
   sender: {
     type: Schema.Types.ObjectId,
-    ref: AccountModel.modelName,
+    ref:'account',
     strictAlien: true,
     impact: false,
   },
   channel: [{
     type: Schema.Types.ObjectId,
-    ref: 'post',
+    ref:MessageModel.modelName,
     access: 'public',
     impact: true,
   }],
