@@ -7,26 +7,6 @@ import { DescriptionSchema, DescriptionsType, TypeRuleSchema, getDescription, so
 import { Validator } from "./Validation";
 import EventEmiter, { EventInfo, listenerSchema } from "./event/eventEmiter";
 
-interface Model {
-
-}
-
-
-export interface BaseInstance<T> {
-  update: (data: any) => void
-  when: (event: keyof {
-    [key in keyof T as (`refresh:${key &string}`| `refresh`)]: any
-  }, listener: ((v:Partial<T>, e : EventInfo<Partial<T>> )=>void), changeRequired?: boolean) => this;
-  extractor: (extractorPath: string) => Promise<BaseInstance<T> | null>;
-  $modelPath: string;
-  $parentModelPath: string | undefined;
-  $parentId: string | undefined;
-  $parentProperty: string | undefined;
-  $model: Model;
-  $id: string;
-  $cache: T;
-  newParentInstance: () => Promise<BaseInstance<T> | null>;
-}
 
 const InstanceCache: any = {};
 
@@ -247,8 +227,8 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
       }
     );
   };
-  instance.when = (event: string, listener: any, changeRequired?: boolean) => {
-    emiter.when(event, listener, changeRequired);
+  instance.when = (event: string, listener: any) => {
+    emiter.when(event, listener, true);
   };
   instance.extractor = async (extractorPath: string) => {
     if (extractorPath == "./") return instance;
@@ -281,6 +261,17 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
         }
       );
     });
+  };
+  instance.bind= (binder: (actu: (caches:any) => any) => any) => {
+    instance.$modelPath
+    instance?.when('refresh', (v:any) => {
+      binder((state) => ({
+        [instance.$modelPath]: {
+          ...state[instance.$modelPath],
+          ...v
+        }
+      }));
+    })
   };
   const parts = (await instance.__parentModel)?.split("_");
   instance.$modelPath = modelPath;

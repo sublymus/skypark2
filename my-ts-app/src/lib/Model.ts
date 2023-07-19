@@ -1,11 +1,10 @@
-import { BaseInstance, createInstanceFrom } from "./Instance";
+import { createInstanceFrom } from "./Instance";
 import  { DescriptionSchema, DescriptionsType, socket } from "./SQueryClient";
-import { Validator } from "./Validation";
-import { listenerSchema } from "./event/eventEmiter";
 
 
 
-export async function createModelFrom<key extends keyof DescriptionsType>(modelPath: key , description:DescriptionSchema , {getInstanceType , model}:any): Promise<any> {
+
+export async function createModelFrom<key>(modelPath: key , description:DescriptionSchema , {model}:{model:any}): Promise<any> {
   const Model: any = {};
   Model.description = description;
   Model.create = async (data: any, errorCb: any): Promise<any> => {
@@ -92,32 +91,26 @@ export async function createModelFrom<key extends keyof DescriptionsType>(modelP
     return parentInstance;
   };
   Model.update = async (data: any): Promise<any> => {
-    // const result = await Validator(description, data);
-    // if (result.value == undefined) {
-    //   // await emitRefresh([property])
-    //   throw new Error("Invalide Value because : " + result.message);
-    // }
+
     return await new Promise((rev, rej) => {
       try {
         socket.emit(modelPath + ":update", data, (res: any) => {
           try {
             if (res.error) {
-              console.error(res);
+              console.log(`ERROR de mise a jour du modelPath:${modelPath} , id:${data.id}`,JSON.stringify(res));
               return rev(null);
             }
             ////*console.log('*************', { modelPath, id: res.response, description });
             rev(createInstanceFrom({ modelPath, id: res.response, Model }));
             //restCarte.text.value = JSON.stringify(res);
           } catch (e) {
-            console.error(res);
+            console.log(`ERROR creation d'instance du modelPath:${modelPath} , id:${data.id}`,JSON.stringify(e));
             rev(null);
-            //restCarte.text.value = JSON.stringify(e);
           }
         });
       } catch (e) {
+        console.log(`ERROR de mise a jour du modelPath:${modelPath} , id:${data.id}`,JSON.stringify(e));
         rev(null);
-        console.error(e);
-        //restCarte.text.value = e;
       }
     });
   };

@@ -1,6 +1,72 @@
-import { FileType, UrlData, DescriptionSchema, DescriptionsType } from "./lib/SQueryClient";
+import { FileType, UrlData, DescriptionsType } from "./lib/SQueryClient";
 
-
+export const service = {
+  login:{
+    user:{
+      send:{
+        email:'',
+        password:'',
+      },
+      receive:{
+        login: {
+          modelPath: 'account' as const,
+          id: '',
+        },
+        signup: {
+          modelPath:'user' as const,
+          id: '',
+        },
+      }
+    },
+    manager:{
+      send:{
+        email:'',
+        password:'',
+      },
+      receive:{
+        login: {
+          modelPath: 'account' as const,
+          id: '',
+        },
+        signup: {
+          modelPath:'manager' as const,
+          id: '',
+        },
+      }
+    },
+    admin:{
+      send:{
+        email:'',
+        password:'',
+      },
+      receive:{
+        login: {
+          modelPath: 'account' as const,
+          id: '',
+        },
+        signup: {
+          modelPath:'admin' as const,
+          id: '',
+        },
+      }
+    }
+  },
+  signup:{
+    user:{
+      send:'create_user' as const,
+      receive:''
+    },
+    manager:{
+      send:'create_manager' as const,
+      receive:''
+    },
+    admin:{
+      send:'create_admin' as const,
+      receive:''
+    }
+  }
+  
+};
 export const Descriptions = {
   user: {
     account: {
@@ -41,15 +107,14 @@ export const Descriptions = {
     text: {
       type: String
     },
-    files: {
+    files: [{
       type: String,
       file: {}
       //checkout:true,
-    },
+    }],
     targets: [{
       type: String,
       ref: 'user' as const,/////
-
     }]
   },
   manager: {
@@ -117,33 +182,38 @@ export const Descriptions = {
       type: BigInt,
     },
     arrSimple: [{
-      type: Boolean,
+      type: Number,
+      required: true as const,
     }],
     arrFile: [{
       type: String,
+      required:true,
       file: {
 
       }
     }],
     arrRef: [{
       type: String,
-      ref: 'address' as const,
+      ref: 'message' as const,
     }],
-    obj: [{
+    obj: {
       type: {
-        salut: String,
+        salut: '',
+        famille:'',
+        nombreuse:0
       }
-    }]
+    }
     ,
     map: {
       type: Map,
-      of: true 
+      of: true, 
+      required:true
     }
     ,
-    map2: {
+    map2: [{
       type: Map,
       of: 0
-    }
+    }]
   },
   activity: {
     poster: {

@@ -30,7 +30,7 @@ interface AuthState {
     fetchDisconnect: () => Promise<void>,
 }
 
-type setType = (partial: AuthState | Partial<AuthState> | ((state: AuthState) => AuthState | Partial<AuthState>), replace?: boolean | undefined) => void
+type setType = (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>), replace?: boolean | undefined) => void
 
 export const AuthStore = create<AuthState>((set: setType) => ({
     id: '',
@@ -75,30 +75,33 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         const manager = await SQuery.newInstance('manager', { id: res?.response?.signup.id });
         if (!manager) return
 
-        const account = await manager.account;
-
-        const entreprise = await manager.entreprise;
         const messenger = await manager.messenger;
-
+        const entreprise = await manager.entreprise;
+        const account = await manager.account;
         const profile = await account.profile;
         const address = await account.address;
+       
+        manager.bind(set)
+        account.bind(set)
+        entreprise?.bind(set);
 
-       // SQuery.bind(profile , set);                
-        profile.when('refresh' , (v)=>{
-            set(({profile}) => ({profile:{
-                ...profile,
-                ...v
-            }}));
-        })
-        
-        entreprise?.when('refresh' , (v)=>{
-            set(({entreprise}) => ({entreprise:{
-                ...entreprise,
-                ...v
-            }}));
+        profile.bind((fun)=>{
+            const newState = fun({})
+            console.log('result of fun ', newState );
+            set(()=> newState)
+        });
+
+
+        address?.when('refresh', (v) => {
+            set((state) => ({
+                [address.$modelPath]: {
+                    ...state[address.$modelPath],
+                    ...v
+                }
+            }));
         })
 
-        set(({ }) => ({ id: manager.$id, ...SQuery.cacheFrom({ account, entreprise, messenger, address, manager , profile }) }))
+        set(({ }) => ({ id: manager.$id, ...SQuery.cacheFrom({ account, entreprise, messenger, address, manager, profile }) }))
 
     }
 }))

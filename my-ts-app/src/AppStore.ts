@@ -1,4 +1,3 @@
-
 import { SQueryType } from "./SQreryType";
 import { AccountInterface, AddressInterface, BuildingInterface, CacheValues, EntrepriseInterface, PadiezdInterface, QuarterInterface, UserInterface } from "./Descriptions";
 
@@ -6,7 +5,6 @@ import { AccountInterface, AddressInterface, BuildingInterface, CacheValues, Ent
 import { create } from 'zustand'
 import createSQueryFrom from "./lib/SQueryClient";
 import { Descriptions } from "./Descriptions";
-import { BaseInstance } from "./lib/Instance";
 declare module "zustand" {
 
 }
@@ -22,6 +20,9 @@ declare module "zustand" {
       __updatedAt: 1689489783584,
 */
 
+
+type PromiseReturnType<T extends Promise<any>> = T extends {then: infer U } ? (U extends (value: infer P)=>any ?  (P extends (value: infer Q)=>any ? Q:never ): never):never
+  
 export const SQuery = createSQueryFrom(Descriptions, CacheValues);
 export type ArgumentsType<T> = T extends (arg1: infer U, ...args: any[]) => any ? U : never;
 type allModelPath = keyof typeof Descriptions;
@@ -33,7 +34,7 @@ interface AppState {
     padiezdList: PadiezdInterface[]
     buildingList: BuildingInterface[],
     userList: UserInterface[],
-    fetchModel: (modelPath: allModelPath, id: string, callBack: (instance: BaseInstance<typeof CacheValues[allModelPath]> & { [p: string]: any } | null | undefined) => void) => Promise<void>
+    fetchModel: (modelPath: allModelPath, id: string, callBack: (instance: (PromiseReturnType<ReturnType<typeof SQuery.newInstance>>  & { [p: string]: any })|null|undefined) => void) => Promise<void>
     fetchEntreprise: (id: string) => Promise<void>
     fetchBuilding: (id: string) => Promise<void>
     fetchPadiezd: (quarterId: string) => Promise<void>
@@ -105,25 +106,6 @@ export const AppStore = create<AppState>((set: setType) => ({
         console.log({ userList });
 
         set(() => ({ userList }))
-    },
-    LABO: async () => {
-        
-        ///////  SQuery.model
-        
-        const model = await SQuery.model('address');
-
-        //TODO model.delete  model.update   model.newInstance
-        const i = await model.create({
-            
-            building:{
-             users:[],
-             Thread:{
-                
-             }
-            }
-        });
-
-        
     }
 }))
 
