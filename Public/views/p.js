@@ -51,7 +51,6 @@ export const load = {
         address: {
           room: '34',
           city: 'Weston',
-          padiezd: '80',
           etage: '8',
           description: 'rigth',
         },
@@ -70,7 +69,6 @@ export const load = {
               address: {
                 room: '34',
                 city: 'Weston',
-                padiezd: '80',
                 etage: '8',
                 description: 'rigth',
               },
@@ -87,7 +85,6 @@ export const load = {
   
                 room: '34',
                 city: 'Weston',
-                padiezd: '80',
                 etage: '8',
                 description: 'rigth',
               }
@@ -109,7 +106,6 @@ export const load = {
                 address: {
                   room: '101',// address de l'entreprise de gestion 
                   city: 'gestion',
-                  padiezd: '2',
                   etage: '8',
                   description: 'rigth',
                 }
@@ -131,7 +127,6 @@ export const load = {
                       address: {
                         room: '34',
                         city: 'Weston',
-                        padiezd: '80',
                         etage: '8',
                         description: 'rigth',
                       }
@@ -147,7 +142,6 @@ export const load = {
                       address: {
                         room: '34',
                         city: 'Weston',
-                        padiezd: '80',
                         etage: '8',
                         description: 'rigth',
                       }
@@ -163,7 +157,6 @@ export const load = {
                       address: {
                         room: '34',
                         city: 'Weston',
-                        padiezd: '80',
                         etage: '8',
                         description: 'rigth',
                       }
@@ -185,7 +178,6 @@ export const load = {
           
                         room: '34',
                         city: 'Weston',
-                        padiezd: '80',
                         etage: '8',
                         description: 'rigth',
                       }
@@ -201,7 +193,6 @@ export const load = {
                       address: {
                         room: '34',
                         city: 'Weston',
-                        padiezd: '80',
                         etage: '8',
                         description: 'rigth',
                       }
@@ -217,7 +208,6 @@ export const load = {
                       address: {
                         room: '34',
                         city: 'Weston',
-                        padiezd: '80',
                         etage: '8',
                         description: 'rigth',
                       }

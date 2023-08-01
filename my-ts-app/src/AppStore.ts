@@ -52,7 +52,6 @@ interface AppState {
     padiezdList: PadiezdInterface[]
     buildingList: BuildingInterface[],
     userList: (typeof userInit)[],
-    fetchModel: (modelPath: allModelPath, id: string, callBack: (instance: (PromiseReturnType<ReturnType<typeof SQuery.newInstance>>  & { [p: string]: any })|null|undefined) => void) => Promise<void>
     fetchEntreprise: (id: string) => Promise<void>
     fetchBuilding: (id: string) => Promise<void>
     fetchPadiezd: (quarterId: string) => Promise<void>
@@ -69,10 +68,7 @@ export const AppStore = create<AppState>((set: setType) => ({
     padiezdList: [],
     buildingList: [],
     HOST: 'http://localhost:3500',
-    fetchModel: async (modelPath, id: string, callBack) => {
-        const instance = await SQuery.newInstance(modelPath, { id });
-        callBack(instance);
-    },
+    
     fetchEntreprise: async (id: string) => {
         if (!id) return
         const entreprise = await SQuery.newInstance('entreprise', { id });
