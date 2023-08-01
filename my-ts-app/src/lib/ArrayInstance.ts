@@ -1,6 +1,6 @@
 import EventEmiter, { listenerSchema } from "./event/eventEmiter";
 import { createInstanceFrom } from "./Instance";
-import SQuery, { socket } from "./SQueryClient";
+
 
 const ArrayCache: any = {};
 
@@ -9,6 +9,8 @@ export async function createArrayInstanceFrom({
   id: parentId,
   property,
   description,
+  SQuery,
+  Model,
 }: any) {
   let currentData: any = null;
   if (ArrayCache[parentModel + "/" + property + ":" + parentId]) {
@@ -24,21 +26,15 @@ export async function createArrayInstanceFrom({
     query: {},
   };
 
-  let itemModelPath = "";
-  try {
-    itemModelPath = description[property]?.[0]?.ref;
-    if (!itemModelPath)
-      throw new Error(
-        "Cannot create a Array Instance, property= " +
-          property +
-          " is not a array instance"
-      );
-  } catch (error: any) {
-    throw new Error(error.message);
+  let itemModelPath = description[property]?.[0]?.ref;
+  if (!itemModelPath) {
+    console.log(`%c CLIENT_ERROR %c createArrayInstanceFrom'`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+    console.log(`%c the property=${property} is not a array of model reference`, 'background: #3455; ');
+    return
   }
 
   const arrayInstance: any = {};
-  socket.on(
+  SQuery.on(
     "list/" + parentModel + "/" + property + ":" + parentId,
     async (data: { added: any; removed: any }) => {
       const modifData = {
@@ -51,7 +47,8 @@ export async function createArrayInstanceFrom({
             return await refresh();
           },
           set: async () => {
-            throw new Error("Read Only Property");
+            console.log(`%c CLIENT_ERROR %c wrong action`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+            console.log(`%c params.arrayData is a readOnly property , `, 'background: #3455; ');
           },
         },
       });
@@ -73,15 +70,19 @@ export async function createArrayInstanceFrom({
     };
 
     return await new Promise((rev) => {
-      if (socket.connected) {
-        socket.emit(
+      if (SQuery.connected) {
+        SQuery.emit(
           itemModelPath + ":list",
           {
             ...options,
             property,
           },
           async (res: any) => {
-            if (res.error) throw new Error("****=> " + JSON.stringify(res));
+            if (res.error) {
+              console.log(`%c ERROR_SERVER %c ${itemModelPath}:${'list'}`, 'font-weight: bold; font-size: 14px;color: orange; ' ,'font-weight: bold; font-size: 20px;color: red; ');
+              console.log(`%c ${JSON.stringify(res)}`,'background: #3455; ');
+              return;
+            };
             currentData = res.response;
             paging.page = currentData.page;
             paging.limit = currentData.limit;
@@ -100,6 +101,8 @@ export async function createArrayInstanceFrom({
                     if (first) {
                       first = false;
                       instance = await createInstanceFrom({
+                        Model,
+                        SQuery,
                         modelPath: itemModelPath,
                         id: item._id,
                       });
@@ -108,19 +111,19 @@ export async function createArrayInstanceFrom({
                     return instance;
                   },
                   set: async () => {
-                    throw new Error("Read Only Property");
+                    console.log(`%c CLIENT_ERROR %c wrong action`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+                    console.log(`%c arraData.itemsInstance is a readOnly array property , `, 'background: #3455; ');
                   },
                 },
               });
             });
             currentData.itemsInstance = itemsInstance;
             emiter.emit("refresh", currentData);
-            emiter.emit("dataAvalaible", currentData);
             rev(currentData);
           }
         );
       } else {
-        throw new Error("DISCONNECT FROM SERVER");
+        console.log(`%c CLIENT_ERROR %c DISCONNECT FROM SERVER`, 'font-weight: bold; font-size: 14px;color: orange; ' ,'font-weight: bold; font-size: 20px;color: red; ');
       }
     });
   };
@@ -129,13 +132,8 @@ export async function createArrayInstanceFrom({
       paging.page = currentData.prevPage;
       return await refresh();
     } else {
-      throw new Error(
-        "back() == null; backPage = " +
-          (paging.page - 1) +
-          " ;interval = [ 1 ; " +
-          currentData.totalPages +
-          " ]"
-      );
+      console.log(`%c CLIENT_ERROR %c wrong action`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+      console.log(`%cback() == null; backPage = ${paging.page - 1 }) ;interval = [ 1 ;  ${currentData.totalPages }  ]`, 'background: #3455; ');
     }
   };
   arrayInstance.next = async () => {
@@ -143,19 +141,14 @@ export async function createArrayInstanceFrom({
       paging.page = currentData.nextPage;
       return await refresh();
     } else {
-      throw new Error(
-        "next() == null; nextPage = " +
-          (paging.page + 1) +
-          " ;interval = [ 1 ; " +
-          currentData.totalPages +
-          " ]"
-      );
+      console.log(`%c CLIENT_ERROR %c wrong action`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+      console.log(`%c next() == null; nextPage =${paging.page + 1}, interval = [ 1 ; ${currentData.totalPages}  ]`, 'background: #3455; ');
     }
   };
   arrayInstance.page = async (page: number) => {
     if (!page) {
       if (currentData) {
-        emiter.emit("dataAvalaible", currentData);
+        emiter.emit("refresh", currentData);
         return currentData;
       }
       return await refresh();
@@ -163,19 +156,14 @@ export async function createArrayInstanceFrom({
       paging.page = page;
       return await refresh();
     } else {
-      throw new Error(
-        "page(" +
-          page +
-          ") == null; page interval = [ 1 ; " +
-          currentData.totalPages +
-          " ]"
-      );
+      console.log(`%c CLIENT_ERROR %c wrong action`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+      console.log(`%c page(${page }) == null; page interval = [ 1 ; ${currentData.totalPages}  ]`, 'background: #3455; ');
     }
   };
   arrayInstance.$itemModelPath = itemModelPath;
   arrayInstance.last = async () => {
     if (paging.page == currentData.totalPages) {
-      emiter.emit("dataAvalaible", currentData);
+      emiter.emit("refresh", currentData);
       return currentData;
     }
     paging.page = currentData.totalPages;

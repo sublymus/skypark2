@@ -1,16 +1,14 @@
-import { Descriptions } from './../Descriptions';
-import { SQuery } from '../AppStore';
+
 
 import { createArrayInstanceFrom } from "./ArrayInstance";
 import { Config } from "./Config";
-import { DescriptionSchema, DescriptionsType, TypeRuleSchema, getDescription, socket } from "./SQueryClient";
+import { DescriptionSchema, DescriptionsType, TypeRuleSchema, getDescription } from "./SQueryClient";
 import { Validator } from "./Validation";
 import EventEmiter, { EventInfo, listenerSchema } from "./event/eventEmiter";
 
-
 const InstanceCache: any = {};
 
-export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) {
+export async function createInstanceFrom({ modelPath, id, Model, SQuery }: any) {
 
   const description = await getDescription(modelPath)
   if (!id || !modelPath) {
@@ -21,13 +19,13 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
   let lastInstanceUpdateAt = 0;
   const refresh = async () => {
     await new Promise((rev) => {
-      socket.emit(
+      SQuery.emit(
         modelPath + ":read",
         {
           id: id,
         },
         async (res: any) => {
-          if (res.error) return console.log(`ERROR_SERVER_RESULT`,JSON.stringify(res));
+          if (res.error) return console.log(`ERROR_SERVER_RESULT`, JSON.stringify(res));
           cache = res.response;
           Config.dataStore.setData(modelPath + ":" + id, cache);
           lastInstanceUpdateAt = cache.__updatedAt;
@@ -53,7 +51,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
     }
   }
 
- 
+
   const instance: any = {};
   const emiter = new EventEmiter();
 
@@ -62,7 +60,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
     await refresh();
   }
 
-  socket.on("update:" + cache._id, async (data: any) => {
+  SQuery.on("update:" + cache._id, async (data: any) => {
     console.log("update:" + cache._id, data);
     cache = data.doc;
     Config.dataStore.setData(modelPath + ":" + id, cache);
@@ -81,7 +79,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
     // });
     emiter.emit("refresh", Objproperties);
     console.log("refresh", Objproperties);
-    
+
     if (properties) {
       properties.forEach(async (p: any) => {
         emiter.emit("refresh:" + p, {
@@ -113,40 +111,46 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
       const rule = description[property];
       let lastPropertyUpdateAt = 0;
       let firstRead = true;
-      let propertyCache: any = {}; 
+      let propertyCache: any = {};
       Object.defineProperties(instance, {
         [property]: {
-          get: async function () {
+          get: function () {
             if (rule.ref) {
-              console.log(propertyCache[property]);
-              
-              if (firstRead || lastPropertyUpdateAt != lastInstanceUpdateAt) {
-                propertyCache[property] = await createInstanceFrom({
-                  modelPath: rule.ref,
-                  id: cache[property],
-                  Model,
-                });
-                lastPropertyUpdateAt = lastInstanceUpdateAt;
-                firstRead = false;
-              }
-              return propertyCache[property];
+              return new Promise(async (rev, rej) => {
+                console.log(propertyCache[property]);
+
+                if (firstRead || lastPropertyUpdateAt != lastInstanceUpdateAt) {
+                  propertyCache[property] = await createInstanceFrom({
+                    modelPath: rule.ref,
+                    id: cache[property],
+                    Model,
+                    SQuery
+                  });
+                  lastPropertyUpdateAt = lastInstanceUpdateAt;
+                  firstRead = false;
+                }
+                rev( propertyCache[property]);
+              })
             } else if (rule[0] && rule[0].ref) {
               // invalible
-              if (firstRead) {
-                propertyCache[property] = await createArrayInstanceFrom({
-                  modelPath,
-                  id,
-                  property,
-                  description,
-                  Model,
-                });
-                //*NEW_ADD
-                // instance.when('refresh:' + property, () => {
-                //     propertyCache[property].__$emulator();
-                // })
-                firstRead = false;
-              }
-              return propertyCache[property];
+              return new Promise(async(rev , rej)=>{
+                if (firstRead) {
+                  propertyCache[property] = await createArrayInstanceFrom({
+                    modelPath,
+                    id,
+                    property,
+                    description,
+                    Model,
+                    SQuery,
+                  });
+                  //*NEW_ADD
+                  // instance.when('refresh:' + property, () => {
+                  //     propertyCache[property].__$emulator();
+                  // })
+                  firstRead = false;
+                }
+                rev(propertyCache[property]);
+              });
             } else if (rule[0]) {
               if (firstRead || lastPropertyUpdateAt != lastInstanceUpdateAt) {
                 propertyCache[property] = cache[property];
@@ -211,7 +215,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
     }
   }
   instance.update = async (data: any) => {
-    socket.emit(
+    SQuery.emit(
       modelPath + ":update",
       {
         ...data,
@@ -227,14 +231,15 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
       }
     );
   };
-  instance.when = (event: string, listener: any) => {
-    emiter.when(event, listener, true);
+  instance.when = (event: string, listener: any, uid?: string) => {
+
+    return emiter.when(event, listener, false);
   };
   instance.extractor = async (extractorPath: string) => {
     if (extractorPath == "./") return instance;
     if (extractorPath == "../") return await instance.newParentInstance();
-    return await new Promise((rev) => { 
-      socket.emit(
+    return await new Promise((rev) => {
+      SQuery.emit(
         "server:extractor",
         {
           modelPath,
@@ -262,17 +267,7 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
       );
     });
   };
-  instance.bind= (binder: (actu: (caches:any) => any) => any) => {
-    instance.$modelPath
-    instance?.when('refresh', (v:any) => {
-      binder((state) => ({
-        [instance.$modelPath]: {
-          ...state[instance.$modelPath],
-          ...v
-        }
-      }));
-    })
-  };
+
   const parts = (await instance.__parentModel)?.split("_");
   instance.$modelPath = modelPath;
   instance.$parentModelPath = parts?.[0];
@@ -281,6 +276,9 @@ export async function createInstanceFrom({ modelPath, id, Model , SQuery}: any) 
   instance.$model = Model;
   instance.$id = id;
   instance.$cache = cache || {};
+  instance.getEmiter = () => {
+    return emiter;
+  };
   instance.newParentInstance = async () => {
     return Model.newParentInstance({ childInstance: instance });
   };

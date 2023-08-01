@@ -1,7 +1,8 @@
 
 import './UserForm.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UserFormStore } from './UserFormStore';
+import { AppStore } from '../AppStore';
 // import { RooState, RootDispatch } from '../AppStore';
 // import { useDispatch, useSelector } from 'react-redux';
 // import { setAddUser } from '../Main/MainStore';
@@ -9,14 +10,23 @@ import { UserFormStore } from './UserFormStore';
 function UserForm() {
     const { openedForm, setOpenedForm, createNewUser } = UserFormStore();
     // const dispatch:RootDispatch = useDispatch();
+    const { entreprise: entrepriseI, quarters, userList, padiezdList, buildingList, HOST } = AppStore();
     const [name, setName] = useState('Opus')
     const [lastName, setLastName] = useState('Opus');;
     const [email, setEmail] = useState('sublymus@getMaxListeners.com');
     const [telephone, setTelephone] = useState('+7(999)862-74-41');
     const [room, setRoom] = useState(1);
     const [etage, setEtage] = useState(1);
-    const [padiezd, setPadiezd] = useState(1);
-    const [buildingId, setBuildingId] = useState('0');
+    const [padiezd, setPadiezd] = useState(padiezdList[0]?._id);
+    const [quarterId, setQuarterId] = useState(quarters[0]?._id);
+    const [status, setStatus] = useState('');
+    const { fetchEntreprise, fetchPadiezd, fetchBuilding, fetchUser, currentQuarter } = AppStore();
+    useEffect(() => {
+        if (quarterId) {
+            fetchPadiezd(quarterId);
+            fetchBuilding(quarterId);
+        }
+    }, [quarterId]);
     return (
         <div className="user-form" onClick={(e) => {
 
@@ -47,15 +57,21 @@ function UserForm() {
                         setTelephone(e.currentTarget.value);
                     }}></input>
 
-                    <select className='user-building' onChange={(e)=>{
-                                setBuildingId(e.currentTarget.value);
-                            }}>
-                        <option value="" disabled={true} selected={true}>Select Building </option>
-                        <option value="0">Sublymus B0</option>
-                        <option value="1">Sublymus B5</option>
-                        <option value="2">Sublymus B10</option>
-                        <option value="3">Sublymus B15</option>
-                        <option value="4">Sublymus B20</option>
+                    <select className='user-building' value={'owner'} onChange={(e) => {
+                        setStatus(e.currentTarget.value);
+                    }}>
+                        <option value="" disabled={true} selected={true}>Select Status </option>
+                        {['owner', 'locater'].map((s) =>
+                            <option value={s}>{s}</option>
+                        )}
+                    </select>
+                    <select className='user-building' value={quarterId} onChange={(e) => {
+                        setQuarterId(e.currentTarget.value);
+                    }}>
+                        <option value="" disabled={true} selected={true}>Select Quarter </option>
+                        {quarters.map((q) =>
+                            <option value={q._id} >{q.name}</option>
+                        )}
                     </select>
 
                     <div className='room-info'>
@@ -73,30 +89,32 @@ function UserForm() {
                         </div>
                         <div className='room'>
                             <h5>Padiezd</h5>
-                            <select className='user-padiezd' onChange={(e)=>{
-                                setPadiezd(Number(e.currentTarget.value))
+                            <select className='user-padiezd' value= {padiezd}onChange={(e) => {
+                                setPadiezd(e.currentTarget.value)
                             }}>
                                 <option value="" disabled={true} selected={true}>Select Padiezd</option>
-                                <option value="1">Padiezd 1</option>
-                                <option value="2">Padiezd 2</option>
-                                <option value="3">Padiezd 3</option>
-                                <option value="4">Padiezd 4</option>
-                                <option value="5">Padiezd 5</option>
-                                <option value="6">Padiezd 6</option>
+                                {padiezdList.map((p) =>
+                                    <option value={p._id}>{'Padiezd ' + p.number}</option>
+                                )}
                             </select>
                         </div>
                     </div>
                     <div className="auformth-submit" onClick={() => {
-                        // dispatch(setAddUser({
-                        //     name,
-                        //     email,
-                        //     telephone,
-                        //     room,
-                        //     etage,
-                        //     lastName,
-                        //     padiezd,
-                        //     buildingId
-                        // }))
+                        console.log('%%%%%%%%%%%%%%%%%%%%%%%%%');
+                        
+                        createNewUser({
+                            entrepriseId: entrepriseI._id,
+                            name,
+                            email,
+                            telephone,
+                            room,
+                            etage,
+                            lastName,
+                            padiezd,
+                            quarterId,
+                            status
+                        });
+                        setOpenedForm('none')
                     }}>Create</div>
 
                 </div>

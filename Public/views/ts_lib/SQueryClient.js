@@ -56,7 +56,7 @@ const SQuery = {
   currentUserInstance: async () => {
     if (Global.userInstance) return Global.userInstance;
     return await new Promise((rev) => {
-      SQuery.emit("server:currentUser", {}, async (res) => {
+      SQuery.emit("server:currentClient", {}, async (res) => {
         if (res.error) rev(null); //throw new Error(JSON.stringify(res));
         const userModel = await SQuery.model(res.response.signup.modelPath);
         if (!userModel) rev(null); //throw new Error("Model is null for modelPath : " + res.modelPath);

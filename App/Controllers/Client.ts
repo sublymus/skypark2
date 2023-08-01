@@ -1,39 +1,90 @@
 import { ContextSchema } from "../../lib/squery/Context";
 import { CtrlManager } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ModelInstanceSchema, ResponseSchema } from "../../lib/squery/Initialize";
-import {SQuery } from "../../lib/squery/SQuery";
+import { SQuery } from "../../lib/squery/SQuery";
 import { AuthManager } from "../../lib/squery/AuthManager";
 import { AuthDataMap } from "../../lib/squery/SQuery_auth";
+import QuarterModel from "../Models/QuarterModel";
 const client: ControllerSchema = {
     create: async (ctx: ContextSchema): ResponseSchema => {
-        const token = await SQuery.cookies(ctx.socket, 'token');
-        const res = await ModelControllers['user']()['create']?.({
-            ...ctx,
-        });
-        if (!res?.response) return res;
-        await SQuery.cookies(ctx.socket, 'token', token);
-        return res;
+        try {
+            const { entrepriseId, name,
+                email,
+                telephone,
+                room,
+                etage,
+                lastName,
+                padiezd,
+                status,
+                quarterId } = ctx.data;
+            const quartier = await QuarterModel.findOne({_id:quarterId});
+            if(!quartier) return
+            if (ctx.signup.modelPath != 'manager' && ctx.signup.modelPath != 'admin') {
+                return {
+                    error: "OPERATION_FAILED",
+                    code: "OPERATION_FAILED",
+                    message: 'manager Or admin',
+                    status: 404
+                }
+            }
+            const token = await SQuery.cookies(ctx.socket, 'token');
+            const res = await ModelControllers['user']()['list']?.({
+                ...ctx,
+                __permission: 'admin',
+                data: {
+                    addNew: [{
+                        "account": {
+                            "name": name +' '+ lastName,
+                            "email": email,
+                            "status": status,
+                            "password": "code",
+                            "telephone": telephone,
+                            "address": {
+                                "room": room,
+                                "city": quartier.name,
+                                "padiezd": padiezd,
+                                "etage": etage,
+                                "description": "rigth"
+                            }
+                        }
+                    }],
+                    paging: {
+                        query: {
+                            __parentModel: "padiezd_" +padiezd + "_users_user"
+                        }
+                    }
+                }
+            });
+            console.log('###',res);
+            
+            if (!res?.response) return res;
+    
+            await SQuery.cookies(ctx.socket, 'token', token);
+            return res;
+        } catch (error) {
+            return
+        }
     },
     firstConnect: async (ctx: ContextSchema): ResponseSchema => {
         const authCtrl = new AuthManager();
-        const {email , code , password1, password2 } = ctx.data;
+        const { email, code, password1, password2 } = ctx.data;
 
         let error = "";
-        if(!email) error += "<email>, ";
-        if(!code) error += "<code>, ";
-        if(!password1) error += "<password1>, ";
-        if(!password2) error += "<password2>, ";
-        if(error) error+=" are missing.  "
-        if(password1 !== password2) error += "<password1> != <password2>";
-        if(error) return  {
+        if (!email) error += "<email>, ";
+        if (!code) error += "<code>, ";
+        if (!password1) error += "<password1>, ";
+        if (!password2) error += "<password2>, ";
+        if (error) error += " are missing.  "
+        if (password1 !== password2) error += "<password1> != <password2>";
+        if (error) return {
             error: "OPERATION_FAILED",
             code: "OPERATION_FAILED",
             message: error,
             status: 404
         }
-        const account =  await  ModelControllers[ctx.login.modelPath].option.model.findOne({email,password:code})
-        
-        if(!account) return  {
+        const account = await ModelControllers[ctx.login.modelPath].option.model.findOne({ email, password: code })
+
+        if (!account) return {
             error: "NOT_FOUND",
             code: "NOT_FOUND",
             message: "Account don't exist",
@@ -51,18 +102,18 @@ const client: ControllerSchema = {
                 __permission: account.__permission,
             }
         });
-        if(!LogRes?.response) return LogRes;
+        if (!LogRes?.response) return LogRes;
         const res = await ModelControllers[LogRes.response.login.modelPath]()['update']?.({
             ...ctx,
-            __key:account.__key,
-            __permission : account.__permission,
-            data:{
-                id:LogRes.response.login.id,
+            __key: account.__key,
+            __permission: account.__permission,
+            data: {
+                id: LogRes.response.login.id,
                 password: password1,
             }
         });
-        if(!res?.response) return res;
-        
+        if (!res?.response) return res;
+
         return res;
     }
 }

@@ -49,6 +49,7 @@ function Auth() {
                             email: email,
                             password: pass
                         })
+                        setOpenAuth('none');
                     }}>{openAuth == 'login' ? "Sign In" : "Sign Up"}</div>
                 </div>
             </div>

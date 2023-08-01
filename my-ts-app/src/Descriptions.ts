@@ -1,86 +1,177 @@
-import { FileType, UrlData, DescriptionsType } from "./lib/SQueryClient";
+import { FileType, UrlData, DescriptionsType, ControllerType } from "./lib/SQueryClient";
 
-export const service = {
-  login:{
-    user:{
-      send:{
-        email:'',
-        password:'',
+export const Controller = {
+  messenger: {
+    createDiscussion: {
+      send: {
+        receiverAccountId: ''
       },
-      receive:{
+      receive: {
+        id: '',
+        modelPath: ''
+      }
+    },
+    removeDiscussion: {
+      send: {
+        discussionId: ''
+      },
+      receive: 0
+    }
+  },
+  login: {
+    user: {
+      send: {
+        email: '',
+        password: '',
+      },
+      receive: {
         login: {
           modelPath: 'account' as const,
           id: '',
         },
         signup: {
-          modelPath:'user' as const,
+          modelPath: 'user' as const,
           id: '',
         },
       }
     },
-    manager:{
-      send:{
-        email:'',
-        password:'',
+    manager: {
+      send: {
+        email: '',
+        password: '',
       },
-      receive:{
+      receive: {
         login: {
           modelPath: 'account' as const,
           id: '',
         },
         signup: {
-          modelPath:'manager' as const,
+          modelPath: 'manager' as const,
           id: '',
         },
       }
     },
-    admin:{
-      send:{
-        email:'',
-        password:'',
+    admin: {
+      send: {
+        email: '',
+        password: '',
       },
-      receive:{
+      receive: {
         login: {
           modelPath: 'account' as const,
           id: '',
         },
         signup: {
-          modelPath:'admin' as const,
+          modelPath: 'admin' as const,
           id: '',
         },
       }
     }
   },
-  signup:{
-    user:{
-      send:'create_user' as const,
-      receive:''
+  signup: {
+    user: {
+      send: 'create_user' as const,
+      receive: ''
     },
-    manager:{
-      send:'create_manager' as const,
-      receive:''
+    manager: {
+      send: 'create_manager' as const,
+      receive: ''
     },
-    admin:{
-      send:'create_admin' as const,
-      receive:''
+    admin: {
+      send: 'create_admin' as const,
+      receive: ''
     }
+  },
+  app: {
+    userList: {
+      send: {
+        quarterId: ''
+      },
+      receive: {} as AccountInterface[]
+    },
+    padiezdList: {
+      send: {
+        quarterId: ''
+      },
+      receive: {} as PadiezdInterface[]
+    },
+    buildingList: {
+      send: {
+        quarterId: ''
+      },
+      receive: {} as BuildingInterface[]
+    },
+  },
+  client: {
+    firstConnect: {
+      send: {
+        quarterId: ''
+      },
+      receive: {} as BuildingInterface[]
+    },
+    create: {
+      send: {
+        entrepriseId: '',
+        name: '',
+        email: '',
+        telephone: '',
+        room: 0,
+        etage: 0,
+        lastName: '',
+        padiezd: '',
+        quarterId: '',
+        status: ''
+
+      },
+      receive: {} as BuildingInterface[]
+    }
+  },
+  server: {
+    disconnection: {
+      send: {},
+      receive: '',
+    },
+    currentClient: {
+      send: {},
+      receive: {
+        login: {
+          modelPath: '',
+          id: '',
+        },
+        signup: {
+          modelPath: '',
+          id: '',
+        },
+      },
+    },
   }
-  
-};
+
+} satisfies ControllerType;
 export const Descriptions = {
   user: {
     account: {
       type: String,
       ref: 'account' as const,
-      //  required: true,
-    },
-    managerProperty: {
-      type: String,
+      required: true,
     },
     messenger: {
       type: String,
       ref: 'messenger' as const,
-    }
+    },
+    entreprise:{
+      type:String,
+      ref:'entreprise' as const,
+      strictAlien:true
+    },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   post: {
     message: {
@@ -97,12 +188,21 @@ export const Descriptions = {
       ref: "post" as const,
       required: true as const,
     }],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   message: {
     account: {
       type: String,
       ref: 'account' as const,
-      //strictAlien: true,
+      strictAlien: true as const,
     },
     text: {
       type: String
@@ -115,7 +215,16 @@ export const Descriptions = {
     targets: [{
       type: String,
       ref: 'user' as const,/////
-    }]
+    }],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   manager: {
     account: {
@@ -134,7 +243,17 @@ export const Descriptions = {
     entreprise: {
       type: String,
       ref: 'entreprise' as const,
-    }
+      strictAlien:true
+    },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   account: {
     name: {
@@ -187,7 +306,7 @@ export const Descriptions = {
     }],
     arrFile: [{
       type: String,
-      required:true,
+      required: true as const,
       file: {
 
       }
@@ -199,21 +318,30 @@ export const Descriptions = {
     obj: {
       type: {
         salut: '',
-        famille:'',
-        nombreuse:0
+        famille: '',
+        nombreuse: 0
       }
     }
     ,
     map: {
       type: Map,
-      of: true, 
-      required:true
+      of: true,
+      required: true as const
     }
     ,
     map2: [{
       type: Map,
       of: 0
-    }]
+    }],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   activity: {
     poster: {
@@ -236,21 +364,41 @@ export const Descriptions = {
       type: String,
       required: true as const,
       file: {}
-    }]
+    }],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   messenger: {
     listDiscussion: [
       {
         type: String,
         ref: 'discussion' as const,
+        alien: true as const,
       },
     ],
     archives: [
       {
         type: String,
         ref: 'channel' as const,
+        alien: true as const,
       },
     ],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   address: {
     location: {
@@ -259,14 +407,21 @@ export const Descriptions = {
     quarter: {
       type: String,
       ref: 'quarter' as const,
+      strictAlien: true as const,
     },
     building: {
       type: String,
       ref: 'building' as const,
+      strictAlien: true as const,
     },
     room: {
       type: String,
       required: true as const,
+    },
+    padiezd: {
+      type: String,
+      ref: 'padiezd' as const ,
+      strictAlien: true as const,
     },
     city: {
       type: String,
@@ -283,6 +438,15 @@ export const Descriptions = {
     description: {
       type: String,
       required: true as const,
+    },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
     },
   },
   building: {
@@ -303,65 +467,59 @@ export const Descriptions = {
       ref: 'channel' as const,
       //alien: true,
     },
-  },
-  channel: {
-    name: {
-      type: String,
-      required: true as const,
+    _id: {
+      type: String
     },
-
-    firstUser: {
-      type: String,
-      ref: 'user' as const,
-      // strictAlien: true,
+    __createdAt: {
+      type: Number
     },
-    description: {
-      type: String,
+    __updatedAt: {
+      type: Number
     },
-    vectors: [{
-      type: String,
-      ref: 'post' as const,
-    }],
-    users: [{
-      type: String,
-      ref: 'user' as const,
-    }]
   },
   discussion: {
-    receiver: {
+    members: [{
       type: String,
       ref: 'account' as const,
-      // strictAlien: true,
-    },
-    sender: {
+      required: true as const,
+      strictAlien: true as const,
+    }],
+    account1: {
       type: String,
       ref: 'account' as const,
-      // strictAlien: true,
+      strictAlien: true as const,
     },
-    channel: {
-      type: String,
-      ref: 'channel' as const,
-      // strictAlien: true,
-    },
-  },
-  entreprisemanager: {
-    account: {
+    account2: {
       type: String,
       ref: 'account' as const,
-      //  required: true,
+      strictAlien: true as const,
     },
-    entreprise: {
-      type: String,
-      ref: 'entreprise' as const,
-      // strictAlien: true,
-    }
-  },
 
+    isGroup: {
+      type: Boolean,
+      required: true as const,
+    },
+    channel: [{
+      type: String,
+      ref: 'message' as const,
+      required: true as const
+    }],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
+  },
+  
   entreprise: {
     managers: [{
       type: String,
       //ref: ConstructionManagerModel.modelName,
-      ref: 'manager',
+      ref: 'manager'  as const,
       // strictAlien: true,
     }],
     quarters: [{
@@ -392,11 +550,20 @@ export const Descriptions = {
     creationDate: {
       type: Date,
     },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   quarter: {
     name: {
       type: String,
-      required:true
+      required: true as const
     },
     city: {
       type: String,
@@ -417,7 +584,16 @@ export const Descriptions = {
     activities: [{
       type: String,
       ref: 'activity' as const,
-    }]
+    }],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   admin: {
     app: {
@@ -436,31 +612,49 @@ export const Descriptions = {
       type: String,
       required: true as const
     },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
-  app:{
+  app: {
     entreprises: [{
-      type:String,
+      type: String,
       ref: 'entreprise' as const,
     }],
-    admins:[{
-      type:String,
-      ref:'admin' as const,
+    admins: [{
+      type: String,
+      ref: 'admin' as const,
     }]
   },
-  supervisor:{
+  supervisor: {
     account: {
       type: String,
       ref: 'account' as const,
-      required: true,
+      required: true as const,
     },
-    messenger: { 
-      type:String,
-      ref: 'essenger' as const,
+    messenger: {
+      type: String,
+      ref: 'messenger' as const,
     },
     entreprise: {
       type: String,
       ref: 'entreprise' as const,
-    }
+    },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   favorites: {
     folders: [{
@@ -473,7 +667,16 @@ export const Descriptions = {
     likeList: [{
       type: String,
       ref: 'user' as const,
-    }]
+    }],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   },
   profile: {
     imgProfile: [{
@@ -488,39 +691,58 @@ export const Descriptions = {
 
     message: {
       type: String,
-      required:true
+      required: true as const
+    },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
     },
 
   },
   padiezd: {
-
+    number: {
+      type: Number,
+      required: true as const,
+    },
+    users: [{
+      type: String,
+      ref: "user" as const,
+      alien: true as const
+    }],
+    channel: [{
+      type: String,
+      ref: 'post' as const,
+    }],
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
   }
 
 } satisfies DescriptionsType;
 
-const Controller = {
-  login: {
-    login: {
-      modelPath: '',
-      id: '',
-    },
-    signup: {
-      modelPath: '',
-      id: '',
-    },
-  }
-}
 type CacheType = {
   [kek in keyof typeof Descriptions]: any
 }
 export const CacheValues = {
   messenger: {
     _id: '',
-    discussions: []
+    discussions: [],
+    __createdAt: 0,
+    __updatedAt: 0,
   } as MessengerInterface,
   entreprise: {
     _id: '',
-    $id: '',
     address: '',
     creationDate: 0,
     email: '',
@@ -529,7 +751,9 @@ export const CacheValues = {
     profile: '',
     quarters: [],
     telephone: [],
-    webPageUrl: ''
+    webPageUrl: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as EntrepriseInterface,
   account: {
     _id: '',
@@ -542,15 +766,24 @@ export const CacheValues = {
     address: '',
     favorites: '',
     profile: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as AccountInterface,
   manager: {
-    _id: ''
+    _id: '',
+    account: '',
+    entreprise: '',
+    messenger: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as ManagerInterface,
   profile: {
     _id: '',
     imgProfile: [],
     banner: [],
     message: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as ProfileInterface,
   address: {
     _id: '',
@@ -560,104 +793,167 @@ export const CacheValues = {
     etage: 0,
     description: "",
     city: "",
+    __createdAt: 0,
+    __updatedAt: 0,
   } as AddressInterface,
   activity: {
-
+    _id: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as ActivityInterface,
   building: {
     _id: '',
     name: '',
     city: '',
     padiezdList: [],
+    __createdAt: 0,
+    __updatedAt: 0,
   } as BuildingInterface,
-  channel: {
-
-  } as ChannelInterface,
   discussion: {
-
-  } as DiscussionInterface,
-  entreprisemanager: {
     _id: '',
-    $id: '',
-    managers: [],
-    quarters: [],
-    address: '',
-    name: '',
-    telephone: [],
-    email: '',
-    webPageUrl: '',
-    profile: '',
-    creationDate: 0
-  } as EntrepriseInterface,
+    members: [],
+    account1: '',
+    account2: '',
+    isGroup: false,
+    channel: [],
+    __createdAt: 0,
+    __updatedAt: 0,
+  } as DiscussionInterface,
   favorites: {
-
+    _id: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as FavoritesInterface,
   message: {
-
-  } as MessengerInterface,
+    _id: '',
+    account: '',
+    files: [],
+    targets: [],
+    text: '',
+    __createdAt: 0,
+    __updatedAt: 0,
+  } as MessageInterface,
   post: {
-    _id:'',
-    message:''
+    _id: '',
+    message: '',
+    comments: [],
+    like: [],
+    __createdAt: 0,
+    __updatedAt: 0,
   } as PostInterface,
   user: {
     _id: '',
     account: '',
     messenger: '',
     entreprise: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as UserInterface,
-  admin:{
-
+  admin: {
+    _id: '',
+    account: '',
+    messenger: '',
+    entreprise: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as AdminInterface,
-  app:{
-
+  app: {
+    _id: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as AppInterface,
-  padiezd:{
+  padiezd: {
     _id: '',
     number: 0,
     users: [],
     channel: [],
+    __createdAt: 0,
+    __updatedAt: 0,
   } as PadiezdInterface,
-  quarter:{
+  quarter: {
     _id: '',
     name: '',
     city: '',
     buildings: [],
     supervisor: [],
     Thread: [],
-    activities: []
+    activities: [],
+    __createdAt: 0,
+    __updatedAt: 0,
   } as QuarterInterface,
-  supervisor:{
-
+  supervisor: {
+    _id: '',
+    account: '',
+    messenger: '',
+    entreprise: '',
+    __createdAt: 0,
+    __updatedAt: 0,
   } as SupervisorInterface
 } satisfies CacheType
 
+export interface MessageInterface {
+  account: string,
+  text: string,
+  files: (FileType | UrlData)[],
+  targets: string[]
+  _id: string,
+  __createdAt: number,
+  __updatedAt: number,
+}
 export interface SupervisorInterface {
-
+  _id: string,
+  account: string,
+  messenger: string,
+  entreprise: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface AppInterface {
-
+  _id: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface AdminInterface {
-
+  _id: string,
+  account: string,
+  messenger: string,
+  entreprise: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface PostInterface {
-
+  _id: string,
+  message: string,
+  like: string[],
+  comments: string[],
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface FavoritesInterface {
-
+  _id: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface DiscussionInterface {
-
-}
-export interface ChannelInterface {
-
+  _id: string,
+  members: string[],
+  account1: string,
+  account2: string,
+  isGroup: boolean,
+  channel: string[],
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface ActivityInterface {
-
+  _id: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface MessengerInterface {
   _id: string,
-  discussions: string[]
+  discussions: string[],
+  __createdAt: number,
+  __updatedAt: number,
 }
 
 export interface ProfileInterface {
@@ -665,6 +961,8 @@ export interface ProfileInterface {
   imgProfile: (FileType | UrlData)[],
   banner: (FileType | UrlData)[],
   message: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface AddressInterface {
   _id: string,
@@ -674,6 +972,8 @@ export interface AddressInterface {
   etage: number,
   description: string,
   city: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 
 export interface EntrepriseInterface {
@@ -686,16 +986,25 @@ export interface EntrepriseInterface {
   email: string,
   webPageUrl: string,
   profile: string,
-  creationDate: number
+  creationDate: number,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface ManagerInterface {
-  _id: string
+  _id: string,
+  account: string,
+  messenger: string,
+  entreprise: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface BuildingInterface {
   _id: string,
   name: string,
   city: string,
   padiezdList: string[],
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface QuarterInterface {
   _id: string,
@@ -704,19 +1013,25 @@ export interface QuarterInterface {
   buildings: string[],
   supervisor: string[],
   Thread: string[],
-  activities: string[]
+  activities: string[],
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface PadiezdInterface {
   _id: string,
   number: number,
   users: string[],
   channel: string[],
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface UserInterface {
   _id: string,
   account: string,
   messenger: string,
   entreprise: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export interface AccountInterface {
   _id: string,
@@ -729,6 +1044,8 @@ export interface AccountInterface {
   address: string,
   favorites: string,
   profile: string,
+  __createdAt: number,
+  __updatedAt: number,
 }
 export type ModelSchema<K extends keyof typeof Descriptions> = typeof Descriptions[K];
 

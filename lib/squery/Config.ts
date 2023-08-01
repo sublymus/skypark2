@@ -7,6 +7,16 @@ export interface ConfigInterface {
     DB_KEY?: string,
     TOKEN_KEY?: string,
     URL_KEY?: string,
+    IO_CORS?:{
+        maxAge?: 0,
+        origin?:string|string[],
+        allowedHeaders?:string|string[],
+        credentials?:boolean,
+        exposedHeaders?:string|string[],
+        methods?:string|string[],
+        optionsSuccessStatus?:number,
+        preflightContinue?:boolean
+    }
 }
 let _conf :any= {
     execDir: ["/App/Models", "/App/Controllers", "/App/Tools", "/Start"],
@@ -17,6 +27,7 @@ let _conf :any= {
     DB_KEY: 'a',
     TOKEN_KEY: 'a',
     URL_KEY: 'a',
+    IO_CORS:{}
 } 
 type ConfigType = {
     get conf() : ConfigInterface,

@@ -3,7 +3,6 @@
 
 BUG: ordre d'utilisation du model dans le schema.
 
-BUG: le defaulte ne marche pas.
 
 BUG: le backdestroy laisse a dessirer.
 
@@ -32,7 +31,7 @@ TODO: impact != false => dontImpact == true
 
 TODO: le event du prepost doit suivre la forme suivante : " e1 e2 e3" 
 
-TODO: access , seul a voir mais ne peut pas modifier.
+TODO: access , seul a voir mais ne peut pas modifier. ( any : r  , client: w r , client:manager: r )
 
 TODO: proprieter virtuel qu'on peut pas modifier et qui est un ensemble de query , un object de proprieter queryObj ou une fonction  qui retourne un queryObj
 

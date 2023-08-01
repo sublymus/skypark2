@@ -5,17 +5,16 @@ import { AllowedModelService, CallBack, Global, MapUserCtx, SQuery, modelService
 import { Server, Socket } from "socket.io";
 import Log from "sublymus_logger";
 import { AuthDataMap } from "./SQuery_auth";
+import { Config } from "./Config";
 
-export const SQuery_io = (server: any) => {
+export const SQuery_io = (httpServer: any) => {
     /********************    Cookies   *********************** */
-    if (!server) {
+    if (!httpServer) {
       return Global.io;
     }
-    const io = new Server(server, {
+    const io = new Server(httpServer, {
       maxHttpBufferSize: 1e10,
-      cors:{
-        origin:['http://localhost:3000']
-      },
+      cors:Config.conf.IO_CORS,
       cookie: {
         name: "io",
         path: "/",

@@ -2,13 +2,14 @@ import { io } from "socket.io-client";
 
 import { Config } from "./Config";
 import { createModelFrom } from "./Model";
-import { EventInfo, listenerSchema } from "./event/eventEmiter";
+import EventEmiter, { EventInfo } from "./event/eventEmiter";
+import { createInstanceFrom } from "./Instance";
 
 /*
 
 Affiche ses log Zoo
 
-interface AuthState {
+interface AuthState { 
     id: string,
     ...SQrery.Collector({
       profile: [ProfileInterface,''];
@@ -44,15 +45,17 @@ initial data
 */
 
 export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | Buffer | Map<string, any> | BigInt;
-export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof Buffer | typeof Map | typeof BigInt |{[k:string]:any};
+export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof Buffer | typeof Map | typeof BigInt | { [k: string]: any };
 export type RuleSchema = TypeRuleSchema | TypeRuleSchema[]
 
 export type TypeRuleSchema = {
   type: TypeSchema,
   required?: boolean,
+  strictAlien?:boolean,
+  alien?:boolean,
   ref?: string,
   file?: object,
-  of?: valueSchema
+  of?: valueSchema,
 }
 export const DataRuleSchema: TypeRuleSchema = {
   type: String,
@@ -67,10 +70,51 @@ export interface DescriptionSchema {
 export interface DescriptionsType {
   [key: string]: DescriptionSchema;
 }
-export const socket = io('http://localhost:3500', {
+
+export type ArrayData<I> = {
+  added: string[],
+  removed: string[],
+  items: I[],
+  totalItems: number,
+  limit: number,
+  totalPages: number,
+  page: number,
+  pagingCounter: number,
+  hasPrevPage: boolean,
+  hasNextPage: boolean,
+  prevPage: number | null,
+  nextPage: number | null
+} | null | undefined;
+export const ArrayDataInit = {
+  added: [],
+  removed: [],
+  items: [],
+  totalItems: 0,
+  limit: 20,
+  totalPages: 0,
+  page: 1,
+  pagingCounter: 0,
+  hasPrevPage: false,
+  hasNextPage: false,
+  prevPage: null,
+  nextPage: null
+} as ArrayData<any>;
+type Service = {
+  send: {
+    [key: string]: any,
+  } | string,
+  receive: any
+}
+type OneController = {
+  [service: string]: Service
+}
+export interface ControllerType {
+  [ctrl: string]: OneController
+}
+
+const socket = io('http://localhost:3500',{
   extraHeaders: {},
 });
-
 
 socket.on("storeCookie", (cookie, cb) => {
   document.cookie = cookie;
@@ -109,12 +153,6 @@ export type FileType = {
 
 
 
-interface Model {
-
-}
-
-
-
 export const getDescription = async function (modelPath: string) {
   if (typeof modelPath != 'string') throw new Error('getDescription(' + modelPath + ') is not permit, parameter must be string');
   if (Descriptions[modelPath]) {
@@ -127,7 +165,7 @@ export const getDescription = async function (modelPath: string) {
   }
   return await new Promise((rev) => {
     // //console.//consolelog('********************');
-    socket.emit('server:description', {
+    socket?.emit('server:description', {
       modelPath,
     }, (res: any) => {
       // //console.log('server:description', res);
@@ -138,13 +176,14 @@ export const getDescription = async function (modelPath: string) {
     })
   })
 }
-export function createSQueryFrom<D extends DescriptionsType, C extends { [key in keyof D]: C[key] }>(Descriptions: D, CacheValues: C) {
+export function createSQueryFrom<D extends DescriptionsType, C extends { [key in keyof D]: C[key] }, Ctrl extends ControllerType>(url:string,Descriptions: D, CacheValues: C, Controller: Ctrl) {
   type ModelType<K extends keyof D> = D[K];
   type SortType<K extends keyof D> = {
-    [key in keyof D[K]]?: 1 | -1
+    [key in keyof (D[K])]?: 1 | -1
   } & { [key: string]: any }
   type QueryType<K extends keyof D> = {
-    [key in keyof D[K]]?: any
+    //TODO*
+    [key in keyof (D[K] | '$and' | '$or' | '$nor' | '$comment' | '$text' | '$where')]?: any;
   } & { [key: string]: any };
   type ArrayUpdateOption<K extends keyof D> = {
     addId: string[],
@@ -158,10 +197,17 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
       query?: QueryType<K>
     }
   }
+  type listenerSchema<T> = ((value: T, e?: EventInfo<T>) => void) & {
+    uid?: string;
+  };
+  type ModifiedData = {
+    added: string[],
+    removed: string[],
+  }
   type ArrayData<K extends keyof D> = {
     added: string[],
     removed: string[],
-    items: (typeof CacheValues[K])[],
+    items: K extends keyof D ? (typeof CacheValues[K])[] : K[],
     itemsInstance: ReturnType<typeof getInstanceType<ModelType<K>, K>>[],
     totalItems: number,
     limit: number,
@@ -174,7 +220,7 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
     nextPage: number
   } | null | undefined
   type ArrayInstance<K extends keyof D> = {
-    when: (event: string, listener: listenerSchema, changeRequired?: boolean | undefined) => void,
+    when: <e extends ('update' | 'refresh') >(event: e, listener: listenerSchema<e extends 'update' ? ModifiedData : ArrayData<K>>, changeRequired?: boolean | undefined) => void,
     update: (options: Partial<ArrayUpdateOption<K>>) => Promise<ArrayData<K>>;
     last: () => Promise<ArrayData<K>>;
     next: () => Promise<ArrayData<K>>;
@@ -184,27 +230,43 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
 
 
   type BaseInstance<K extends keyof D> = {
-    update (data: any) : void
-    when (event: keyof {
+    update(data: { [key in keyof Partial<D[K]>]: CreateAbstractModel<K, key> }): void
+    when(event: keyof {
       [key in keyof C[K]as (`refresh:${key & string}` | `refresh`)]: any
-    }, listener: ((v: Partial<C[K]>, e: EventInfo<Partial<C[K]>>) => void)) : void;
+    }, listener: ((v: Partial<C[K]>, e: EventInfo<Partial<C[K]>>) => void)): void;
     extractor(extractorPath: string): Promise<BaseInstance<K> | null>;
     $modelPath: K;
     $parentModelPath: string | undefined;
     $parentId: string | undefined;
     $parentProperty: string | undefined;
     $model: ModelSchema<K>;
+    getEmiter(): EventEmiter,
     $id: string;
+    _id: string;
+    __createdAt: number,
+    __updatedAt: number,
+    __parentModel:string,
     $cache: C[K];
-    bind(binder: (actu: (caches: Partial<C>) => ({
-      [e in keyof Partial<D>] :C[e]
-    })) => any) : void,
-    newParentInstance() :Promise<BaseInstance<K> | null>;
+    // bind(binder: (actu: (caches: Partial<C>) => ({
+    //   [e in keyof Partial<D>]: C[e]
+    // })) => any): void,
+    // unbind(): void,
+    newParentInstance<key extends keyof D>() :Promise<ReturnType<typeof getInstanceType<ModelType<key>, key>> | null>;
   }
+  type Receive<T> = {
+    response?: T,
+    error?: string,
+    message: string,
+    status: number,
+    code: string
+  }
+  //TYPE*
+  type Send<T> = T extends `create_${infer U}` ? (U extends keyof D ? { [key in keyof Partial<D[U]>]: CreateAbstractModel<U, key> } : never) : T;
+
 
   type PropertyTypeOf<T extends DescriptionSchema, key extends keyof T, p extends keyof TypeRuleSchema> = T[key] extends TypeRuleSchema[] ? T[key][0][p] : T[key] extends TypeRuleSchema ? T[key][p] : any;
 
-  type Value<I extends keyof TypeRuleSchema, T extends DescriptionSchema, key extends keyof T> = T[key] extends { ref: infer U } ? (U extends keyof D ? Promise<ReturnType<typeof getInstanceType<(D)[U], U>>> : never) : T[key] extends { type: typeof String } ? String : T[key] extends { type: typeof Number } ? Number : T[key] extends { type: typeof Boolean } ? Boolean : T[key] extends { type: typeof BigInt } ? BigInt : T[key] extends { type: typeof Map } ?Map<string, PropertyTypeOf<T, key, 'of'>> : PropertyTypeOf<T, string & key, I>;
+  type Value<I extends keyof TypeRuleSchema, T extends DescriptionSchema, key extends keyof T> = T[key] extends { ref: infer U } ? (U extends keyof D ? Promise<ReturnType<typeof getInstanceType<(D)[U], U>>> : never) : T[key] extends { type: typeof String } ? String : T[key] extends { type: typeof Number } ? Number : T[key] extends { type: typeof Boolean } ? Boolean : T[key] extends { type: typeof BigInt } ? BigInt : T[key] extends { type: typeof Map } ? Map<string, PropertyTypeOf<T, key, 'of'>> : PropertyTypeOf<T, string & key, I>;
 
   function getInstanceType<T extends DescriptionSchema, K extends keyof D>() {
 
@@ -229,35 +291,118 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
     return fun<'type', 'of'>();
   }
 
-  type CreateModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends { ref: infer U } ? (U extends keyof D ? string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> } : never) : D[K][key] extends Array<{ file: {} }> ? FileType[] : Value<I, D[K], key>;
-  type CreateArryModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends Array<{ file: {} }> ? FileType[] : D[K][key] extends Array<{ ref: infer U }> ? (U extends keyof D ? (string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : Value<I, D[K], 'type'>[];
+  type CreateModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends { ref: infer U , strictAlien: true  } ? (U extends keyof D ? string : never): D[K][key] extends { ref: infer U , alien: true  } ? (U extends keyof D ? string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> } : never) :D[K][key] extends { ref: infer U } ? (U extends keyof D ? { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> } : never) : D[K][key] extends Array<{ file: {} }> ? FileType[] : Value<I, D[K], key>;
+  type CreateArryModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends Array<{ file: {} }> ? (FileType | UrlData)[] : D[K][key] extends Array<{ ref: infer U , strictAlien: true}> ? (U extends keyof D ? (string)[] : never) :D[K][key] extends Array<{ ref: infer U, alien: true }> ? (U extends keyof D ? (string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) :D[K][key] extends Array<{ ref: infer U }> ? (U extends keyof D ? ({ [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : Value<I, D[K], 'type'>[];
 
   type CreateAbstractModel<K extends keyof D, key extends keyof D[K]> = (D[K][key] extends Array<object> ? (D[K][key] extends Array<{ required: true }> ? CreateArryModel<'type', K, key> : CreateArryModel<'type', K, key> | undefined) : (D[K][key] extends { required: true } ? CreateModel<'type', K, key> : CreateModel<'type', K, key> | undefined));
 
   type ModelSchema<K extends keyof D> = {
     description: D[K];
-    create: (data: { [key in keyof Partial<D[K]>]: CreateAbstractModel<K, key> }) => Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>>|null>;
-    newInstance: (value: { id: string }) => Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>>>;
-    newParentInstance: <key extends keyof D>(data: {
+    create: (data: { [key in keyof Partial<D[K]>]: CreateAbstractModel<K, key> }) => Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>> | null>;
+    newInstance: (value: { id: string }|{cache: BaseInstance<K>['$cache']}) => Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>>>;
+    newParentInstance<key extends keyof D>(data: {
       childInstance: BaseInstance<K>;
-    }) => Promise<ReturnType<typeof getInstanceType<ModelType<key>, key>>|null>;
-    update: (data:  { [key in keyof Partial<D[K]>]: CreateAbstractModel<K, key> }&{ id: string}) => Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>>|null>;
-    delete: (data:{ id: string}) => Promise<void>;
+    }) :Promise<ReturnType<typeof getInstanceType<ModelType<key>, key>> | null>;
+    update: (data: { [key in keyof Partial<D[K]>]: CreateAbstractModel<K, key> } & { id: string }) => Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>> | null>;
+    delete: (data: { id: string }) => Promise<void>;
   };
 
   const SQuery = {
     socket,
-    async model <K extends keyof D>(modelPath: K){
+    async collector<B extends Boolean,Q extends {
+      [key in keyof D]?: B extends true ? BaseInstance<key>['$cache'][]:string[]
+    }>(collect:Q , fromServer:B):Promise<{[key in keyof Q]:key extends keyof D ?ReturnType<typeof getInstanceType<ModelType<key>, key>>[] : never;}>{
+      const c =  await new Promise<any>((rev)=>{
+        SQuery.emit('server:collector',collect,
+          async (res: any) => {
+            if (res.error) {
+              console.log(`%c ERROR_SERVER %c server:collector`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+              console.log(`%c ${JSON.stringify(res)}`, 'background: #3455; ');
+              return rev([])
+            }
+            rev(res.response);
+          }
+        );
+      });
+      console.log(`%c SUPER %c server:collector  ${JSON.stringify(c)}`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+      
+      const Result : any = {}
+      for (const key in c) {
+        if (Object.prototype.hasOwnProperty.call(c, key)) {
+          const cacheArray = c[key];
+          Result[key] = [];
+          const model = await SQuery.createModel(key);
+          for (const cache of cacheArray) {
+            Result[key] = await model.newInstance({
+              cache,
+            })
+          }
+          
+        }
+      }
+      return Result;
+    },
+    //TYPE*
+    bind<Q extends {
+      [key in keyof Q]: BaseInstance<any> | undefined | null
+    }>(instancesData: Q, binder: (actu: (caches: Partial<C>) => ({
+      [e in keyof Partial<D>]: C[e]
+    })) => any) {
+      const instanceBinder = (instance: BaseInstance<any>, instanceName: keyof Q & string, binder: (actu: (caches: any) => any) => any) => {
+
+        const listener = (v: any) => {
+          console.log(listener.uid, instanceName);
+
+          binder((state) => ({
+            [instanceName]: {
+              ...state[instanceName],
+              ...v
+            }
+          }))
+        };
+        listener.uid = instance.$id;
+        instance?.when('refresh', listener);
+
+      };
+      for (const key in instancesData) {
+        if (Object.prototype.hasOwnProperty.call(instancesData, key)) {
+          const instance = instancesData[key];
+          if (instance) instanceBinder(instance, key, binder)
+        }
+      }
+
+    },
+    unbind<Q extends {
+      [key in keyof Q]: BaseInstance<any> | undefined | null
+    }>(instancesData: Q) {
+      const unbind = (instance:BaseInstance<any>) => {
+        instance.getEmiter().remove({
+          event: 'refresh',
+          uid: instance.$id
+        });
+      };
+      for (const key in instancesData) {
+        if (Object.prototype.hasOwnProperty.call(instancesData, key)) {
+          const instance = instancesData[key];
+          if (instance) unbind(instance)
+        }
+      }
+    },
+    async createModel<K extends keyof D>(modelPath: K) {
       const model = await createModelFrom(modelPath, Descriptions[modelPath], SQuery);
 
       return model as ModelSchema<K>
     },
-    async currentUserInstance<K extends keyof D>(): Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>>|null>{
+    async currentClientInstance<K extends keyof D>(): Promise<ReturnType<typeof getInstanceType<ModelType<K>, K>> | null> {
       if (Global.userInstance) return Global.userInstance;
       return await new Promise((rev) => {
-        SQuery.emit("server:currentUser", {}, async (res: any) => {
-          if (res.error) rev(null); //throw new Error(JSON.stringify(res));
-          const userModel: any = await SQuery.model(
+        SQuery.emit("server:currentClient", {}, async (res: any) => {
+          if (res.error) {
+            console.log(`%c ERROR_SERVER %c ${'server'}:${'currentClient'}`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+            console.log(`%c ${JSON.stringify(res)}`, 'background: #3455; ');
+            return rev(null);
+          }; //throw new Error(JSON.stringify(res));
+          const userModel: any = await SQuery.createModel(
             res.response.signup.modelPath
           );
           if (!userModel) rev(null); //throw new Error("Model is null for modelPath : " + res.modelPath);
@@ -282,7 +427,7 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
         throw new Error("DISCONNECT FROM SERVER");
       }
     },
-    emit (event: string, ...arg: any){
+    emit(event: string, ...arg: any) {
       if (typeof event != "string")
         throw new Error(
           "cannot emit with following event : " +
@@ -291,7 +436,7 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
         );
       socket.emit(event, ...arg);
     },
-    on(event: string, listener: Function){
+    on(event: string, listener: Function) {
       if (typeof event != "string")
         throw new Error(
           "cannot emit with following event : " +
@@ -303,44 +448,42 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
       });
     },
 
-
-    set dataStore(value) {
+    set storage(value) {
       Config.dataStore = {
         ...Config.dataStore,
         ...value,
       };
     },
-    get dataStore() {
+    get storage() {
       return Config.dataStore;
     },
-    //TODO*
-    async service <T>(ctrl: string, service: string, data: any): Promise<any | null> {
+    async service<Kc extends keyof Ctrl, Ks extends keyof Ctrl[Kc]>(ctrl: Kc & string, service: Ks & string, data: Send<Ctrl[Kc][Ks]['send']>): Promise<Receive<Ctrl[Kc][Ks]['receive']>> {
       return await new Promise((rev) => {
         SQuery.emit(
           ctrl + ":" + service,
           data,
           async (res: any) => {
-            // if (res.error) {
-            //   console.log(`ERROR from service;  crtl:${ctrl} , service${service} `,JSON.stringify(res) )
-            //   rev(null);
-            // }
+            if (res.error) {
+              console.log(`%c ERROR_SERVER %c ${ctrl}:${service}`, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
+              console.log(`%c ${JSON.stringify(res)}`, 'background: #3455; ');
+            }
             rev(res);
           }
         );
       });
     },
     async newInstance<K extends keyof D>(modelPath: K, data: { id: string }) {
-      const model = await SQuery.model(modelPath);
+      const model = await SQuery.createModel(modelPath);
       const instance = await model.newInstance(data);
       type InstanceType = ReturnType<typeof getInstanceType<D[K], K>>;
       return (instance as InstanceType | null);
     },
     cacheFrom<Q extends {
-      [key in keyof Q]: key extends keyof D ? BaseInstance<key> | undefined | null : never
+      [key in keyof Q]: BaseInstance<any> | undefined | null
     }>(instanceCollector: Q) {
 
       type Result = {
-        [key in keyof Q]: key extends keyof D ? C[key] : undefined;
+        [key in keyof Q]: Q[key] extends (BaseInstance<infer U> | undefined) ? U extends keyof D ? C[U] : never : never;
       }
       const caches: any = {};
       for (const key in instanceCollector) {

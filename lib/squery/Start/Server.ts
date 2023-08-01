@@ -17,9 +17,14 @@ const server: ControllerSchema = {
   disconnection:async (ctx: ContextSchema): ResponseSchema =>{
     await SQuery.cookies(ctx.socket, "token" ,{});
     //ctx.socket?.disconnect(true);
-    return
+    return {
+      response: "OPERATION_SUCCESS",
+      status: 404,
+      code: "OPERATION_SUCCESS",
+      message: 'OPERATION_SUCCESS',
+    }
   },
-  currentUser: async (ctx: ContextSchema): ResponseSchema => {
+  currentClient: async (ctx: ContextSchema): ResponseSchema => {
     const token = await SQuery.cookies(ctx.socket, "token");
     return {
       response: {

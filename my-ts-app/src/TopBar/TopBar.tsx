@@ -6,11 +6,11 @@ import { AppStore } from '../AppStore';
 import { useState } from 'react';
 
 function TopBar() {
-    const { setOpenAuth, openAuth, id, account, profile  , fetchDisconnect} = AuthStore();
+    const { setOpenAuth, openAuth, account2, profile , manager  , fetchDisconnect} = AuthStore();
     const { HOST } = AppStore();
     const [authOption, setAuthOption] = useState(false);
 
-    console.log({id});
+    console.log({id:manager._id});
 
     const { openedForm, setOpenedForm } = UserFormStore()
     return (
@@ -26,7 +26,7 @@ function TopBar() {
                     setAuthOption(!authOption);
                 }}>Disconnect</div>
                     </div>
-                    <div className='not-connect' style={{ display: id ? 'none' : 'flex' }}>
+                    <div className='not-connect' style={{ display: manager._id ? 'none' : 'flex' }}>
                         <div className='login-btn' onClick={async () => {
                             setOpenAuth('login');
                         }}>Login</div>
@@ -34,10 +34,10 @@ function TopBar() {
                             setOpenAuth('signup');
                         }}>Create account</div>
                     </div>
-                    <div className='connect' style={{ display: id ? 'flex' : 'none' }} onClick={async () => {
+                    <div className='connect' style={{ display: manager._id ? 'flex' : 'none' }} onClick={async () => {
                     setAuthOption(!authOption);
                 }}>
-                        <div className='name'>{account.name}</div>
+                        <div className='name'>{account2.name}</div>
                         <div className={'icon ' + (profile?.imgProfile?.[0] ? '' : "connect-icon")} style={profile?.imgProfile?.[0]?{
                             backgroundImage: `url(${HOST + (profile?.imgProfile?.[0] as UrlData)?.url})`,
                             backgroundRepeat: 'no-repeat',

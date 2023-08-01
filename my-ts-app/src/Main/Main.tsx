@@ -13,14 +13,14 @@ import { MainStore } from './MainStore';
 
 function Main() {
 
-    const { openAuth } = AuthStore();
-    const { openedForm, setOpenedForm } = UserFormStore();
-    const { entreprise } = AuthStore();
+    const { openAuth  , entreprise } = AuthStore();
+    const { openedForm, setOpenedForm , newUserId } = UserFormStore();
     const { entreprise: entrepriseI, quarters, userList, padiezdList, buildingList, HOST } = AppStore();
     const { fetchEntreprise, fetchPadiezd, fetchBuilding, fetchUser } = AppStore();
+    
     if (entreprise._id && !entrepriseI._id) fetchEntreprise(entreprise._id)
 
-    const [currentQuarterId, setcurrentBuildingId] = useState('');
+    const [currentQuarterId, setCurrentQuarterId] = useState('');
     const [deselectedPadiezd, setSeselectedPadiezd] = useState<string[]>([]);
     const [deselectedPBuilding, setSeselectedBuilding] = useState<string[]>([]);
     const [filtre, setFiltre] = useState<'Padiezd' | 'Building'>('Building');
@@ -30,30 +30,33 @@ function Main() {
     const quarter = quarters.find((q) => q._id == currentQuarterId);
 
     useEffect(() => {
-        fetchPadiezd(currentQuarterId);
-        fetchBuilding(currentQuarterId);
+        if(currentQuarterId){
+            fetchPadiezd(currentQuarterId);
+            fetchBuilding(currentQuarterId);
+        }
     }, [currentQuarterId]);
 
     useEffect(() => {
+        if(quarter?._id)
         fetchUser({
             filter: filtre,
             ids: filtre == 'Building' ? buildingList.filter((b) => !deselectedPBuilding.includes(b._id)).map(p => p._id) : padiezdList.filter((p) => !deselectedPadiezd.includes(p._id)).map(p => p._id),
             sort,
-            quarterId: quarter?._id ?? ''
+            quarterId: quarter?._id
         })
-    }, [currentQuarterId , buildingList, deselectedPBuilding, padiezdList, deselectedPadiezd, filtre, sort]);
+    }, [currentQuarterId ,newUserId, buildingList, deselectedPBuilding, padiezdList, deselectedPadiezd, filtre, sort]);
 
-
-    const { setFocusedUser  ,focusedUser , modelObservator} = MainStore()
+    
+    const { setFocusedUser  ,focusedUser } = MainStore()
     useEffect(() => {
-        modelObservator('user', focusedUser._id);
+       // modelObservator('user', focusedUser._id);
     }, [focusedUser]);
 
     return (
         <div className={"main " + (openAuth !== 'none' ? "blurry" : openedForm !== 'none' ? "blurry" : '')}>
             <div className="quarters">
                 {quarters.map((quarter) =>
-                    <div key={'quarter' + quarter._id} className={`quarter ${quarter._id === currentQuarterId ? ' active' : ''}`} data-id={quarter._id} onClick={(e) => setcurrentBuildingId(e.currentTarget.dataset.id || "0")}>{quarter.name}</div>
+                    <div key={'quarter' + quarter._id} className={`quarter ${quarter._id === currentQuarterId ? ' active' : ''}`} data-id={quarter._id} onClick={(e) => setCurrentQuarterId(e.currentTarget.dataset.id || "0")}>{quarter.name}</div>
                 )}
             </div>
             <div className="list-ctn">
@@ -119,18 +122,13 @@ function Main() {
                 </div>
                 <div className="list">
                     {
-                        userList.map((user) => (user.account as any as AccountInterface)).map(account =>
+                        userList.map((user) => (user.account)).map(account =>
                             <div className='user-item' key={account._id} onClick={() => {
                                 setFocusedUser(account)
                             }}>
-                                <div className={'img ' + (((account.profile as any as ProfileInterface).imgProfile[0] as UrlData) ? '' : 'user-default-icon')} style={{
-
-                                }}></div>
-
-                                
+                                <div className={'img' + (((account.profile).imgProfile[0]) ? '' : 'user-default-icon')} style={{}}></div>
                                 <div className="ctn-1">
                                     <div className="name">{account.name}</div>
-                                    <div className="padiezd-num">{(account.address as any as AddressInterface).padiezd}</div>
                                 </div>
                                 <div className="email">{account?.email}</div>
                                 <div className="ctn-2">

@@ -228,13 +228,14 @@ export const createFactory = (
           );
           if (!res?.response) {
             // Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
-
+            
+            Log('defffff',res)
             await backDestroy(ctx, more);
             // Log('log', { res })
             return await callPost({
               ctx,
               more,
-              res: {
+              res: res??{
                 error: "ACCESS_NOT_FOUND",
                 status: 404,
                 code: "ACCESS_NOT_FOUND",

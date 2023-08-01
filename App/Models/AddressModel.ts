@@ -26,26 +26,24 @@ let addressSchema = SQuery.Schema({
   room: {
     type: String,
     trim: true,
-    required: true,
     emit:true
   },
   city: {
     type: String,
-    required: true,
   },
   padiezd: {
     type: Schema.Types.ObjectId,
     ref: PadiezdModel.modelName,
+    impact: false,
+    strictAlien: true,
   },
   etage: {
     type: String,
     trim: true,
-    required: true,
   },
   description: {
     type: String,
     trim: true,
-    required: true,
   },
 });
 

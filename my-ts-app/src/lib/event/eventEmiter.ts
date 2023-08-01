@@ -4,7 +4,7 @@ export type EventInfo<T> = {
   event: string;
   count: number;
   value: T;
-  lastValue: T;
+  lastValue: T|null|undefined;
   uid: string;
 };
 
@@ -86,7 +86,7 @@ class EventEmiter extends UidGenerator {
     changeRequired?: boolean
   ): EventEmiter {
     let uid = this.validatedUid(listener?.uid)
-      ? listener.uid + ""
+      ? (changeRequired ? "#" : "")+listener.uid + ""
       : (listener.uid = (changeRequired ? "#" : "") + this.generateUid());
 
     events

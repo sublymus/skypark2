@@ -8,6 +8,8 @@ import { UrlData } from "./lib/SQueryClient";
 import { arrayBuffer } from 'node:stream/consumers';
 import { Stream } from 'node:stream';
 import { ReadStream } from 'node:fs';
+import { SQuery2 } from './Description2';
+import EventEmiter from './lib/event/eventEmiter';
 declare module "zustand" {
 
 }
@@ -28,7 +30,7 @@ interface AuthState {
 }
 
 type setType = (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>), replace?: boolean | undefined) => void
-
+const eventEmiter = new EventEmiter();
 export const AuthStore = create<AuthState>((set: setType) => ({
     id: '',
     messenger: CacheValues['messenger'],
@@ -40,7 +42,13 @@ export const AuthStore = create<AuthState>((set: setType) => ({
     openAuth: 'none',
     setOpenAuth: (openAuth: 'login' | 'none' | 'signup') => set(() => ({ openAuth })),
     fetchDisconnect: async () => {
-
+        const transaction  = await SQuery2.newInstance('transaction',{
+            id:''
+        });
+        transaction?.update({
+            
+        });
+       // const er = await transaction?.unbind
         set(() => ({
             id: '',
             messenger: CacheValues['messenger'],
@@ -50,13 +58,18 @@ export const AuthStore = create<AuthState>((set: setType) => ({
             profile: CacheValues['profile'],
             address: CacheValues['address'],
         }))
-        await SQuery.service<typeof SQueryType.disconnect>('server', 'disconnection', {});
+        await SQuery.service('server', 'disconnection', {});
+        const account = await SQuery2.newInstance('account', { id:''});
 
+        account?.imgProfile
     },
     LABO: async (loginData: { email: string, password: string }) => {
         //********************   SQuery.service   ***************************
-        const res = await SQuery.service<typeof SQueryType.login>('login', 'manager', loginData);
-
+        const res = await SQuery2.service('login', 'manager', loginData);
+        const res2 = await SQuery2.service('messenger', 'joinDiscussion', {
+            discussionId:''
+        });
+        res2.response
         if (!res?.response || !res?.response?.signup.id) {
             return console.log('ERROR Loging : res=> ', res);
         }
@@ -71,23 +84,25 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         const account = await manager.account;
         const profile = await account.profile;
         const address = await account.address;
-
         // push them in your state
         set(({ }) => ({ id: manager.$id, ...SQuery.cacheFrom({ account, entreprise, messenger, address, manager, profile }) }))
 
-        //********************   manage update of your insatce   ***************************
-
-        // bind( set )
-        manager.bind(set)
-        account.bind(set)
-        entreprise?.bind(set);
-
-        // bind( (actu)=>{ newState = actu(oldState) } )
-        profile.bind((actu) => {
-            const newState = actu({})
-            set(() => newState)
-        });
-
+        SQuery.bind({manager , account , entreprise , profile},((actu)=>{
+            
+            const newState = actu({});
+            console.log(newState);
+            set(()=>(newState));
+        }));
+       
+        const parent2  =  await account.newParentInstance<'user'>()
+        parent2?.messenger
+        eventEmiter.when('disconnect', () => {
+           SQuery.unbind({manager , account , entreprise , profile})
+        })
+        SQuery.storage
+        
+        console.log('uid 4');
+        
         /*
         when( 'refresh' , ( v, e )=> void )
         v : contain the modified properties; { p1: value1 }
@@ -111,7 +126,7 @@ export const AuthStore = create<AuthState>((set: setType) => ({
 
         //********************   instance  read / update   ***************************
 
-        const arrSimple = account.arrSimple;
+        const arrSimple =  account.arrSimple;
         account.arrSimple = [...arrSimple, 2, 3,];
 
         const arrFile = account.arrFile;
@@ -149,7 +164,7 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         obj?.salut
 
         const arrRef = await account.arrRef;
-        const arrayData = await arrRef?.back() // back() | last() | next() | page(number?) | update(..) | when(..);
+        const arrayData = await arrRef?.next() // back() | last() | next() | page(number?) | update(..) | when(..);
         arrayData?.items; // all information about arrayData 
         /*
         added: string[],            // recently added
@@ -168,41 +183,37 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         */
 
         arrRef?.update({
-            addId:['',''],// list of id, to compelet alien property list,
-            remove:['',''],
-            addNew:[{
-                account:'accountId',
-                text:'SQuery >> all',
-                files:[],
-            }], 
-            paging:{
-                limit:2,
-                page:3,
+            paging:{ 
+                limit:20,
+                page:arrayData?.page,
                 query:{
+                    
                     text:{ $in:['SQuery >> all','...']}
                 },
                 sort:{
-                    text:-1,
+                    text:1,
+                    eert:1
+
                 },
                 select:'text account',
             }
         })
 
         //********************   SQuery.model   ***************************
-        //TODO*
-        const parent  = SQuery.currentUserInstance<'user'>()
+        const parent  = SQuery2.currentClientInstance<'user'>()
         //********************   SQuery.model   ***************************
 
-        const model1 = await SQuery.model('address');
+        const model1 = await SQuery2.createModel('entreprise');
         // or 
         if (!address) return
         const model2 = address.$model;
 
+       
         // the description of model permit you to know exactly 
         const modelDescription = model2.description
 
         const instance1 = await model2.create({
-            /* model creation object*/
+            
         });
 
         const instance2 = await model2.newInstance({ id: ''/* model id*/ });
@@ -210,17 +221,17 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         const instance3 = await model2.update({
             id: ''/* model update data , id is required*/
         });
-        const instance4 = await model2.newParentInstance<'account'>({
+        const instance4 = await model2.newParentInstance<'address'>({
             childInstance: address
         });
-
+        
         await model2.delete({
             id: ''
         });
 
 
-
-
+ //********************   SQuery.Collector   ***************************
+       
     }
 }))
 

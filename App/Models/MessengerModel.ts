@@ -8,11 +8,13 @@ let MessengerSchema = SQuery.Schema({
     {
       type: Schema.Types.ObjectId,
       ref: DiscussionModel.modelName,
+      alien: true,
     },
   ],
   archives:  [{
     type: Schema.Types.ObjectId,
     ref: DiscussionModel.modelName,
+    alien: true,
   }],
 });
 

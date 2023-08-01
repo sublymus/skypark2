@@ -36,6 +36,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       __parentModel: paging?.query?.__parentModel,
       modelPath: option.modelPath,
     };
+    console.log('***more', { more });
 
     const preRes = await callPre({
       ctx,
@@ -83,6 +84,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
     //   key: ctx.__key,
     //   permission: ctx.__permission,
     // });
+    console.log('parentPropertyRule', parentPropertyRule, parts);
 
     if (
       parentPropertyRule &&
@@ -157,6 +159,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
             return data.value;
           });
         validAddId.push(...validResult);
+
       }
 
 
@@ -227,7 +230,10 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
               { ...more },
             );
             Log('________', res)
-            if (!res?.response) rej(null);
+            if (!res?.response) {
+              Log('@@@@@@@@@@@@@@@@@@@@@@@@@@ rej(null)', res);
+              return rej(null);
+            }
             else rev(res.response);
           });
         });
@@ -260,10 +266,12 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
           added = [...validAddNew, ...validAddId];
           Log('added', { added })
           if (parentPropertyRule.emit != false) {
-            SQuery.io()?.emit('list/' + parentModelPath + '/' + parentProperty + ':' + parentId, {
-              added,
-              removed
-            })
+            setTimeout(() => {
+              SQuery.io()?.emit('list/' + parentModelPath + '/' + parentProperty + ':' + parentId, {
+                added,
+                removed
+              })
+            });
           }
         } catch (error: any) {
           await backDestroy(ctx, more);
@@ -280,8 +288,9 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
           });
         }
       }
+
     } else {
-      Log("je_ne_peux_pas_modifier", { addId, addNew, remove, isParentUser });
+      Log("je_ne_peux_pas_modifier", { addId, addNew, remove, query: paging.query, isParentUser });
     }
     //Log('parent', parentModelInstance);
     //Log('parentModelInstance', { parentModelInstance })

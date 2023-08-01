@@ -1,10 +1,10 @@
 import { createInstanceFrom } from "./Instance";
-import  { DescriptionSchema, DescriptionsType, socket } from "./SQueryClient";
+import  { DescriptionSchema } from "./SQueryClient";
 
 
 
 
-export async function createModelFrom<key>(modelPath: key , description:DescriptionSchema , {model}:{model:any}): Promise<any> {
+export async function createModelFrom<key>(modelPath: key , description:DescriptionSchema , SQuery:any): Promise<any> {
   const Model: any = {};
   Model.description = description;
   Model.create = async (data: any, errorCb: any): Promise<any> => {
@@ -22,13 +22,13 @@ export async function createModelFrom<key>(modelPath: key , description:Descript
     // }
     return await new Promise((rev) => {
       try {
-        socket.emit(modelPath + ":create", data, async (res: any) => {
+        SQuery.emit(modelPath + ":create", data, async (res: any) => {
           try {
             if (res.error) {
               errorCb(res);
               return rev(null);
             }
-            rev(await createInstanceFrom({ modelPath, id: res.response }));
+            rev(await createInstanceFrom({ modelPath, id: res.response  , SQuery , Model}));
           } catch (e) {
             errorCb(e);
             return rev(null);
@@ -50,7 +50,7 @@ export async function createModelFrom<key>(modelPath: key , description:Descript
     try {
       try {
         // //console.log('*************', { modelPath, id: data.id, description });
-        instance = await createInstanceFrom({ modelPath, id: data.id, Model });
+        instance = await createInstanceFrom({ modelPath, id: data.id, Model , SQuery });
       } catch (e) {
         errorCb(e);
       }
@@ -72,6 +72,7 @@ export async function createModelFrom<key>(modelPath: key , description:Descript
       childInstance = await createInstanceFrom({
         modelPath,
         id: childId,
+        SQuery,
         Model,
       });
     }
@@ -79,7 +80,7 @@ export async function createModelFrom<key>(modelPath: key , description:Descript
       try {
         parentId = await childInstance["$parentId"];
         parentModelPath = await childInstance["$parentModelPath"];
-        const parentModel = await model(parentModelPath);
+        const parentModel = await SQuery.createModel(parentModelPath);
         parentInstance = await parentModel.newInstance({ id: parentId });
       } catch (e) {
         errorCb(e);
@@ -94,7 +95,7 @@ export async function createModelFrom<key>(modelPath: key , description:Descript
 
     return await new Promise((rev, rej) => {
       try {
-        socket.emit(modelPath + ":update", data, (res: any) => {
+        SQuery.emit(modelPath + ":update", data, (res: any) => {
           try {
             if (res.error) {
               console.log(`ERROR de mise a jour du modelPath:${modelPath} , id:${data.id}`,JSON.stringify(res));

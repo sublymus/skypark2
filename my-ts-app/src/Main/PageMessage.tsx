@@ -1,43 +1,38 @@
-
-// import { RooState, RootDispatch } from "../AppStore";
-import profile from '../img/building.png'
-import { useSelector, useDispatch } from 'react-redux';
-// import { sendMessage, setInfoSize, setSelectedPage } from "./MainStore";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { MainStore } from "./MainStore";
+import { AppStore } from "../AppStore";
+import { AuthStore } from "../Auth/AuthStore";
+import { UrlData } from "../lib/SQueryClient";
 
 
 function PageMessage() {
-    // const { buildings, currentBuildingId, selectedPage, focusedUser } = useSelector((state: RooState) => state.main)
-    // const building = buildings.find((b) => b.id == currentBuildingId);
-    // const dispatch: RootDispatch = useDispatch();
+    const { focusedUser , sendMessage , currentChannel } = MainStore();
+    const { messenger , manager , account2 , profile  , } = AuthStore();
+    const { HOST } = AppStore();
     const [value, setValue] = useState('');
+    
     return (
         <div className="page-messenger" style={{ display: /*selectedPage */  1 ? 'flex' : 'none' }}>
             <div className="messages">
-                {/* {focusedUser.messenger.discussions.map((d, i) =>
-                    <div key={i + (focusedUser?.account.name || '')} className={'message ' + (d.left ? 'left' : 'right')}>
+                {currentChannel?.items.map((m, i) =>( <div key={m._id} className={'message ' + (m.account == manager.account ? 'right' : 'left')}>
                         <div className="icon" style={{
-                            backgroundImage: `url(${d.left?focusedUser?.account.profile.imgProfile[0].url:profile})`,
+                            backgroundImage: `url(${m.account == manager.account ? ((HOST+(profile?.imgProfile?.[0] as UrlData)?.url)??'https://icons.veryicon.com/png/o/miscellaneous/two-color-icon-library/user-286.png'):(HOST+focusedUser.profile.imgProfile[0])?? 'https://t3.ftcdn.net/jpg/03/94/89/90/360_F_394899054_4TMgw6eiMYUfozaZU3Kgr5e0LdH4ZrsU.jpg'})`,
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'center',
-                            backgroundSize: 'cover'
+                            backgroundSize: 'cover'  
                         }}></div>
-                        <div className="text">{d.text}</div>
-                    </div>)} */}
-            </div>{
-                // building?.id
-            }
+                        <div className="text">{m.text}</div>
+                    </div>))} 
+            </div>
             <div className="writer">
                 <textarea name="textarea" cols={30} rows={4} value={value} onChange={(e) => {
                     setValue(e.currentTarget.value);
                 }}></textarea>
                 <div className="icon" onClick={(e) => {
-                    // dispatch(sendMessage({
-                    //     value: value,
-                    //     focusedUser,
-                    //     currentBuildingId,
-                    //     building,
-                    // }));
+                    sendMessage({
+                        value: value,
+                        focusedUser
+                    });
                     setValue('')
                 }}></div>
             </div>

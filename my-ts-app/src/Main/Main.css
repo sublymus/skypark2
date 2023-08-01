@@ -358,16 +358,16 @@
     flex-direction: column;
     /* background:  */
     width: 100%;
-    height: calc(100% - var(--nav-pages-ctn-height));
+    height: calc(100% - 350px);
 }
+
 
 .main .nav-bar .user-info {
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    background: rgba(119, 47, 14, 0.048);
+    width: 100%;
     height: 100%;
-    margin-top: 20px;
-    border-top: 1px solid rgba(51, 68, 85, 0.267);
 }
 
 .main .nav-bar .user-info-item {
@@ -484,3 +484,8 @@
     border-bottom-left-radius: 10px;
     border-bottom-right-radius: 10px;
 }
+
+.user-default-icon{
+    background: no-repeat center/cover url(../img/user.png);
+  }
+  

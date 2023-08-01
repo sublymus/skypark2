@@ -8,7 +8,11 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
   let decoded: any = {};
   let cookie = typeof source =='string'? source : source?.request.headers.cookie;
   try {
-    const squery_session = JSON.parse(parse(cookie||'').squery_session);
+    
+    console.log({cookie});
+    const p = parse(cookie||'');
+    console.log({p});
+    const squery_session = JSON.parse(p.squery_session);
     decoded = jwt.verify(squery_session, Config.conf.TOKEN_KEY||'') || {};
   } catch (error:any) {
     Log("jwtError", error.message);

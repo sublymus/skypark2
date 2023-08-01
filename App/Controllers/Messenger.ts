@@ -2,130 +2,160 @@ import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
 import { CtrlManager } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ResponseSchema } from "../../lib/squery/Initialize";
+import DiscussionModel from "../Models/DiscussionModel";
+import AccountModel from "../Models/AccountModel";
+import mongoose, { mongo } from "mongoose";
 const messenger: ControllerSchema = {
-    i_saw:  async (ctx: ContextSchema): ResponseSchema => {return},
+    i_saw: async (ctx: ContextSchema): ResponseSchema => { return },
     createDiscussion: async (ctx: ContextSchema): ResponseSchema => {
-        try {
-            const { receiverId } = ctx.data;
-            /** on recupere le  receiverAccount*/
-            const receiverAccount = await ModelControllers['account'].option.model.findOne({ _id: receiverId });
-            if (!receiverAccount) {
-                return {
-                    error: "NOT_FOUND",
-                    code: "NOT_FOUND",
-                    message: "Receiver don't exist",
-                    status: 404
-                }
-            }
-            
-            /** on recupere le  sender(UserModel)*/
-            const sender = await ModelControllers[ctx.signup.modelPath].option.model.findOne({ _id: ctx.signup.id });
-            if (!sender) {
-                return {
-                    error: "NOT_FOUND",
-                    code: "NOT_FOUND",
-                    message: "sender don't exist",
-                    status: 404
-                }
-            }
-            /** on recupere le  channel*/
-            const discussion = await ModelControllers['discussion'].option.model.findOne({ receiver: receiverId, sender: ctx.login.id });
-            let channel: any;
-            if (!discussion) {
-
-                const resChannel = await ModelControllers['channel']()['create']?.({
-                    ...ctx,
-                    data: {
-                        name: "Channel",
-                        description: "",
-                        vectors: [],
-                        users: []
-                    }
-                });
-
-                if (!resChannel?.response) return resChannel;
-                channel = resChannel.response.toString();
-            } else {
-                channel = discussion.channel.toString();
-            }
-            if (!channel) return {
-                error: "CHANNEL_CREATION_FAILED",
-                code: "CHANNEL_CREATION_FAILED",
-                message: "CHANNEL_CREATION_FAILEDt",
+        const { receiverAccountId } = ctx.data
+        const receiverAccount = await ModelControllers['account'].option.model.findOne({ _id: receiverAccountId });
+        if (!receiverAccount) {
+            return {
+                error: "NOT_FOUND",
+                code: "NOT_FOUND",
+                message: "Receiver don't exist",
                 status: 404
             }
-            /** si le sender ne dispose pas d'une discussion avec le receiver on le cree*/
-            const senderDiscussion = await ModelControllers['discussion'].option.model.findOne({ __key: ctx.__key, receiver: receiverId, sender: ctx.login.id });
-            if (!senderDiscussion) {
-                const res = await ModelControllers["discussion"]()['list']?.({
-                    
-                    ...ctx,
-                    data: {
-                        addNew: [{
-                            receiver: receiverId,
-                            sender: sender.account.toString(),
-                            channel: channel,
-                        }],
-                        paging: {
-                            query: {
-                                __parentModel: "messenger_" + sender.messenger.toString() + "_listDiscussion_discussion"
-                            }
-                        }
-                    }
-                });
-                if (!res?.response) return res
-            }
-            const receiverDiscussion = await ModelControllers['discussion'].option.model.findOne({ __key: receiverAccount.__key.toString(), receiver: receiverId, sender: ctx.login.id });
-            if (!receiverDiscussion) {
-                const resExtractor = await Controllers['server']()['extractor']({
-                    ...ctx,
-                    __key: receiverAccount.__key.toString(),
-                    __permission: receiverAccount.__permission,
-                    data: {
-                        modelPath: 'account',
-                        id: receiverId,
-                        extractorPath: '../messenger'
-                    }
-                })
-                if (!resExtractor?.response) {
-                    return resExtractor
-                }
-                const res = await ModelControllers["discussion"]()['list']?.({
-                    ...ctx,
-                    __key: receiverAccount.__key,
-                    __permission: receiverAccount.__permission,
-                    data: {
-                        addNew: [{
-                            receiver: receiverId,
-                            sender: sender.account.toString(),
-                            channel: channel,
-                        }],
-                        paging: {
-                            query: {
-                                __parentModel: "messenger_" + resExtractor.response.id + "_listDiscussion_discussion"
-                            }
-                        }
-                    }
-                });
+        }
 
-                if (!res?.response) return res
+        if (receiverAccountId == ctx.signup.id) {
+            return {
+                error: "NOT_FOUND",
+                code: "NOT_FOUND",
+                message: "another account required",
+                status: 404
             }
+        }
+
+        /** on recupere le  sender(UserModel)*/
+        const sender = await ModelControllers[ctx.signup.modelPath].option.model.findOne({ _id: ctx.signup.id });
+        if (!sender) {
+            return {
+                error: "NOT_FOUND",
+                code: "NOT_FOUND",
+                message: "sender don't exist",
+                status: 404
+            }
+        }
+
+        const discussion = await DiscussionModel.findOne({
+            $or: [{
+                'account1': receiverAccountId,
+                'account2': ctx.login.id,
+                isGroup: false,
+            }, {
+                'account1': ctx.login.id,
+                'account2': receiverAccountId,
+                isGroup: false
+            }]
+        });
+        console.log('@@@@@@@@discussion', { discussion });
+
+        if (discussion) {
+            const res = await ModelControllers["discussion"]()['list']?.({
+                ...ctx,
+                __key: sender.__key.toString(),
+                __permission: 'admin',
+                data: {
+                    addId: [(discussion._id as string).toString()],
+                    paging: {
+                        query: {
+                            __parentModel: "messenger_" + sender.messenger.toString() + "_listDiscussion_discussion"
+                        }
+                    }
+                }
+            })
+            console.log('@@@@@@@@@@discussion existe');
             return {
                 code: "OPERATION_SUCCESS",
                 message: "OPERATION_SUCCESS",
                 response: {
-                    id: channel,
-                    modelPath: "channel"
+                    id: discussion._id,
+                    modelPath: "discussion"
                 },
                 status: 200
             }
-        } catch (error:any) {
-            return {
-                error: "Messenger.createDiscussion:ERROR",
-                status: 404,
-                code: "OPERATION_FAILED",
-                message: error.message
+        }
+
+        const resExtractor = await Controllers['server']()['extractor']({
+            ...ctx,
+            __key: receiverAccount.__key.toString(),
+            __permission: 'admin',
+            data: {
+                modelPath: 'account',
+                id: receiverAccountId,
+                extractorPath: '../messenger'
             }
+        });
+
+        console.log('resExtractor', { resExtractor });
+
+        if (!resExtractor?.response) {
+            return resExtractor
+        }
+        console.log('sender', sender.messenger.toString());
+
+        const res = await ModelControllers["discussion"]()['list']?.({
+            ...ctx,
+            __key: sender.__key.toString(),
+            __permission: 'admin',
+            data: {
+                addNew: [{
+                    members: [receiverAccountId, sender.account.toString()],
+                    'account1':  ctx.login.id,
+                    'account2': receiverAccountId,
+                    isGroup: false,
+                    channel: [],
+                }],
+                paging: {
+                    query: {
+                        __parentModel: "messenger_" + sender.messenger.toString() + "_listDiscussion_discussion"
+                    }
+                }
+            }
+        })
+
+        console.log('res', res);
+
+        if (!res?.response) {
+            return res
+        }
+        console.log('added', res.response.added);
+        if (!res.response.added[0]) {
+            return;
+        }
+
+
+        const res2 = await ModelControllers["discussion"]()['list']?.({
+            ...ctx,
+            __key: receiverAccount.__key.toString(),
+            __permission: 'admin',
+            data: {
+                addId: [res.response.added[0]],
+                paging: {
+                    query: {
+                        __parentModel: "messenger_" + resExtractor.response.id.toString() + "_listDiscussion_discussion"
+                    }
+                }
+            }
+        })
+
+        console.log('res2', res2);
+
+
+        if (!res2?.response) {
+            return res2
+        }
+
+        return {
+            code: "OPERATION_SUCCESS",
+            message: "OPERATION_SUCCESS",
+            response: {
+                id: res.response.added[0],
+                modelPath: "discussion"
+            },
+            status: 200
         }
     },
 
@@ -157,7 +187,7 @@ const messenger: ControllerSchema = {
                         const resDeleteChannel = await (ctrl.delete || ctrl.destroy)?.({
                             ...ctx,
                             __key: channel.__key,
-                            __permission:'admin',
+                            __permission: 'admin',
                             data: {
                                 id: channel._id,
                             }
@@ -173,7 +203,7 @@ const messenger: ControllerSchema = {
                 response: 0,
                 status: 200
             }
-        } catch (error:any) {
+        } catch (error: any) {
             return {
                 error: "OPERATION_FAILED2",
                 status: 404,

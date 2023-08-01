@@ -11,9 +11,9 @@ import { useEffect } from 'react';
 import { AppStore } from './AppStore';
 
 function App() {
-  const { openAuth } = AuthStore();
+  const { openAuth , fetchCurrentManager} = AuthStore();
   const {openedForm}= UserFormStore()
-  
+
   return (
     <div className="app ctn">
 
