@@ -32,11 +32,11 @@ import { updateFactory } from "./Model_update";
 import mongoose from "mongoose";
 
 
-export const UNDIFINED_RESULT : ResultSchema= {
-status:404,
-message:'UNDEFINED_RESULT',
-error:'UNDEFINED_RESULT',
-code:'UNDEFINED_RESULT',
+export const UNDIFINED_RESULT: ResultSchema = {
+  status: 404,
+  message: 'UNDEFINED_RESULT',
+  error: 'UNDEFINED_RESULT',
+  code: 'UNDEFINED_RESULT',
 }
 
 const MakeModelCtlForm: (
@@ -45,19 +45,19 @@ const MakeModelCtlForm: (
   options: ModelFrom_optionSchema
 ): CtrlModelMakerSchema => {
 
- 
-   type CompletModel = mongoose.Model<any, unknown, unknown, unknown, any> &{__findOne: (filter?: any, projection?: any, options?: any, callback?: any)=>Promise<ModelInstanceSchema> };
-  const  completModel:CompletModel = options.model as CompletModel;
-  const option: Model_optionSchema= {
+
+    type CompletModel = mongoose.Model<any, unknown, unknown, unknown, any> & { __findOne: (filter?: any, projection?: any, options?: any, callback?: any) => Promise<ModelInstanceSchema> };
+    const completModel: CompletModel = options.model as CompletModel;
+    const option: Model_optionSchema = {
       ...options,
-      volatile: options.volatile??true,
+      volatile: options.volatile ?? true,
       modelPath: options.model.modelName,
-      model:completModel,
+      model: completModel,
     };
     option.schema.model = option.model;
     option.model.__findOne = async (filter?: any, projection?: any, options?: any, callback?: any): Promise<ModelInstanceSchema> => {
       const instance: ModelInstanceSchema | null | undefined = await option.model.findOne(filter, projection, options, callback);
-     
+
       //Log('instance',{result});
       return instance as ModelInstanceSchema;
     }
@@ -80,7 +80,7 @@ const MakeModelCtlForm: (
       for (const listener of EventManager[e.ctx.service].pre) {
         try {
           const res = await listener(e);
-          if(res) return res;
+          if (res) return res;
         } catch (error) {
           Log("ERROR_callPre", error);
         }
@@ -92,12 +92,12 @@ const MakeModelCtlForm: (
       try {
         if (!EventManager[e.ctx.service]?.post) return e.res;
         for (const listener of EventManager[e.ctx.service].post) {
-          if (listener){
+          if (listener) {
             const r = await listener(e);
             Log('res__', r);
-            
-            if(r) return r ;
-          }  
+
+            if (r) return r;
+          }
         }
         Log('res__', e.res);
         return e.res;
@@ -175,20 +175,24 @@ async function formatModelInstance(
   ctx: ContextSchema,
   service: ModelServiceAvailable,
   option: ModelFrom_optionSchema & { modelPath: string },
-  modelInstance: ModelInstanceSchema
+  modelInstance: ModelInstanceSchema,
+  deep?: number
 ) {
   const info: PopulateSchema = {
-    populate:[],
-    select:'',
+    populate: [],
+    select: '',
   };
   deepPopulate(
     ctx,
     service,
     option.model.modelName,
     info,
-    modelInstance.__key._id.toString() == ctx.__key
+    modelInstance.__key._id.toString() == ctx.__key, (!Number.isNaN(deep)) ? {
+      count: 0,
+      max: deep as number
+    } : undefined
   );
-  await modelInstance.populate(info.populate||[]);
+  await modelInstance.populate(info.populate || []);
   const propertys = info.select?.replaceAll(" ", "").split("-");
   propertys?.forEach((p) => {
     modelInstance[p] = undefined;
@@ -206,7 +210,7 @@ function deepPopulate(
     max: number
   },
 ) {
-  const description: DescriptionSchema|undefined =
+  const description: DescriptionSchema | undefined =
     ModelControllers[ref].option?.schema.description;
   info.populate = [];
   info.select = "";
@@ -227,7 +231,7 @@ function deepPopulate(
             path: p,
           };
           info.populate?.push(info2);
-          deepPopulate(ctx, service, rule.ref||'', info2, isOwner, count);
+          deepPopulate(ctx, service, rule.ref || '', info2, isOwner, count);
         }
 
       };
@@ -288,10 +292,10 @@ async function backDestroy(ctx: ContextSchema, more: MoreSchema) {
         __key: saved.__key,
       },
     });
-    return p?promises.push(p):promises;
+    return p ? promises.push(p) : promises;
   });
   const log = await Promise.allSettled(promises);
-  Log('backDestroy',log);
+  Log('backDestroy', log);
 
   more.savedlist = [];
   return;

@@ -1,4 +1,4 @@
-import { FileType, UrlData, DescriptionsType, ControllerType } from "./lib/SQueryClient";
+import { UrlData, DescriptionsType, ControllerType } from "./lib/SQueryClient";
 
 export const Controller = {
   messenger: {
@@ -158,10 +158,10 @@ export const Descriptions = {
       type: String,
       ref: 'messenger' as const,
     },
-    entreprise:{
-      type:String,
-      ref:'entreprise' as const,
-      strictAlien:true
+    entreprise: {
+      type: String,
+      ref: 'entreprise' as const,
+      strictAlien: true
     },
     _id: {
       type: String
@@ -243,7 +243,7 @@ export const Descriptions = {
     entreprise: {
       type: String,
       ref: 'entreprise' as const,
-      strictAlien:true
+      strictAlien: true
     },
     _id: {
       type: String
@@ -291,48 +291,6 @@ export const Descriptions = {
       type: String,
       ref: 'favorites' as const,
     },
-    bool: {
-      type: Boolean,
-    },
-    num: {
-      type: Number,
-    },
-    bigint: {
-      type: BigInt,
-    },
-    arrSimple: [{
-      type: Number,
-      required: true as const,
-    }],
-    arrFile: [{
-      type: String,
-      required: true as const,
-      file: {
-
-      }
-    }],
-    arrRef: [{
-      type: String,
-      ref: 'message' as const,
-    }],
-    obj: {
-      type: {
-        salut: '',
-        famille: '',
-        nombreuse: 0
-      }
-    }
-    ,
-    map: {
-      type: Map,
-      of: true,
-      required: true as const
-    }
-    ,
-    map2: [{
-      type: Map,
-      of: 0
-    }],
     _id: {
       type: String
     },
@@ -349,10 +307,10 @@ export const Descriptions = {
       ref: 'profile' as const,
       required: true as const,
     },
-    channel: {
+    channel: [{
       type: String,
-      ref: 'channel' as const,
-    },
+      ref: 'post' as const,
+    }],
     name: {
       type: String,
       required: true as const,
@@ -386,7 +344,7 @@ export const Descriptions = {
     archives: [
       {
         type: String,
-        ref: 'channel' as const,
+        ref: 'discussion' as const,
         alien: true as const,
       },
     ],
@@ -420,7 +378,7 @@ export const Descriptions = {
     },
     padiezd: {
       type: String,
-      ref: 'padiezd' as const ,
+      ref: 'padiezd' as const,
       strictAlien: true as const,
     },
     city: {
@@ -462,11 +420,6 @@ export const Descriptions = {
       ref: "user" as const,
       //strictAlien: true,
     }],
-    Thread: {
-      type: String,
-      ref: 'channel' as const,
-      //alien: true,
-    },
     _id: {
       type: String
     },
@@ -514,12 +467,12 @@ export const Descriptions = {
       type: Number
     },
   },
-  
+
   entreprise: {
     managers: [{
       type: String,
       //ref: ConstructionManagerModel.modelName,
-      ref: 'manager'  as const,
+      ref: 'manager' as const,
       // strictAlien: true,
     }],
     quarters: [{
@@ -797,6 +750,11 @@ export const CacheValues = {
     __updatedAt: 0,
   } as AddressInterface,
   activity: {
+    poster: '',
+    channel: [],
+    name: '',
+    description: '',
+    icon: [],
     _id: '',
     __createdAt: 0,
     __updatedAt: 0,
@@ -820,6 +778,8 @@ export const CacheValues = {
     __updatedAt: 0,
   } as DiscussionInterface,
   favorites: {
+    folders: [],
+    likeList: [],
     _id: '',
     __createdAt: 0,
     __updatedAt: 0,
@@ -894,7 +854,7 @@ export const CacheValues = {
 export interface MessageInterface {
   account: string,
   text: string,
-  files: (FileType | UrlData)[],
+  files: UrlData[],
   targets: string[]
   _id: string,
   __createdAt: number,
@@ -930,6 +890,8 @@ export interface PostInterface {
   __updatedAt: number,
 }
 export interface FavoritesInterface {
+  folders: string[],
+  likeList: string[],
   _id: string,
   __createdAt: number,
   __updatedAt: number,
@@ -945,6 +907,11 @@ export interface DiscussionInterface {
   __updatedAt: number,
 }
 export interface ActivityInterface {
+  poster: string,
+  channel: string[],
+  name: string,
+  description: string,
+  icon: UrlData[],
   _id: string,
   __createdAt: number,
   __updatedAt: number,
@@ -958,8 +925,8 @@ export interface MessengerInterface {
 
 export interface ProfileInterface {
   _id: string,
-  imgProfile: (FileType | UrlData)[],
-  banner: (FileType | UrlData)[],
+  imgProfile: (UrlData)[],
+  banner: (UrlData)[],
   message: string,
   __createdAt: number,
   __updatedAt: number,

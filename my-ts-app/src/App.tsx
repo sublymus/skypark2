@@ -13,7 +13,12 @@ import { AppStore } from './AppStore';
 function App() {
   const { openAuth , fetchCurrentManager} = AuthStore();
   const {openedForm}= UserFormStore()
+  const {testCollector} = AppStore();
 
+  useEffect(()=>{
+    //testCollector();
+    
+  },[]);
   return (
     <div className="app ctn">
 

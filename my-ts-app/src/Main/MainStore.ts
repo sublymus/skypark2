@@ -57,7 +57,7 @@ export const MainStore = create<MainState>((set: setType) => ({
         const discussion = await SQuery.newInstance('discussion', { id: res.response.id });
         if (!discussion) return
         const ArrayDiscussion = await discussion.channel;
-        ArrayDiscussion.update({
+        ArrayDiscussion?.update({
             addNew: [{
                 account: data.focusedUser._id,
                 text: data.value
@@ -85,7 +85,7 @@ export const MainStore = create<MainState>((set: setType) => ({
                 },
             }
         });
-        ArrayDiscussion.when('update', async (modifiedData , e) => {
+        ArrayDiscussion?.when('update', async (modifiedData , e) => {
             a++;
             console.log(`%c update${a}`, 'font-weight: bold; font-size: 20px;color: green;', { modifiedData  ,  });
             const currentChannel = await ArrayDiscussion?.update({

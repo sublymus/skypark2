@@ -27,6 +27,14 @@ export const createFactory = (
 ) => {
 
   return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
+   if(option.modelPath == 'account'|| option.modelPath == 'user'){
+    setTimeout(() => {
+      Log('des***', {
+        model: option.modelPath,
+        ...option.schema.description
+      })
+     }, 2000);
+   }
     const service = option.volatile ? "create" : "store";
     ctx = { ...ctx };
     ctx.service = service;
@@ -82,10 +90,16 @@ export const createFactory = (
     for (const property in description) {
       const rule = description[property];
       if (ctx.data?.[property] == undefined) {
+        Log('deffff', {
+          property,
+          value: ctx.data?.[property],
+          _default: ctx.data[property] = !Array.isArray(rule) ? rule?._default : rule[0]?._default,
+          rule
+        })
         if (Array.isArray(rule)) {
           ctx.data[property] = rule[0]?._default || [];
         } else {
-          ctx.data[property] = rule?._default;
+          ctx.data[property] = rule._default;
         }
       }
       if (
@@ -93,16 +107,16 @@ export const createFactory = (
         ctx.data[property] != undefined
       ) {
 
-        Log("log2", {
-          property,
-          value: ctx.data[property],
-          modelPath: option.modelPath,
-        });
+        // Log("log2", { 
+        //   property,
+        //   value: ctx.data[property],
+        //   modelPath: option.modelPath,
+        // });
         if (!Array.isArray(rule) && rule.ref) {
           const isStr = typeof ctx.data[property] == "string";
 
           const isAlien = !!(rule.alien || rule.strictAlien);
-          Log('vraiment!!', { isStr, isAlien, strict: rule.strictAlien, value: ctx.data[property], property });
+          // Log('vraiment!!', { isStr, isAlien, strict: rule.strictAlien, value: ctx.data[property], property });
           // Log(
           //     "alien",
           //     "strictAlien: ",
@@ -228,14 +242,14 @@ export const createFactory = (
           );
           if (!res?.response) {
             // Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
-            
-            Log('defffff',res)
+
+            Log('defffff', res)
             await backDestroy(ctx, more);
             // Log('log', { res })
             return await callPost({
               ctx,
               more,
-              res: res??{
+              res: res ?? {
                 error: "ACCESS_NOT_FOUND",
                 status: 404,
                 code: "ACCESS_NOT_FOUND",

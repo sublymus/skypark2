@@ -57,7 +57,14 @@ io?.on("connection", (socket: Socket) => {
   });
 });
 
-Log.define('defffff',{
+Log.define('des**',{
   visible:true,
-  style:['green','white','underscore']
+  style:['green','white','underscore'],
+  count:true,
+  folder:true,
+});
+
+Log.define('collect',{
+  visible:true,
+  style:['crimson','','blink']
 });

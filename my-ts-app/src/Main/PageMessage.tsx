@@ -14,9 +14,9 @@ function PageMessage() {
     return (
         <div className="page-messenger" style={{ display: /*selectedPage */  1 ? 'flex' : 'none' }}>
             <div className="messages">
-                {currentChannel?.items.map((m, i) =>( <div key={m._id} className={'message ' + (m.account == manager.account ? 'right' : 'left')}>
+                {currentChannel?.items.map((m, i) =>( <div key={m._id} className={'message ' + (m.account == manager?.account ? 'right' : 'left')}>
                         <div className="icon" style={{
-                            backgroundImage: `url(${m.account == manager.account ? ((HOST+(profile?.imgProfile?.[0] as UrlData)?.url)??'https://icons.veryicon.com/png/o/miscellaneous/two-color-icon-library/user-286.png'):(HOST+focusedUser.profile.imgProfile[0])?? 'https://t3.ftcdn.net/jpg/03/94/89/90/360_F_394899054_4TMgw6eiMYUfozaZU3Kgr5e0LdH4ZrsU.jpg'})`,
+                            backgroundImage: `url(${m.account == manager?.account ? ((HOST+(profile?.imgProfile?.[0] as UrlData)?.url)??'https://icons.veryicon.com/png/o/miscellaneous/two-color-icon-library/user-286.png'):(HOST+focusedUser.profile.imgProfile[0])?? 'https://t3.ftcdn.net/jpg/03/94/89/90/360_F_394899054_4TMgw6eiMYUfozaZU3Kgr5e0LdH4ZrsU.jpg'})`,
                             backgroundRepeat: 'no-repeat',
                             backgroundPosition: 'center',
                             backgroundSize: 'cover'  

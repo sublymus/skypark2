@@ -9,8 +9,7 @@ export async function createArrayInstanceFrom({
   id: parentId,
   property,
   description,
-  SQuery,
-  Model,
+  SQuery
 }: any) {
   let currentData: any = null;
   if (ArrayCache[parentModel + "/" + property + ":" + parentId]) {
@@ -101,7 +100,6 @@ export async function createArrayInstanceFrom({
                     if (first) {
                       first = false;
                       instance = await createInstanceFrom({
-                        Model,
                         SQuery,
                         modelPath: itemModelPath,
                         id: item._id,
@@ -175,9 +173,10 @@ export async function createArrayInstanceFrom({
   arrayInstance.when = (
     event: string,
     listener: listenerSchema,
-    changeRequired?: boolean | undefined
+    uid?:string
   ) => {
-    emiter.when(event, listener, changeRequired);
+    if(uid) listener.uid = uid;
+    emiter.when(event, listener, false);
   };
   ArrayCache[parentModel + "/" + property + ":" + parentId] = arrayInstance;
   return arrayInstance;

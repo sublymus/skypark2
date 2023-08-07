@@ -1,9 +1,10 @@
-import {  BuildingInterface, CacheValues, Controller, EntrepriseInterface, PadiezdInterface, QuarterInterface } from "./Descriptions";
+import { BuildingInterface, Descriptions , CacheValues, Controller, EntrepriseInterface, PadiezdInterface, QuarterInterface } from "./Descriptions";
+import { CacheValues as C2, Controller as Ctrl2,  Descriptions  as D2} from "./Description2";
 
 
 import { create } from 'zustand'
 import createSQueryFrom from "./lib/SQueryClient";
-import { Descriptions } from "./Descriptions";
+import { io } from "socket.io-client";
 declare module "zustand" {
 
 }
@@ -20,27 +21,52 @@ declare module "zustand" {
 */
 
 
-export const SQuery = createSQueryFrom('http://localhost:3500',Descriptions, CacheValues , Controller);
+
+export const SQuery2 = createSQueryFrom( D2, C2, Ctrl2,{
+    socket: io('http://localhost:3500', {
+        extraHeaders: {},
+    }),
+    getCookie() {
+        return  document.cookie
+    },
+    setCookie(cookie) {
+        console.log(cookie);
+        
+        document.cookie = cookie;  
+    },
+});
+
+export const SQuery = createSQueryFrom(Descriptions, CacheValues, Controller, {
+    socket: io('http://localhost:3500', {
+        extraHeaders: {},
+    }),
+    getCookie() {
+        return ''
+    },
+    setCookie(cookie) {
+        document.cookie = cookie;  
+    },
+});
 
 
 //TYPE*
-type PromiseReturnType<T extends Promise<any>> = T extends {then: infer U } ? (U extends (value: infer P)=>any ?  (P extends (value: infer Q)=>any ? Q:never ): never):never
+type PromiseReturnType<T extends Promise<any>> = T extends { then: infer U } ? (U extends (value: infer P) => any ? (P extends (value: infer Q) => any ? Q : never) : never) : never
 
 //TYPE*
-export type PickArgumentsType<N extends keyof Array<any> ,T > = T extends (...args: infer U) => any ? U extends Array<any> ? U[N] : never: never;
+export type PickArgumentsType<N extends keyof Array<any>, T> = T extends (...args: infer U) => any ? U extends Array<any> ? U[N] : never : never;
 
 
-const f = (a:number , b:string)=>{}
+const f = (a: number, b: string) => { }
 
-type arg = PickArgumentsType<0 , typeof f>
+type arg = PickArgumentsType<0, typeof f>
 
 export const accountInit = {
     ...CacheValues['account'],
-    address:CacheValues['address'],
-    profile:CacheValues['profile']
+    address: CacheValues['address'],
+    profile: CacheValues['profile']
 }
 export const userInit = {
-    account:accountInit
+    account: accountInit
 }
 
 type allModelPath = keyof typeof Descriptions;
@@ -52,6 +78,7 @@ interface AppState {
     padiezdList: PadiezdInterface[]
     buildingList: BuildingInterface[],
     userList: (typeof userInit)[],
+    testCollector(): Promise<void>;
     fetchEntreprise: (id: string) => Promise<void>
     fetchBuilding: (id: string) => Promise<void>
     fetchPadiezd: (quarterId: string) => Promise<void>
@@ -68,7 +95,21 @@ export const AppStore = create<AppState>((set: setType) => ({
     padiezdList: [],
     buildingList: [],
     HOST: 'http://localhost:3500',
-    
+    async testCollector() {
+        const collection = await SQuery.collector({
+            $option: {},
+            entreprise: [
+                "64c8e5245b9746a9b450c40",
+                "64c8e5245b9746a9b450c470",
+                "64c8e5245b9746a9b450c40"
+            ],
+            user: ["64c8e5245b9746a9b450c496",
+                "64c8e5255b9746a9b450c4a7",
+                "64c8e5255b9746a9b450c4b8"
+            ]
+        });
+        console.log(`%c testCollector`, 'font-weight: bold; font-size: 20px;color: #345;', { collection });
+    },
     fetchEntreprise: async (id: string) => {
         if (!id) return
         const entreprise = await SQuery.newInstance('entreprise', { id });
@@ -89,11 +130,11 @@ export const AppStore = create<AppState>((set: setType) => ({
 
         const quarters = arrayData?.items
 
-        set(() => ({ ...SQuery.cacheFrom({entreprise}), quarters }));
+        set(() => ({ ...SQuery.cacheFrom({ entreprise }), quarters }));
     },
 
     fetchPadiezd: async (quarterId: string) => {
-        console.log(`%c fetchPadiezd`,'font-weight: bold; font-size: 20px;color: #345;',{quarterId});
+        console.log(`%c fetchPadiezd`, 'font-weight: bold; font-size: 20px;color: #345;', { quarterId });
 
         const res = await SQuery.service('app', 'padiezdList', { quarterId });
         if (!res.response) return
@@ -104,8 +145,8 @@ export const AppStore = create<AppState>((set: setType) => ({
         set(() => ({ padiezdList }))
     },
     fetchBuilding: async (quarterId: string) => {
-        console.log(`%c fetchBuilding`,'font-weight: bold; font-size: 20px;color: #345;',{quarterId});
-       
+        console.log(`%c fetchBuilding`, 'font-weight: bold; font-size: 20px;color: #345;', { quarterId });
+
         const res = await SQuery.service('app', 'buildingList', { quarterId });
         if (!res.response) return
 
@@ -115,7 +156,7 @@ export const AppStore = create<AppState>((set: setType) => ({
         set(() => ({ buildingList }))
     },
     fetchUser: async (data) => {
-        console.log(`%c fetchUser`,'font-weight: bold; font-size: 20px;color: #345;',{data});
+        console.log(`%c fetchUser`, 'font-weight: bold; font-size: 20px;color: #345;', { data });
         if (!data.quarterId) return
         const res = await SQuery.service('app', 'userList', data);
         if (!res.response) return

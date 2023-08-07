@@ -3,24 +3,26 @@ import { AccountInterface, AddressInterface, EntrepriseInterface, MessengerInter
 
 
 import { create } from 'zustand'
-import { ArrayData, ArrayDataInit, UrlData } from "../lib/SQueryClient";
+import { ArrayData, ArrayDataInit, FileType, UrlData } from "../lib/SQueryClient";
 import EventEmiter, { listenerSchema } from '../lib/event/eventEmiter';
 declare module "zustand" {
 
 }
 
 interface AuthState {
-    account2: AccountInterface;
-    profile: ProfileInterface;
-    address: AddressInterface;
-    manager: ManagerInterface;
-    messenger: MessengerInterface;
-    entreprise: EntrepriseInterface
+    account2: AccountInterface|undefined;
+    profile: ProfileInterface|undefined;
+    address: AddressInterface|undefined;
+    manager: ManagerInterface|undefined;
+    messenger: MessengerInterface|undefined;
+    entreprise: EntrepriseInterface|undefined,
     openAuth: 'login' | 'none' | 'signup',
     setOpenAuth: (openAuth: 'login' | 'none' | 'signup') => void
     fetchLoginManager: (loginData: { email: string, password: string }) => Promise<void>,
     fetchDisconnect: () => Promise<void>,
-    fetchCurrentManager: () => Promise<void>
+    fetchCurrentManager: () => Promise<void>,
+    setProfile:(data:Partial<ProfileInterface>&{_id:string} , file?:{imgProfile?:FileType[] , bainner?:FileType[]})=>  Promise<void>,
+
 }
 
 //TYPE*
@@ -29,13 +31,22 @@ type setType = (partial: Partial<AuthState> | ((state: AuthState) => Partial<Aut
 const eventEmiter = new EventEmiter()
 
 export const AuthStore = create<AuthState>((set: setType) => ({
-    messenger: CacheValues['messenger'],
-    entreprise: CacheValues['entreprise'],
-    account2: CacheValues['account'],
-    manager: CacheValues['manager'],
-    profile: CacheValues['profile'],
-    address: CacheValues['address'],
+    messenger: undefined,
+    entreprise: undefined,
+    account2: undefined,
+    manager: undefined,
+    profile: undefined,
+    address: undefined,
     openAuth: 'none',
+    setProfile:async(data , file)=> {
+        console.log(`%c setProfile`, 'font-weight: bold; font-size: 20px;color: #345;',{data , file});
+        const profile = await SQuery.newInstance('profile', { id: data?._id ||''});
+        if (!profile) return;
+        profile.update({
+            ...data,
+            ...file
+        })
+    },
     setOpenAuth: (openAuth: 'login' | 'none' | 'signup') => {
         console.log(`%c setOpenAuth`, 'font-weight: bold; font-size: 20px;color: #345;', { openAuth });
         set(() => ({ openAuth }))
@@ -64,51 +75,57 @@ export const AuthStore = create<AuthState>((set: setType) => ({
     fetchLoginManager: async (loginData: { email: string, password: string }) => {
         console.log(`%c fetchLoginManager`, 'font-weight: bold; font-size: 20px;color: #345;', { ...loginData });
         const res = await SQuery.service('login', 'manager', loginData);
+console.log(res);
 
-        if (!res?.response || !res?.response?.signup.id) return
+        if (!res?.response || !res?.response?.signup.id) return  console.log(`%c ERROR`, 'font-weight: bold; font-size: 20px;color: #345;', { er : res.error});
 
         const manager = await SQuery.newInstance('manager', { id: res?.response?.signup.id });
+        console.log(`%c fetchLoginManager`, 'font-weight: bold; font-size: 20px;color: #345;',{manager});
         if (!manager) return
 
-        const _messenger = await manager.messenger;
-        if (!_messenger) return
-
+        const messenger = await manager.messenger;
+        console.log(`%c fetchLoginManager`, 'font-weight: bold; font-size: 20px;color: #345;',{messenger});
+      //  if (!messenger) return
         const entreprise = await manager.entreprise;
         const account2 = await manager.account;
-        const profile = await account2.profile;
-        const address = await account2.address;
+        console.log({account2});
+        
+        const profile = await account2?.profile;
+        const address = await account2?.address;
         
         const listener = async ( _address:any)=>{
 
         }
 
+        console.log(`%c fetchLoginManager`, 'font-weight: bold; font-size: 20px;color: #345;', {
+            account2: account2?.$cache,
+            entreprise:entreprise?.$cache,
+            address: address?.$cache,
+            manager: manager.$cache,
+            profile: profile?.$cache,
+            messenger : messenger?.$cache
+        });
         listener.uid = 'ertyui'
 
         address?.when('refresh',listener )
 
-        SQuery.bind({manager , account2 , entreprise , profile},((actu)=>{
-            
-            const newState = actu({});
-            console.log(newState);
-            set(()=>(newState));
-        }))
+        SQuery.bind({manager , account2  , profile},set)
        
         eventEmiter.when('disconnect', () => {
-           SQuery.unbind({manager , account2 , entreprise , profile})
+           SQuery.unbind({manager , account2  , profile})
         })
        
-        
+       
         set(({ }) => ({
 
             ...SQuery.cacheFrom({
-
-                _messenger
-                , account2,
+                messenger,
+                account2,
                 entreprise,
                 address,
                 manager,
                 profile
-            })
+            }),
         }));
 
     }

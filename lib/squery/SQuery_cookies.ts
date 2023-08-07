@@ -9,7 +9,6 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
   let cookie = typeof source =='string'? source : source?.request.headers.cookie;
   try {
     
-    console.log({cookie});
     const p = parse(cookie||'');
     console.log({p});
     const squery_session = JSON.parse(p.squery_session);
@@ -23,7 +22,6 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
   if (value && !key) return;
 
   if(!(source instanceof Socket)) return key? decoded[key]:undefined;
-  console.log('on est passer');
   ('on est passer')
   const socket = source;
   const generateToken = (payload: { [property: string]: any }) => {
@@ -44,7 +42,7 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
   return await new Promise((rev) => {
     socket.emit("storeCookie", cookieToken, (clientCookie: string) => {
       try {
-        Log('koki',socket.request.headers.cookie)
+       // Log('koki',socket.request.headers.cookie)
         socket.request.headers.cookie =
           ((socket.request.headers.cookie as string) || "")
             .split(";")

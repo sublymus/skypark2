@@ -14,8 +14,8 @@ import { parentInfo } from "../ModelCtrlManager";
 import { SQuery } from "../SQuery";
 
 const server: ControllerSchema = {
-  disconnection:async (ctx: ContextSchema): ResponseSchema =>{
-    await SQuery.cookies(ctx.socket, "token" ,{});
+  disconnection: async (ctx: ContextSchema): ResponseSchema => {
+    await SQuery.cookies(ctx.socket, "token", {});
     //ctx.socket?.disconnect(true);
     return {
       response: "OPERATION_SUCCESS",
@@ -23,6 +23,48 @@ const server: ControllerSchema = {
       code: "OPERATION_SUCCESS",
       message: 'OPERATION_SUCCESS',
     }
+  },
+  collector: async (ctx: ContextSchema): ResponseSchema => {
+    const {data, data:{$option}} = ctx.data;
+    Log('defffff',data);
+    
+    const collect: any = {};
+    for (const p in data) {
+      const promies = []
+
+      if (Object.prototype.hasOwnProperty.call(data, p)) {
+        const arrayId = data[p];
+       if(!Array.isArray(arrayId)) continue;
+        const promises = arrayId.map((id: any) => {
+          return new Promise<any>(async (rev, rej) => {
+            console.log('id',id);
+            const res = await ModelControllers[p]?.()['read']?.({
+              ...ctx,
+              data:{
+                id,
+                deep:data.$deep
+              }
+            });
+          // console.log(res);
+           
+            if(!res?.response) return rev(null);
+            rev(res.response);
+          });
+        });
+        const instances = await Promise.allSettled(promises);
+        const validResult = instances.map((data: any) => {
+          return data.value;
+        });
+        collect[p] = validResult;
+        Log('collect' ,collect);
+      }
+    }
+    return {
+      response: collect,
+      status: 202,
+      code: "OPERATION_SUCCESS",
+      message: "",
+    };
   },
   currentClient: async (ctx: ContextSchema): ResponseSchema => {
     const token = await SQuery.cookies(ctx.socket, "token");
@@ -44,7 +86,7 @@ const server: ControllerSchema = {
   },
   description: async (ctx: ContextSchema): ResponseSchema => {
     try {
-      if(!ctx.data.modelPath){
+      if (!ctx.data.modelPath) {
         return {
           error: "OPERATION_FAILED",
           status: 404,
@@ -100,7 +142,7 @@ const server: ControllerSchema = {
         code: "OPERATION_SUCCESS",
         message: "",
       };
-    } catch (error:any) {
+    } catch (error: any) {
       return {
         error: "OPERATION_FAILED",
         status: 404,
@@ -128,7 +170,7 @@ const server: ControllerSchema = {
         code: "OPERATION_SUCCESS",
         message: "",
       };
-    } catch (error:any) {
+    } catch (error: any) {
       return {
         error: "NOT_FOUND",
         status: 404,
@@ -172,7 +214,7 @@ const server: ControllerSchema = {
         };
       }
       throw new Error("ID is not valid");
-    } catch (error:any) {
+    } catch (error: any) {
       return {
         error: "BAD_ARGUMENT",
         status: 404,
@@ -236,9 +278,9 @@ const server: ControllerSchema = {
           if (!canStart)
             throw new Error(
               "< . >  is only use to start the path, Example: ./p1/p2 , currentPath:" +
-                accu +
-                " <-- is not correct;   " +
-                illegalMessage
+              accu +
+              " <-- is not correct;   " +
+              illegalMessage
             );
           canStart = false;
           canUpToParent = false;
@@ -246,9 +288,9 @@ const server: ControllerSchema = {
           if (!canUpToParent)
             throw new Error(
               "< .. >  is Only use at the start of the path, Example: ../../../p1/p2 , currentPath:" +
-                accu +
-                " <-- is not correct;   " +
-                illegalMessage
+              accu +
+              " <-- is not correct;   " +
+              illegalMessage
             );
 
           const info = parentInfo(currentDoc.__parentModel);
@@ -284,23 +326,23 @@ const server: ControllerSchema = {
           } else if (Array.isArray(rule) && rule[0].ref) {
             throw new Error(
               "currentPath : " +
-                accu +
-                " <-- is ObjectId array property ; You must recover his parent  "
+              accu +
+              " <-- is ObjectId array property ; You must recover his parent  "
             );
           } else if (Array.isArray(rule)) {
             throw new Error(
               "currentPath : " +
-                accu +
-                " <-- is array property ; You must recover his parent  "
+              accu +
+              " <-- is array property ; You must recover his parent  "
             );
           } else if (!Array.isArray(rule) && !rule.ref) {
             throw new Error(
               "currentPath : " +
-                accu +
-                " <-- is not a ObjectId property ; ; You must recover his parent  "
+              accu +
+              " <-- is not a ObjectId property ; ; You must recover his parent  "
             );
           }
-          let res = await ModelControllers[rule.ref||'']().read?.({
+          let res = await ModelControllers[rule.ref || '']().read?.({
             ...ctx,
             data: { id: currentDoc[part] },
           });
@@ -319,9 +361,9 @@ const server: ControllerSchema = {
             };
           }
           currentDoc = res.response;
-          currentModelPath = rule.ref||'';
+          currentModelPath = rule.ref || '';
           currentDescription =
-            ModelControllers[rule.ref||''].option.schema.description;
+            ModelControllers[rule.ref || ''].option.schema.description;
         } else {
           throw new Error(illegalMessage);
         }
@@ -337,7 +379,7 @@ const server: ControllerSchema = {
         code: "OPERATION_SUCCESS",
         message: "OPERATION_SUCCESS",
       };
-    } catch (error:any) {
+    } catch (error: any) {
       return {
         error: "ILLEGAL_ARGUMENT",
         status: 407,

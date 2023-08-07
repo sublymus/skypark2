@@ -161,11 +161,8 @@ const SQuery = {
   service: async (ctrl,service, data) => {
     return await new Promise((rev) => {
       SQuery.emit(ctrl+':'+service, data, async (res) => {
-        if (res.error) {
-          rev(null);
-          throw new Error(JSON.stringify(res));
-        }
-        rev(res.response);
+        
+        rev(res);
       });
     });
   }

@@ -1,18 +1,9 @@
-import { SQuery } from './AppStore';
-import { SQueryType } from "./SQreryType";
+import { SQuery, SQuery2 } from './AppStore';
 import { AccountInterface, AddressInterface, EntrepriseInterface, MessengerInterface, ProfileInterface, ManagerInterface, CacheValues } from "./Descriptions";
 
 
 import { create } from 'zustand'
-import { UrlData } from "./lib/SQueryClient";
-import { arrayBuffer } from 'node:stream/consumers';
-import { Stream } from 'node:stream';
-import { ReadStream } from 'node:fs';
-import { SQuery2 } from './Description2';
 import EventEmiter from './lib/event/eventEmiter';
-declare module "zustand" {
-
-}
 
 
 interface AuthState {
@@ -42,13 +33,13 @@ export const AuthStore = create<AuthState>((set: setType) => ({
     openAuth: 'none',
     setOpenAuth: (openAuth: 'login' | 'none' | 'signup') => set(() => ({ openAuth })),
     fetchDisconnect: async () => {
-        const transaction  = await SQuery2.newInstance('transaction',{
-            id:''
+        const transaction = await SQuery2.newInstance('transaction', {
+            id: ''
         });
         transaction?.update({
-            
+
         });
-       // const er = await transaction?.unbind
+        // const er = await transaction?.unbind
         set(() => ({
             id: '',
             messenger: CacheValues['messenger'],
@@ -59,7 +50,7 @@ export const AuthStore = create<AuthState>((set: setType) => ({
             address: CacheValues['address'],
         }))
         await SQuery.service('server', 'disconnection', {});
-        const account = await SQuery2.newInstance('account', { id:''});
+        const account = await SQuery2.newInstance('account', { id: '' });
 
         account?.imgProfile
     },
@@ -67,7 +58,7 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         //********************   SQuery.service   ***************************
         const res = await SQuery2.service('login', 'manager', loginData);
         const res2 = await SQuery2.service('messenger', 'joinDiscussion', {
-            discussionId:''
+            discussionId: ''
         });
         res2.response
         if (!res?.response || !res?.response?.signup.id) {
@@ -82,27 +73,24 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         const messenger = await manager.messenger;
         const entreprise = await manager.entreprise;
         const account = await manager.account;
+        if (!account) return;
         const profile = await account.profile;
         const address = await account.address;
+        if (!profile || !address) return
+
         // push them in your state
         set(({ }) => ({ id: manager.$id, ...SQuery.cacheFrom({ account, entreprise, messenger, address, manager, profile }) }))
 
-        SQuery.bind({manager , account , entreprise , profile},((actu)=>{
-            
-            const newState = actu({});
-            console.log(newState);
-            set(()=>(newState));
-        }));
-       
-        const parent2  =  await account.newParentInstance<'user'>()
+        SQuery.bind({ manager, account, entreprise, profile }, set);
+
+        const parent2 = await account.newParentInstance<'user'>()
         parent2?.messenger
         eventEmiter.when('disconnect', () => {
-           SQuery.unbind({manager , account , entreprise , profile})
-        })
-        SQuery.storage
-        
+            SQuery.unbind({ manager, account, entreprise, profile })
+        });
+
         console.log('uid 4');
-        
+
         /*
         when( 'refresh' , ( v, e )=> void )
         v : contain the modified properties; { p1: value1 }
@@ -115,7 +103,7 @@ export const AuthStore = create<AuthState>((set: setType) => ({
             remove:(envents?: string)=>void // remove listener for this event or specified envents; envents:'e1 e2 e3' //TODO*
         }
        */
-        address?.when('refresh', (v) => {
+        address?.when('refresh:room', (v) => {
             set((state) => ({
                 [address.$modelPath]: {
                     ...state[address.$modelPath],
@@ -126,139 +114,130 @@ export const AuthStore = create<AuthState>((set: setType) => ({
 
         //********************   instance  read / update   ***************************
 
-        const arrSimple =  account.arrSimple;
-        account.arrSimple = [...arrSimple, 2, 3,];
+        // const arrSimple = account.arrSimple;
+        // account.arrSimple = [...(arrSimple || []), 2, 3,];
 
-        const arrFile = account.arrFile;
-        account.arrFile = [...arrFile,
-        {// create new file in server side
-            buffer: new ArrayBuffer(1024),
-            encoding: 'base64',
-            fileName: 'file.json', // or name
-            size: 1024,
-            type: 'application/json' // or mime 
-        }, { // existing file data.
-            url: '/fs/erty.poiouk.wncjdd.json',
-            size: 1024,
-            extension: 'json'
-        }
-        ];
-
-
-        const bigint = account.bigint;
-        account.bigint = 1234567890n;
-
-        const bool = account.bool;
-        account.bool = !bool;
-
-        const map = account.map
-        account.map = new Map([['key', true]]);
+        // const arrFile = account.arrFile;
+        // account.arrFile = [...(arrFile || []),
+        // {// create new file in server side
+        //    // buffer: new ArrayBuffer(1024),
+        //     buffer: 'vgefhjfhbhvrcd',
+        //     encoding: 'base64',
+        //     fileName: 'file.json', // or name
+        //     size: 1024,
+        //     type: 'application/json' // or mime 
+        // }, { // existing file data.
+        //     url: '/fs/erty.poiouk.wncjdd.json',
+        //     size: 1024,
+        //     extension: 'json'
+        // }
+        // ];
 
 
-        const map2 = account.map2
-        account.map2 = [new Map([['key0', 0], ['key1', 1]])];
-        const values = map2?.values();
+        // const bigint = account.bigint;
+        // account.bigint = 1234567890n;
 
-        const obj = account.obj;
-        account.obj = { salut: '', famille: '', nombreuse: 0 };
-        obj?.salut
+        // const bool = account.bool;
+        // account.bool = !bool;
 
-        const arrRef = await account.arrRef;
-        const arrayData = await arrRef?.next() // back() | last() | next() | page(number?) | update(..) | when(..);
-        arrayData?.items; // all information about arrayData 
-        /*
-        added: string[],            // recently added
-        removed: string[],           // recently removed
-        items: [],                   // cache values 
-        itemsInstance: [] instance values, // instance values
-        totalItems: number,          
-        limit: number,
-        totalPages: number,
-        page: number,
-        pagingCounter: number,
-        hasPrevPage: boolean,
-        hasNextPage: boolean,
-        prevPage: number|null,
-        nextPage: number|null
-        */
+        // const map = account.map
+        // account.map = new Map([['key', true]]);
 
-        arrRef?.update({
-            paging:{ 
-                limit:20,
-                page:arrayData?.page,
-                query:{
-                    
-                    text:{ $in:['SQuery >> all','...']}
-                },
-                sort:{
-                    text:1,
-                    eert:1
 
-                },
-                select:'text account',
-            }
-        })
+        // const map2 = account.map2
+        // account.map2 = [new Map([['key0', 0], ['key1', 1]])];
+        // const values = map2?.values();
+
+        // const obj = account.obj;
+        // account.obj = { salut: '', famille: '', nombreuse: 0 };
+        // obj?.salut
+
+        // const arrRef = await account.arrRef;
+        // const arrayData = await arrRef?.next() // back() | last() | next() | page(number?) | update(..) | when(..);
+        // arrayData?.items; // all information about arrayData 
+        
+        // account.update({
+            
+        // })
+        // /*
+        // added: string[],            // recently added
+        // removed: string[],           // recently removed
+        // items: [],                   // cache values 
+        // itemsInstance: [] instance values, // instance values
+        // totalItems: number,          
+        // limit: number,
+        // totalPages: number,
+        // page: number,
+        // pagingCounter: number,
+        // hasPrevPage: boolean,
+        // hasNextPage: boolean,
+        // prevPage: number|null,
+        // nextPage: number|null
+        // */
+
+        // arrRef?.update({
+        //     paging: {
+        //         limit: 20,
+        //         page: arrayData?.page,
+        //         query: {
+        //             //TODO* verifier si c'est zoo
+        //             text: { $in: ['SQuery >> all', '...'] }
+        //         },
+        //         sort: {
+        //             text: 1,
+        //             eert: 1
+
+        //         },
+        //         select: 'text account',
+        //     }
+        // })
+
+        // arrRef?.when('refresh', (v) => {
+
+        //     v?.itemsInstance
+
+        // },)
+        // arrRef?.when('update', (v) => {
+
+        //     v?.removed
+
+        // })
 
         //********************   SQuery.model   ***************************
-        const parent  = SQuery2.currentClientInstance<'user'>()
+        const parent = SQuery2.currentClientInstance<'user'>()
         //********************   SQuery.model   ***************************
 
         const model1 = await SQuery2.createModel('entreprise');
         // or 
         if (!address) return
-        const model2 = address.$model;
+        const addressModel = address.$model;
 
-       
+
         // the description of model permit you to know exactly 
-        const modelDescription = model2.description
+        const modelDescription = addressModel.description
 
-        const instance1 = await model2.create({
-            
+        const instance1 = await addressModel.create({
+            // Partial of Address Creation Object
         });
 
-        const instance2 = await model2.newInstance({ id: ''/* model id*/ });
+        const instance2 = await addressModel.newInstance({ id: ''/* model id*/ });
+        const instance4 = await addressModel.newInstance({
+            cache: {
+                _id: '',
+            }/* model id*/
+        });
 
-        const instance3 = await model2.update({
-            id: ''/* model update data , id is required*/
+        const instance3 = await addressModel.update({
+            id: '' //Partial of Address Creation Object & { id } 
         });
-        const instance4 = await model2.newParentInstance<'address'>({
-            childInstance: address
-        });
-        
-        await model2.delete({
+
+        await addressModel.delete({
             id: ''
         });
 
 
- //********************   SQuery.Collector   ***************************
-       
+        //********************   SQuery.Collector   ***************************
+
     }
-}))
 
-/*
-
-    async isInstance(instance: any){
-      return (
-        instance.$modelPath &&
-        instance.$id &&
-        instance.newParentInstance &&
-        instance.update &&
-        instance.when
-      );
-    },
-    async isArrayInstance(arrayInstance: any) {
-      return (
-        arrayInstance.back &&
-        arrayInstance.next &&
-        arrayInstance.page &&
-        arrayInstance.$itemModelPath &&
-        arrayInstance.last &&
-        arrayInstance.update &&
-        arrayInstance.when
-      );
-    },
-    async isFileInstance (fileInstance: any)  {
-      return false;
-    },
-
-*/
+}));

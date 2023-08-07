@@ -6,19 +6,18 @@ import { AuthStore } from '../Auth/AuthStore';
 import { UserFormStore } from '../UserData/UserFormStore';
 import { AppStore } from '../AppStore';
 import { useEffect, useState } from 'react';
-import { AccountInterface, AddressInterface, ProfileInterface, UserInterface } from '../Descriptions';
-import { UrlData } from '../lib/SQueryClient';
 import { MainStore } from './MainStore';
+import { FileType } from '../lib/SQueryClient';
 
 
 function Main() {
 
-    const { openAuth  , entreprise } = AuthStore();
+    const { openAuth  , entreprise , setProfile , profile } = AuthStore();
     const { openedForm, setOpenedForm , newUserId } = UserFormStore();
     const { entreprise: entrepriseI, quarters, userList, padiezdList, buildingList, HOST } = AppStore();
     const { fetchEntreprise, fetchPadiezd, fetchBuilding, fetchUser } = AppStore();
     
-    if (entreprise._id && !entrepriseI._id) fetchEntreprise(entreprise._id)
+    if (entreprise?._id && !entrepriseI._id) fetchEntreprise(entreprise._id)
 
     const [currentQuarterId, setCurrentQuarterId] = useState('');
     const [deselectedPadiezd, setSeselectedPadiezd] = useState<string[]>([]);
@@ -58,6 +57,43 @@ function Main() {
                 {quarters.map((quarter) =>
                     <div key={'quarter' + quarter._id} className={`quarter ${quarter._id === currentQuarterId ? ' active' : ''}`} data-id={quarter._id} onClick={(e) => setCurrentQuarterId(e.currentTarget.dataset.id || "0")}>{quarter.name}</div>
                 )}
+            </div>
+            <div>
+
+            <input type="file" name="file" onChange={async (e) => {
+                    const f = e.currentTarget.files;
+                    const l: (FileType)[] = [];
+                    for (let i = 0; i < (f?.length||0); i++) {
+                        const el = f?.item(i);
+                        if(el)
+                        l.push({
+                            buffer: await el?.arrayBuffer(),
+                            encoding:'binary',
+                            fileName:el.name,
+                            type:el.type,
+                            size:el.size
+                        })
+                    }
+                    setProfile({
+                        _id:profile?._id||''
+                    }, {
+                        imgProfile: l,
+                    })
+                }} />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             </div>
             <div className="list-ctn">
                 <div className="list-top">

@@ -816,5 +816,3 @@ export interface TransactionInterface {
     __createdAt: number,
     __updatedAt: number,
 }
-
-export const SQuery2 = createSQueryFrom('http://localhost:3500', Descriptions, CacheValues, Controller);

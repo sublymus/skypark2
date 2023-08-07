@@ -5,6 +5,7 @@ import { SQuery } from "../../lib/squery/SQuery";
 import AddressModel from "./AddressModel";
 import FavoritesModel from "./FavoritesModel";
 import ProfileModel from "./ProfileModel";
+import Log from "sublymus_logger";
 let accountSchema = SQuery.Schema({
   name: {
     type: String,
@@ -22,7 +23,7 @@ let accountSchema = SQuery.Schema({
   },
   userTarg: {
     type: String,
-    unique: true,
+    //unique: true,
   },
   status: {
     type: String,// proprietaire, locataire, superviseur , manageur
@@ -60,7 +61,7 @@ let accountSchema = SQuery.Schema({
     }
   },
 });
-
+const d = accountSchema.description
 const AccountModel = mongoose.model("account", accountSchema);
 
 const maker = MakeModelCtlForm({
