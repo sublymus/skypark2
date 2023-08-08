@@ -144,10 +144,69 @@ export const Controller = {
         },
       },
     },
+    
+  },
+  profile: {
+    read: {
+      send: {
+        id:''
+      },
+      receive: {} as ProfileInterface,
+    }
   }
-
 } satisfies ControllerType;
 export const Descriptions = {
+  test: {
+    simpleArray: [{
+      type: Number
+    }],
+    fileArray: [{
+      type: String,
+      file: {}
+    }],
+    bigint: {
+      type: String,
+    },
+    bool: {
+      type: Boolean,
+    },
+    str: {
+      type: String,
+    },
+    num: {
+      type: Number,
+    },
+    stringMap: {
+      type: Map,
+      of: ''
+    },
+    numberMap: {
+      type: Map,
+      of: 0
+    },
+    ojectData: {
+      type: { salut: '', famille: '', nombreuse: 0 },
+    },
+    refArray_of_Account: [{
+      type: String,
+      ref: 'test' as const
+    }],
+    ref_of_Profile: {
+      type: String,
+      ref: 'test' as const,
+      strictAlien: true as const
+    },
+    // _id: {
+    //   type: String
+    // },
+    // __createdAt: {
+    //   type: Number
+    // },
+    // __updatedAt: {
+    //   type: Number
+    // },
+
+  },
   user: {
     account: {
       type: String,
@@ -848,9 +907,40 @@ export const CacheValues = {
     entreprise: '',
     __createdAt: 0,
     __updatedAt: 0,
-  } as SupervisorInterface
+  } as SupervisorInterface,
+  test: {
+    _id: '',
+    simpleArray: [],
+    fileArray: [],
+    bigint: '',
+    bool: false,
+    str: '',
+    num: 0,
+    stringMap: new Map<string, string>(),
+    numberMap: new Map<string, number>(),
+    ojectData: { salut: '', famille: '', nombreuse: 0 },
+    refArray_of_Account: [],
+    ref_of_Profile: '',
+    __createdAt: 0,
+    __updatedAt: 0,
+  } as TestInterface
 } satisfies CacheType
-
+export interface TestInterface {
+  simpleArray: number[],
+  fileArray: UrlData[],
+  bigint: String,
+  bool: boolean,
+  str: string,
+  num: number
+  stringMap: Map<string, string>,
+  numberMap: Map<string, number>,
+  ojectData: { salut: string, famille: string, nombreuse: number },
+  refArray_of_Account: string[],
+  ref_of_Profile: string,
+  _id: string;
+  __createdAt: number,
+  __updatedAt: number,
+}
 export interface MessageInterface {
   account: string,
   text: string,

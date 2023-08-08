@@ -43,8 +43,8 @@ initial data
 
 */
 
-export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | Buffer | Map<string, any> | BigInt;
-export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof Buffer | typeof Map | typeof BigInt | { [k: string]: any };
+export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | Buffer | Map<string, any> ;
+export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof Buffer | typeof Map | { [k: string]: any };
 export type RuleSchema = TypeRuleSchema | TypeRuleSchema[]
 
 export type TypeRuleSchema = {
@@ -70,7 +70,12 @@ export interface DescriptionsType {
   [key: string]: DescriptionSchema;
 }
 
-export type ArrayData<I> = {
+export interface  InstanceInterface{
+  _id: string;
+  __createdAt: number,
+  __updatedAt: number,
+}
+export type ArrayData<I extends InstanceInterface> = {
   added: string[],
   removed: string[],
   items: I[],
@@ -117,6 +122,7 @@ export type UrlData = {
   url: string,
   size: number,
   extension: string,
+  _id:string,
 }
 
 const Descriptions: any = {}
@@ -156,18 +162,18 @@ export type FileType = {
 // }
 interface InitInterface {
   socket: Socket,
-  setCookie: (cookies: string) => void,
-  getCookie: () => string,
-  setJSON?: (key: string, JSON: string) => void,
-  getJSON?: () => string
+  setCookie: (cookies: string) => Promise<void>,
+  getCookie: () => Promise<string>,
+  setJSON?: (key: string, JSON: string) => Promise<void>,
+  getJSON?: () => Promise<string>
 }
 export function createSQueryFrom<D extends DescriptionsType, C extends { [key in keyof D]: C[key] }, Ctrl extends ControllerType>(Descriptions: D, CacheValues: C, Controller: Ctrl, init: InitInterface) {
 
-  init.socket.on("storeCookie", (cookie: string, cb) => {
-    init.setCookie(cookie);
-    cb(cookie);
+  init.socket.on("storeCookie", async (cookie: string, cb) => {
+    await init.setCookie(cookie);
+    cb(init.getCookie());
   });
-
+  init.getCookie();
 
   type ModelType<K extends keyof D> = D[K];
   type SortType<K extends keyof D> = {
@@ -216,11 +222,11 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
   } | null | undefined
   type ArrayInstance<K extends keyof D> = {
     when: <e extends ('update' | 'refresh') >(event: e, listener: listenerSchema<e extends 'update' ? ModifiedData : ArrayData<K>>, uid?: string) => void,
-    update: (options: Partial<ArrayUpdateOption<K>>) => Promise<ArrayData<K>>;
-    last: () => Promise<ArrayData<K>>;
-    next: () => Promise<ArrayData<K>>;
-    back: () => Promise<ArrayData<K>>;
-    page: (page?: number) => Promise<ArrayData<K>>;
+    update: (options: Partial<ArrayUpdateOption<K>>) => Promise<ArrayData<K>|undefined>;
+    last: () => Promise<ArrayData<K>|undefined>;
+    next: () => Promise<ArrayData<K>|undefined>;
+    back: () => Promise<ArrayData<K>|undefined>;
+    page: (page?: number) => Promise<ArrayData<K>|undefined>;
   }
 
   type E<K extends keyof D> = keyof {
@@ -230,8 +236,8 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
 
   type BaseInstance<K extends keyof D> = {
     update(data: { [key in keyof Partial<D[K]>]: CreateAbstractModel<K, key> }): void
-    when(event: E<K>, listener: ((v: V<K>, e: EventInfo<V<K>>, uid?: string) => void)): void;
-    extractor(extractorPath: string): Promise<BaseInstance<K> | null>;
+    when(event: E<K>, listener: ((v: V<K>, e: EventInfo<V<K>>) => void),uid?: string): void;
+    extractor<K extends keyof D>(extractorPath: string): Promise<BaseInstance<K> | null>;
     $modelPath: K;
     $parentModelPath: string | undefined;
     $parentId: string | undefined;
@@ -242,7 +248,6 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
     _id: string;
     __createdAt: number,
     __updatedAt: number,
-    __parentModel: string,
     $cache: C[K];
     newParentInstance<key extends keyof D>(): Promise<ReturnType<typeof getInstanceType<ModelType<key>, key>> | null>;
   }
@@ -259,31 +264,28 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
 
   type PropertyTypeOf<T extends DescriptionSchema, key extends keyof T, p extends keyof TypeRuleSchema> = T[key] extends TypeRuleSchema[] ? T[key][0][p] : T[key] extends TypeRuleSchema ? T[key][p] : any;
 
-  type Value<I extends keyof TypeRuleSchema, T extends DescriptionSchema, key extends keyof T> = T[key] extends { ref: infer U } ? (U extends keyof D ? Promise<ReturnType<typeof getInstanceType<(D)[U], U>>> : never) : T[key] extends { type: typeof String } ? string : T[key] extends { type: typeof Number } ? number : T[key] extends { type: typeof Boolean } ? boolean : T[key] extends { type: typeof BigInt } ? BigInt : T[key] extends { type: typeof Map } ? Map<string, PropertyTypeOf<T, key, 'of'>> : PropertyTypeOf<T, string & key, I>;
+  type Value<I extends keyof TypeRuleSchema, T extends DescriptionSchema, key extends keyof T> = T[key] extends { ref: infer U } ? (U extends keyof D ? Promise<ReturnType<typeof getInstanceType<(D)[U], U>>> : never) : T[key] extends { type: typeof String } ? string : T[key] extends { type: typeof Number } ? number : T[key] extends { type: typeof Boolean } ? boolean  : T[key] extends { type: typeof Map } ? Map<string, PropertyTypeOf<T, key, 'of'>> : PropertyTypeOf<T, string & key, I>;
+  type ArrayValue<T extends DescriptionSchema, key extends keyof T> = T[key] extends Array<{ file: object }> ? (FileType | UrlData)[] : T[key] extends Array<{ ref: infer U }> ? (U extends keyof D ? Promise<ArrayInstance<U>> : never) : T[key] extends Array<{ type: typeof String }> ? string[] : T[key] extends Array<{ type: typeof Number }> ? number[] : T[key] extends Array<{ type: typeof Boolean }> ? boolean[] : T[key] extends Array<{ type: typeof Map }> ? Map<string, PropertyTypeOf<T, key, 'of'>>[] : PropertyTypeOf<T, string & key, 'type'>[]
 
   function getInstanceType<T extends DescriptionSchema, K extends keyof D>() {
 
-    const fun = (<k extends keyof TypeRuleSchema, o extends keyof TypeRuleSchema>() => {
-
+    
       // type MapValue<T, key extends keyof T> = Map<string, Exclude<typeof t, MapConstructor>>
 
       //type OF  = 'of' as keyof DataRuleSchema ;
 
-      type ArrayValue<T extends DescriptionSchema, key extends keyof T> = T[key] extends Array<{ file: object }> ? (FileType | UrlData)[] : T[key] extends Array<{ ref: infer U }> ? (U extends keyof D ? Promise<ArrayInstance<U>> : never) : T[key] extends Array<{ type: typeof String }> ? string[] : T[key] extends Array<{ type: typeof Number }> ? number[] : T[key] extends Array<{ type: typeof Boolean }> ? boolean[] : T[key] extends Array<{ type: typeof BigInt }> ? BigInt[] : T[key] extends Array<{ type: typeof Map }> ? Map<string, PropertyTypeOf<T, key, 'of'>>[] : PropertyTypeOf<T, string & key, k>[]
-
+      
       type instance = {
         [key in keyof T as `${string & key}`]?: T[key] extends Array<{}> ? ArrayValue<T, key> : Value<'type', T, key>
       }
 
       const obj = {} as (instance & BaseInstance<K>);
       return obj;
-    });
-
-    return fun<'type', 'of'>();
+   
   }
 
   type CreateModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends { ref: infer U, strictAlien: true } ? (U extends keyof D ? string : never) : D[K][key] extends { ref: infer U, alien: true } ? (U extends keyof D ? string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> } : never) : D[K][key] extends { ref: infer U } ? (U extends keyof D ? { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> } : never) : D[K][key] extends Array<{ file: {} }> ? FileType[] : Value<I, D[K], key>;
-  type CreateArryModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends Array<{ file: {} }> ? (FileType | UrlData)[] : D[K][key] extends Array<{ ref: infer U, strictAlien: true }> ? (U extends keyof D ? (string)[] : never) : D[K][key] extends Array<{ ref: infer U, alien: true }> ? (U extends keyof D ? (string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : D[K][key] extends Array<{ ref: infer U }> ? (U extends keyof D ? ({ [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : Value<I, D[K], 'type'>[];
+  type CreateArryModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends Array<{ file: {} }> ? (FileType | UrlData)[] : D[K][key] extends Array<{ ref: infer U, strictAlien: true }> ? (U extends keyof D ? (string)[] : never) : D[K][key] extends Array<{ ref: infer U, alien: true }> ? (U extends keyof D ? (string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : D[K][key] extends Array<{ ref: infer U }> ? (U extends keyof D ? ({ [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : ArrayValue< D[K], key>;
 
   type CreateAbstractModel<K extends keyof D, key extends keyof D[K]> = (D[K][key] extends Array<object> ? (CreateArryModel<'type', K, key> | undefined) : (CreateModel<'type', K, key> | undefined));
 
@@ -352,8 +354,7 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
           }
         );
       });
-      console.log(`%c SUPER %c server:collector `, 'font-weight: bold; font-size: 14px;color: orange; ', 'font-weight: bold; font-size: 20px;color: red; ');
-
+      
       const Result: any = {}
       for (const key in c) {
         if (Object.prototype.hasOwnProperty.call(c, key)) {

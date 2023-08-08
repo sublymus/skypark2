@@ -1,59 +1,38 @@
 import { SQuery, SQuery2 } from './AppStore';
-import { AccountInterface, AddressInterface, EntrepriseInterface, MessengerInterface, ProfileInterface, ManagerInterface, CacheValues } from "./Descriptions";
+import { AccountInterface, AddressInterface, EntrepriseInterface, MessengerInterface, ProfileInterface, ManagerInterface, CacheValues, TestInterface } from "./Descriptions";
 
 
 import { create } from 'zustand'
 import EventEmiter from './lib/event/eventEmiter';
+import { ArrayData } from './lib/SQueryClient';
 
 
-interface AuthState {
-    id: string,
-    account: AccountInterface;
-    profile: ProfileInterface;
-    address: AddressInterface;
-    manager: ManagerInterface
-    messenger: MessengerInterface;
-    entreprise: EntrepriseInterface
-    openAuth: 'login' | 'none' | 'signup',
-
+interface laboState {
+    // _id: string,
+    // simpleArray: AccountInterface;
+    // bigint: ProfileInterface;
+    // bool: AddressInterface;
+    // str: ManagerInterface
+    // num: MessengerInterface;
+    // numberMap: EntrepriseInterface,
+    // refArray_of_Account: 'login' | 'none' | 'signup',
+    // arraData_of_test:ArrayData<TestInterface>
+    // ref_of_Profile: 'login' | 'none' | 'signup',
+    // test: TestInterface,
     LABO: (loginData: { email: string, password: string }) => Promise<void>,
-    fetchDisconnect: () => Promise<void>,
+    // fetchDisconnect: () => Promise<void>,
+    // service(): Promise<void>,
+    // collector(): Promise<void>,
+    // newInsatnce(): Promise<void>,
+    // extarctor(): Promise<void>,
+    // newParentInstance(): Promise<void>,
+    // currentClientInstance(): Promise<void>,
 }
 
-type setType = (partial: Partial<AuthState> | ((state: AuthState) => Partial<AuthState>), replace?: boolean | undefined) => void
+type setType = (partial: Partial<laboState> | ((state: laboState) => Partial<laboState>), replace?: boolean | undefined) => void
 const eventEmiter = new EventEmiter();
-export const AuthStore = create<AuthState>((set: setType) => ({
-    id: '',
-    messenger: CacheValues['messenger'],
-    entreprise: CacheValues['entreprise'],
-    account: CacheValues['account'],
-    manager: CacheValues['manager'],
-    profile: CacheValues['profile'],
-    address: CacheValues['address'],
-    openAuth: 'none',
-    setOpenAuth: (openAuth: 'login' | 'none' | 'signup') => set(() => ({ openAuth })),
-    fetchDisconnect: async () => {
-        const transaction = await SQuery2.newInstance('transaction', {
-            id: ''
-        });
-        transaction?.update({
+export const AuthStore = create<laboState>((set: setType) => ({
 
-        });
-        // const er = await transaction?.unbind
-        set(() => ({
-            id: '',
-            messenger: CacheValues['messenger'],
-            entreprise: CacheValues['entreprise'],
-            account: CacheValues['account'],
-            manager: CacheValues['manager'],
-            profile: CacheValues['profile'],
-            address: CacheValues['address'],
-        }))
-        await SQuery.service('server', 'disconnection', {});
-        const account = await SQuery2.newInstance('account', { id: '' });
-
-        account?.imgProfile
-    },
     LABO: async (loginData: { email: string, password: string }) => {
         //********************   SQuery.service   ***************************
         const res = await SQuery2.service('login', 'manager', loginData);
@@ -79,9 +58,9 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         if (!profile || !address) return
 
         // push them in your state
-        set(({ }) => ({ id: manager.$id, ...SQuery.cacheFrom({ account, entreprise, messenger, address, manager, profile }) }))
+        //set(({ }) => ({ id: manager.$id, ...SQuery.cacheFrom({ account, entreprise, messenger, address, manager, profile }) }))
 
-        SQuery.bind({ manager, account, entreprise, profile }, set);
+        //SQuery.bind({ manager, account, entreprise, profile }, set);
 
         const parent2 = await account.newParentInstance<'user'>()
         parent2?.messenger
@@ -103,14 +82,14 @@ export const AuthStore = create<AuthState>((set: setType) => ({
             remove:(envents?: string)=>void // remove listener for this event or specified envents; envents:'e1 e2 e3' //TODO*
         }
        */
-        address?.when('refresh:room', (v) => {
-            set((state) => ({
-                [address.$modelPath]: {
-                    ...state[address.$modelPath],
-                    ...v
-                }
-            }));
-        })
+        // address?.when('refresh:room', (v) => {
+        //     set((state) => ({
+        //         [address.$modelPath]: {
+        //             ...state[address.$modelPath],
+        //             ...v
+        //         }
+        //     }));
+        // })
 
         //********************   instance  read / update   ***************************
 
@@ -234,7 +213,6 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         await addressModel.delete({
             id: ''
         });
-
 
         //********************   SQuery.Collector   ***************************
 

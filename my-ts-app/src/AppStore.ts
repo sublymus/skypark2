@@ -26,12 +26,11 @@ export const SQuery2 = createSQueryFrom( D2, C2, Ctrl2,{
     socket: io('http://localhost:3500', {
         extraHeaders: {},
     }),
-    getCookie() {
+    async getCookie() {
         return  document.cookie
     },
-    setCookie(cookie) {
+    async setCookie(cookie) {
         console.log(cookie);
-        
         document.cookie = cookie;  
     },
 });
@@ -40,10 +39,12 @@ export const SQuery = createSQueryFrom(Descriptions, CacheValues, Controller, {
     socket: io('http://localhost:3500', {
         extraHeaders: {},
     }),
-    getCookie() {
-        return ''
+    async getCookie() {
+        return document.cookie
     },
-    setCookie(cookie) {
+    async setCookie(cookie) {
+        console.log(cookie);
+        
         document.cookie = cookie;  
     },
 });

@@ -11,13 +11,13 @@ import { useEffect } from 'react';
 import { AppStore } from './AppStore';
 
 function App() {
-  const { openAuth , fetchCurrentManager} = AuthStore();
+  const { openAuth ,fetchLoginManager} = AuthStore();
   const {openedForm}= UserFormStore()
   const {testCollector} = AppStore();
 
   useEffect(()=>{
     //testCollector();
-    
+    fetchLoginManager();
   },[]);
   return (
     <div className="app ctn">

@@ -9,6 +9,7 @@ declare module "zustand" {
 
 }
 
+const DIScussionStorage: any = {}
 
 interface MainState {
     infoSize: number,
@@ -21,7 +22,9 @@ interface MainState {
         focusedUser: typeof accountInit
     }) => Promise<void>
     focusedUser: typeof accountInit,
-    currentChannel: ArrayData<MessageInterface>,
+
+    currentChannel:  ArrayData< MessageInterface>|undefined,
+    
     fetchDiscussion: (accountId: string) => Promise<void>
 
     //modelObservator:(modelPath:PickArgumentsType<0,typeof SQuery.newInstance>, id:string)=> Promise<void>
@@ -48,14 +51,25 @@ export const MainStore = create<MainState>((set: setType) => ({
         set(({ }) => ({ focusedUser: account }))
     },
     sendMessage: async (data) => {
-        const res = await SQuery.service('messenger', 'createDiscussion', {
-            receiverAccountId: data.focusedUser._id,
-        });
 
-        if (!res.response) return;
+        let discussionId = '';
+        if(! DIScussionStorage[data.focusedUser._id]){
+            const res = await SQuery.service('messenger', 'createDiscussion', {
+                receiverAccountId: data.focusedUser._id,
+            });
+    
+            if (!res.response) return;
+            discussionId = res.response.id;
+        }else{
+            discussionId = DIScussionStorage[data.focusedUser._id]
+        }
+        
+        const discussion = await SQuery.newInstance('discussion', { id: discussionId });
 
-        const discussion = await SQuery.newInstance('discussion', { id: res.response.id });
         if (!discussion) return
+
+        DIScussionStorage[data.focusedUser._id] = discussionId;
+
         const ArrayDiscussion = await discussion.channel;
         ArrayDiscussion?.update({
             addNew: [{
@@ -70,14 +84,15 @@ export const MainStore = create<MainState>((set: setType) => ({
             receiverAccountId: accountId
         });
 
-        if (!res.response) return set(({}) => ({ currentChannel: ArrayDataInit }));
+        if (!res?.response) return // set(({}) => ({ currentChannel: ArrayDataInit }));
         a = 0;
         const discussion = await SQuery.newInstance('discussion', { id: res.response.id });
         if (!discussion) return
-        const ArrayDiscussion = await discussion.channel;
-        const currentChannel = await ArrayDiscussion?.update({
-            paging: {
-                limit: 100,
+        const ArrayChannel = await discussion.channel;
+        const arrayData = await ArrayChannel?.update({
+            paging: { 
+                limit: 50,
+                page: 3,
                 sort: {
 
                     __createdAt: 1,
@@ -85,20 +100,6 @@ export const MainStore = create<MainState>((set: setType) => ({
                 },
             }
         });
-        ArrayDiscussion?.when('update', async (modifiedData , e) => {
-            a++;
-            console.log(`%c update${a}`, 'font-weight: bold; font-size: 20px;color: green;', { modifiedData  ,  });
-            const currentChannel = await ArrayDiscussion?.update({
-                paging: {
-                    limit: 100,
-                    sort: {
-                        __createdAt: 1
-                    },
-                }
-            });;
-            console.log(`%c currentChannel`, 'font-weight: bold; font-size: 20px;color: green;', { currentChannel  });
-            set(({focusedUser}) => ({ currentChannel: currentChannel }))
-        })
-        set(() => ({ currentChannel: currentChannel }));
+        set(({}) => ({ currentChannel: arrayData  }));
     },
 }))

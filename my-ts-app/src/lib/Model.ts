@@ -1,7 +1,6 @@
 import { createInstanceFrom } from "./Instance";
 import createSQueryFrom, { DescriptionSchema } from "./SQueryClient";
 
-
 const ModelCache : any = {}; 
 
 export async function createModelFrom(modelPath: string, description: DescriptionSchema, SQuery: any): Promise<any> {
@@ -11,7 +10,7 @@ export async function createModelFrom(modelPath: string, description: Descriptio
   const Model: any = {};
   Model.description = description;
   Model.create = async (data: any, errorCb: any): Promise<any> => {
-    ///// verifier si chaque donner est bien rentrer
+  ///// verifier si chaque donner est bien rentrer
 
     if (!errorCb) errorCb = (e: any) => console.error(e);
    

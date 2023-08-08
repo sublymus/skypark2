@@ -12,11 +12,11 @@ import { FileType } from '../lib/SQueryClient';
 
 function Main() {
 
-    const { openAuth  , entreprise , setProfile , profile } = AuthStore();
-    const { openedForm, setOpenedForm , newUserId } = UserFormStore();
+    const { openAuth, entreprise, setProfile, profile } = AuthStore();
+    const { openedForm, setOpenedForm, newUserId } = UserFormStore();
     const { entreprise: entrepriseI, quarters, userList, padiezdList, buildingList, HOST } = AppStore();
     const { fetchEntreprise, fetchPadiezd, fetchBuilding, fetchUser } = AppStore();
-    
+
     if (entreprise?._id && !entrepriseI._id) fetchEntreprise(entreprise._id)
 
     const [currentQuarterId, setCurrentQuarterId] = useState('');
@@ -29,26 +29,26 @@ function Main() {
     const quarter = quarters.find((q) => q._id == currentQuarterId);
 
     useEffect(() => {
-        if(currentQuarterId){
+        if (currentQuarterId) {
             fetchPadiezd(currentQuarterId);
             fetchBuilding(currentQuarterId);
         }
     }, [currentQuarterId]);
 
     useEffect(() => {
-        if(quarter?._id)
-        fetchUser({
-            filter: filtre,
-            ids: filtre == 'Building' ? buildingList.filter((b) => !deselectedPBuilding.includes(b._id)).map(p => p._id) : padiezdList.filter((p) => !deselectedPadiezd.includes(p._id)).map(p => p._id),
-            sort,
-            quarterId: quarter?._id
-        })
-    }, [currentQuarterId ,newUserId, buildingList, deselectedPBuilding, padiezdList, deselectedPadiezd, filtre, sort]);
+        if (quarter?._id)
+            fetchUser({
+                filter: filtre,
+                ids: filtre == 'Building' ? buildingList.filter((b) => !deselectedPBuilding.includes(b._id)).map(p => p._id) : padiezdList.filter((p) => !deselectedPadiezd.includes(p._id)).map(p => p._id),
+                sort,
+                quarterId: quarter?._id
+            })
+    }, [currentQuarterId, newUserId, buildingList, deselectedPBuilding, padiezdList, deselectedPadiezd, filtre, sort]);
 
-    
-    const { setFocusedUser  ,focusedUser } = MainStore()
+
+    const { setFocusedUser, focusedUser } = MainStore()
     useEffect(() => {
-       // modelObservator('user', focusedUser._id);
+        // modelObservator('user', focusedUser._id);
     }, [focusedUser]);
 
     return (
@@ -61,24 +61,33 @@ function Main() {
             <div>
 
             <input type="file" name="file" onChange={async (e) => {
-                    const f = e.currentTarget.files;
-                    const l: (FileType)[] = [];
-                    for (let i = 0; i < (f?.length||0); i++) {
-                        const el = f?.item(i);
-                        if(el)
-                        l.push({
-                            buffer: await el?.arrayBuffer(),
-                            encoding:'binary',
-                            fileName:el.name,
-                            type:el.type,
-                            size:el.size
+                    
+                    const file = e.currentTarget.files?.item(0);
+                    if(file)
+                        setProfile({
+                            _id: profile?._id || '',
+                            message: e.currentTarget.value,
+                        },
+                        {
+                            imgProfile:[{
+                                buffer: await file?.arrayBuffer(),
+                                encoding:'binary',
+                                fileName:file?.name,
+                                size:file?.size,
+                                type:file?.type
+                            }]
+                        }
+                        )
+                }} />
+                <input type="text" name="file" onKeyUp={async (e) => {
+                    console.log(e.key);
+                    if (e.key == 'Enter') {
+                        setProfile({
+                            _id: profile?._id || '',
+                            message: e.currentTarget.value,
                         })
                     }
-                    setProfile({
-                        _id:profile?._id||''
-                    }, {
-                        imgProfile: l,
-                    })
+
                 }} />
 
 
