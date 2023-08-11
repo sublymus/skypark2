@@ -119,7 +119,7 @@ const main: MainType = function (socket: Socket) {
         service,
         data
       );
-        Log('Cookie_result',await SQuery.cookies(socket?.request.headers.cookie));
+      Log('Client_Cookie',await SQuery.cookies(socket));
       const midList = [...GlobalMiddlewares];
 
       for (let i = 0; i < midList.length; i++) {
@@ -134,13 +134,14 @@ const main: MainType = function (socket: Socket) {
         if (modelRequest) {
           res = await ModelControllers[ctrlName]?.()[service]?.(ctx);
         } else {
+          // TODO* Ctrl undefined , service undefined , res?.response undefined
           res = await Controllers[ctrlName]?.()[service]?.(ctx);
         }
-      } catch (error) {
-        Log("ERROR_Controller", error);
+      } catch (error:any) {
+        Log("ERROR_Controller", error.message);
         if (MapUserCtx[ctx.__key]) MapUserCtx[ctx.__key].isAvalaibleCtx = false;
         return cb?.({
-          error: "ERROR_CTRL_UNDEFINED",
+          error: error.message,
           status: 404,
           code: "ERROR_CTRL_UNDEFINED",
           message: "ERROR_CTRL_UNDEFINED",

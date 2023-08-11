@@ -15,8 +15,23 @@ import { SQuery } from "../SQuery";
 
 const server: ControllerSchema = {
   disconnection: async (ctx: ContextSchema): ResponseSchema => {
-    await SQuery.cookies(ctx.socket, "token", {});
-    //ctx.socket?.disconnect(true);
+    const token ={};
+    if(!ctx.socket) return
+    ctx.socket.request.headers.cookie = ctx.data.cookie
+    await SQuery.cookies(ctx.socket ,'token', token );
+    return {
+      response: "OPERATION_SUCCESS",
+      status: 404,
+      code: "OPERATION_SUCCESS",
+      message: 'OPERATION_SUCCESS',
+    }
+  }, 
+   setCookie: async (ctx: ContextSchema): ResponseSchema => {
+    const token = await SQuery.cookies(ctx.data.cookie,'token');
+    Log('cookiessss',{token} , ctx.data.cookie)
+    if(!ctx.socket) return
+    ctx.socket.request.headers.cookie = ctx.data.cookie
+    await SQuery.cookies(ctx.socket ,'token', token );
     return {
       response: "OPERATION_SUCCESS",
       status: 404,
@@ -25,36 +40,34 @@ const server: ControllerSchema = {
     }
   },
   collector: async (ctx: ContextSchema): ResponseSchema => {
-    const {data, data:{$option}} = ctx.data;
-    Log('defffff',data);
-    
+    const {data} = ctx;
+     
+    console.log(`***`,{data});
     const collect: any = {};
-    for (const p in data) {
-      const promies = []
 
+    for (const p in data) {
       if (Object.prototype.hasOwnProperty.call(data, p)) {
         const arrayId = data[p];
        if(!Array.isArray(arrayId)) continue;
         const promises = arrayId.map((id: any) => {
-          return new Promise<any>(async (rev, rej) => {
-            console.log('id',id);
+          return new Promise<any>(async (rev) => {
             const res = await ModelControllers[p]?.()['read']?.({
               ...ctx,
               data:{
                 id,
-                deep:data.$deep
+                deep:0,
               }
             });
-          // console.log(res);
-           
             if(!res?.response) return rev(null);
             rev(res.response);
           });
         });
+
         const instances = await Promise.allSettled(promises);
         const validResult = instances.map((data: any) => {
           return data.value;
         });
+
         collect[p] = validResult;
         Log('collect' ,collect);
       }
@@ -68,6 +81,8 @@ const server: ControllerSchema = {
   },
   currentClient: async (ctx: ContextSchema): ResponseSchema => {
     const token = await SQuery.cookies(ctx.socket, "token");
+    if(!token) throw new Error("you don't have current client");
+    
     return {
       response: {
         login: {
@@ -188,10 +203,10 @@ const server: ControllerSchema = {
     if (!local_modelInstance) {
       Log(
         "ERROR_validId",
-        `Id not found; modePath:${ctx.data.modelPath} alienId: ${ctx.data.id}  alienModelPath: ${ctx.data.modelPath}`
+        `Id not found; modePath:${ctx.data.modelPath} Id: ${ctx.data.id} `
       );
       throw new Error(
-        `Id not found; modePath:${ctx.data.modelPath} alienId: ${ctx.data.id}  alienModelPath: ${ctx.data.modelPath}`
+        `Id not found; modePath:${ctx.data.modelPath} Id: ${ctx.data.id}`
       );
     }
     return {

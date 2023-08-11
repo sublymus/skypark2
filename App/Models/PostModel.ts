@@ -9,12 +9,28 @@ let PostSchema = SQuery.Schema({
     ref: MessageModel.modelName,
     required: true,
   },
+  type:{
+    type:String
+  },
   like:[{
     type:Schema.Types.ObjectId,
     access:'secret',
     impact:false,
     required:true,
   }],
+  shared:[{
+    type:Schema.Types.ObjectId,
+    access:'secret',
+    impact:false,
+    required:true,
+  }],
+  statPost:{
+    type: {
+      likes: Number,
+      comments: Number,
+      shares: Number
+    }
+  },
   comments: [ {
       type: Schema.Types.ObjectId,
       access:'admin',
@@ -32,3 +48,4 @@ const maker = MakeModelCtlForm({
 
 
 export default PostModel;
+

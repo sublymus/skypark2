@@ -10,7 +10,7 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
   try {
     
     const p = parse(cookie||'');
-    console.log({p});
+    //console.log({p});
     const squery_session = JSON.parse(p.squery_session);
     decoded = jwt.verify(squery_session, Config.conf.TOKEN_KEY||'') || {};
   } catch (error:any) {
@@ -22,7 +22,7 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
   if (value && !key) return;
 
   if(!(source instanceof Socket)) return key? decoded[key]:undefined;
-  ('on est passer')
+
   const socket = source;
   const generateToken = (payload: { [property: string]: any }) => {
     return jwt.sign(

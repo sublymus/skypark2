@@ -167,13 +167,16 @@ interface InitInterface {
   setJSON?: (key: string, JSON: string) => Promise<void>,
   getJSON?: () => Promise<string>
 }
-export function createSQueryFrom<D extends DescriptionsType, C extends { [key in keyof D]: C[key] }, Ctrl extends ControllerType>(Descriptions: D, CacheValues: C, Controller: Ctrl, init: InitInterface) {
+export async function createSQueryFrom<D extends DescriptionsType, C extends { [key in keyof D]: C[key] }, Ctrl extends ControllerType>(Descriptions: D, CacheValues: C, Controller: Ctrl, init: InitInterface) {
 
   init.socket.on("storeCookie", async (cookie: string, cb) => {
     await init.setCookie(cookie);
     cb(init.getCookie());
   });
-  init.getCookie();
+  //init
+
+   console.log('available cookies', await init.getCookie());
+   
 
   type ModelType<K extends keyof D> = D[K];
   type SortType<K extends keyof D> = {
@@ -285,9 +288,9 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
   }
 
   type CreateModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends { ref: infer U, strictAlien: true } ? (U extends keyof D ? string : never) : D[K][key] extends { ref: infer U, alien: true } ? (U extends keyof D ? string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> } : never) : D[K][key] extends { ref: infer U } ? (U extends keyof D ? { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> } : never) : D[K][key] extends Array<{ file: {} }> ? FileType[] : Value<I, D[K], key>;
-  type CreateArryModel<I extends keyof TypeRuleSchema, K extends keyof D, key extends keyof D[K]> = D[K][key] extends Array<{ file: {} }> ? (FileType | UrlData)[] : D[K][key] extends Array<{ ref: infer U, strictAlien: true }> ? (U extends keyof D ? (string)[] : never) : D[K][key] extends Array<{ ref: infer U, alien: true }> ? (U extends keyof D ? (string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : D[K][key] extends Array<{ ref: infer U }> ? (U extends keyof D ? ({ [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : ArrayValue< D[K], key>;
+  type CreateArryModel< K extends keyof D, key extends keyof D[K]> = D[K][key] extends Array<{ file: {} }> ? (FileType | UrlData)[] : D[K][key] extends Array<{ ref: infer U, strictAlien: true }> ? (U extends keyof D ? (string)[] : never) : D[K][key] extends Array<{ ref: infer U, alien: true }> ? (U extends keyof D ? (string | { [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : D[K][key] extends Array<{ ref: infer U }> ? (U extends keyof D ? ({ [t in keyof Partial<D[U]>]: CreateAbstractModel<U, t> })[] : never) : ArrayValue< D[K], key>;
 
-  type CreateAbstractModel<K extends keyof D, key extends keyof D[K]> = (D[K][key] extends Array<object> ? (CreateArryModel<'type', K, key> | undefined) : (CreateModel<'type', K, key> | undefined));
+  type CreateAbstractModel<K extends keyof D, key extends keyof D[K]> = (D[K][key] extends Array<object> ? (CreateArryModel<K, key> | undefined) : (CreateModel<'type', K, key> | undefined));
 
   type ModelSchema<K extends keyof D> = {
     description: D[K];
@@ -504,7 +507,7 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
     }>(instanceCollector: Q) {
 
       type Result = {
-        [key in keyof Q]: Q[key] extends (BaseInstance<infer U> | undefined) ? U extends keyof D ? C[U] | undefined : undefined : undefined;
+        [key in keyof Q]: Required<Q[key] > extends (BaseInstance<infer U> | undefined| null) ? U extends keyof D ? C[U] | undefined : undefined : undefined;
       }
       const caches: any = {};
       for (const key in instanceCollector) {
@@ -519,6 +522,15 @@ export function createSQueryFrom<D extends DescriptionsType, C extends { [key in
 
   };
   //type cacheFromParams = ;
+  (async()=>{
+    const cookie =  await init.getCookie();
+    console.log('cookie',cookie);
+    
+    await SQuery.service('server','setCookie',{
+      cookie,
+    } as any);
+  })()
+   ;
   return SQuery;
 }
 

@@ -22,7 +22,14 @@ let MessageSchema = SQuery.Schema({
         type: Schema.Types.ObjectId,
         ref: 'user',
         impact: false,
-    }]
+    }],
+    status: {
+        type: {
+            send: Number,
+            received: Number,
+            seen: Number
+        }
+    }
 });
 
 const MessageModel = mongoose.model("message", MessageSchema);

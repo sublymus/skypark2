@@ -35,5 +35,55 @@ const maker = MakeModelCtlForm({
   schema: userSchema
 });
 
+maker.tools.assigneToNewListElement({
+  parentModelPath: 'padiezd',
+  parentListProperty: 'users',
+  targetExtractorPath: './account/address',
+  targetProperty: 'padiezd',
+  sourceExtractorPath: './',//padiezd
+  sourceProperty: '_id',
+  map: (id, option) => {
+    Log('soureceID', { id, option })
+    return id
+  }
+});
+maker.tools.assigneToNewListElement({
+  parentModelPath: 'padiezd',
+  parentListProperty: 'users',
+  targetExtractorPath: './account/address',
+  targetProperty: 'building',
+  sourceExtractorPath: '../',//building
+  sourceProperty: '_id',
+  map: (id, option) => {
+    Log('soureceID', { id, option })
+    return id
+  }
+});
+
+maker.tools.assigneToNewListElement({
+  parentModelPath: 'padiezd',
+  parentListProperty: 'users',
+  targetExtractorPath: './account/address',
+  targetProperty: 'quarter',
+  sourceExtractorPath: '../../',//quarter
+  sourceProperty: '_id',
+  map: (id, option) => {
+    Log('soureceID', { id, option })
+    return id
+  }
+});
+
+maker.tools.assigneToNewListElement({
+  parentModelPath: 'padiezd',
+  parentListProperty: 'users',
+  targetExtractorPath: './',
+  targetProperty: 'entreprise',
+  sourceExtractorPath: '../../../',//entreprise
+  sourceProperty: '_id',
+  map: (id, option) => {
+    Log('soureceID', { id, option })
+    return id
+  }
+});
 
 export default UserModel;

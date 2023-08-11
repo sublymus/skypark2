@@ -129,7 +129,7 @@ export const Controller = {
   server: {
     disconnection: {
       send: {},
-      receive: '',
+      receive: true,
     },
     currentClient: {
       send: {},
@@ -187,11 +187,12 @@ export const Descriptions = {
     ojectData: {
       type: { salut: '', famille: '', nombreuse: 0 },
     },
-    refArray_of_Account: [{
+    refArray_of_test: [{
       type: String,
-      ref: 'test' as const
+      ref: 'test' as const,
+      alien: true,
     }],
-    ref_of_Profile: {
+    ref_of_test: {
       type: String,
       ref: 'test' as const,
       strictAlien: true as const
@@ -233,15 +234,18 @@ export const Descriptions = {
     },
   },
   post: {
+    statPost:{
+      type: {
+        likes: Number,
+        comments: Number,
+        shares: Number
+      }
+    },
     message: {
       type: String,
       ref: 'message' as const,
       required: true as const,
     },
-    like: [{
-      type: String,
-      required: true as const,
-    }],
     comments: [{
       type: String,
       ref: "post" as const,
@@ -856,7 +860,11 @@ export const CacheValues = {
     _id: '',
     message: '',
     comments: [],
-    like: [],
+    statPost:{
+        likes: 0,
+        comments: 0,
+        shares: 0
+      },
     __createdAt: 0,
     __updatedAt: 0,
   } as PostInterface,
@@ -919,24 +927,24 @@ export const CacheValues = {
     stringMap: new Map<string, string>(),
     numberMap: new Map<string, number>(),
     ojectData: { salut: '', famille: '', nombreuse: 0 },
-    refArray_of_Account: [],
-    ref_of_Profile: '',
+    refArray_of_test: [],
+    ref_of_test: '',
     __createdAt: 0,
     __updatedAt: 0,
   } as TestInterface
 } satisfies CacheType
 export interface TestInterface {
-  simpleArray: number[],
-  fileArray: UrlData[],
-  bigint: String,
-  bool: boolean,
-  str: string,
-  num: number
-  stringMap: Map<string, string>,
-  numberMap: Map<string, number>,
-  ojectData: { salut: string, famille: string, nombreuse: number },
-  refArray_of_Account: string[],
-  ref_of_Profile: string,
+  simpleArray?: number[],
+  fileArray?: UrlData[],
+  bigint?: String,
+  bool?: boolean,
+  str?: string,
+  num?: number
+  stringMap?: Map<string, string>,
+  numberMap?: Map<string, number>,
+  ojectData?: { salut: string, famille: string, nombreuse: number },
+  refArray_of_test?: string[],
+  ref_of_test?: string,
   _id: string;
   __createdAt: number,
   __updatedAt: number,
@@ -973,8 +981,12 @@ export interface AdminInterface {
 }
 export interface PostInterface {
   _id: string,
-  message: string,
-  like: string[],
+  message: string
+  statPost:{
+    likes: number,
+    comments: number,
+    shares: number
+  },
   comments: string[],
   __createdAt: number,
   __updatedAt: number,

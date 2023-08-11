@@ -14,7 +14,10 @@ let PadiezdSchema = SQuery.Schema({
     ref: "user",
     alien: true,
     impact: false,
-    access:'admin',
+    access:'share',
+    share:{
+      only:['client:admin']
+    }
   }],
   channel: [{
     type: Schema.Types.ObjectId,

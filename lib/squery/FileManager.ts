@@ -142,7 +142,7 @@ export async function FileValidator(
           newFileData.push(data);
         }
       }
-      Log("paths", "created", newFileData);
+      //Log("paths", "created", newFileData);
       return newFileData;
     },
     read: async () => {
@@ -180,7 +180,7 @@ export async function FileValidator(
       });
 
       
-      Log("paths", "created", {lastOKDataPaths,newFileData});
+      // Log("paths", "created", {lastOKDataPaths,newFileData});
       return newFileData;
     },
     delete: async () => {
@@ -232,8 +232,8 @@ function createPath(file:FileSchema , ruleFileDir:string , rule:TypeRuleSchema ,
   "." +
   extension;
   
-  Log('length',file.buffer?.length);
-    
+  //Log('length',file.buffer?.length);
+  Log('file', file)
   fs.writeFileSync(path, file.buffer, file.encoding || "binary");
 
   const dataPath =
@@ -247,9 +247,9 @@ function createPath(file:FileSchema , ruleFileDir:string , rule:TypeRuleSchema ,
     ) + "." +extension;
   let p = (rule.file?.dir || []).join("/") + "/" + dataPath;
   p = p.startsWith("/") ? p : "/" + p;
-  Log("path**", p);
-  Log("rule.file?.dir**", rule.file?.dir);
-  Log("dataPath**", dataPath);
+  // Log("path**", p);
+  // Log("rule.file?.dir**", rule.file?.dir);
+  // Log("dataPath**", dataPath);
   return  {
     url:p,
     size: file.buffer?.length||file.size,

@@ -194,7 +194,7 @@ export async function createInstanceFrom({ modelPath, id, SQuery, _cache }: { mo
       },
       (res: any) => {
         if (res.error) {
-          console.error(`update ERROR , modelPath :${modelPath} , id:${_id}`, JSON.stringify(res.error));
+          console.error(`update ERROR , modelPath :${modelPath} , id:${_id}`, JSON.stringify(res));
           return;
         }
         cache = res.response;

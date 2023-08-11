@@ -68,3 +68,5 @@ Log.define('collect',{
   visible:true,
   style:['crimson','','blink']
 });
+Log.print('collect',{
+})

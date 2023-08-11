@@ -21,21 +21,7 @@ declare module "zustand" {
 */
 
 
-
-export const SQuery2 = createSQueryFrom( D2, C2, Ctrl2,{
-    socket: io('http://localhost:3500', {
-        extraHeaders: {},
-    }),
-    async getCookie() {
-        return  document.cookie
-    },
-    async setCookie(cookie) {
-        console.log(cookie);
-        document.cookie = cookie;  
-    },
-});
-
-export const SQuery = createSQueryFrom(Descriptions, CacheValues, Controller, {
+export const SQuery = await createSQueryFrom(Descriptions, CacheValues, Controller, {
     socket: io('http://localhost:3500', {
         extraHeaders: {},
     }),
@@ -44,8 +30,8 @@ export const SQuery = createSQueryFrom(Descriptions, CacheValues, Controller, {
     },
     async setCookie(cookie) {
         console.log(cookie);
-        
         document.cookie = cookie;  
+        //localStorage.setItem('server:cookie', cookie)
     },
 });
 

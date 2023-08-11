@@ -206,8 +206,8 @@ export const GlobalMiddlewares: GlobalMiddlewareSchema = [];
 export const ModelControllers: ModelControllersStorage = {};
 export const Controllers: ControllersStorage = {};
 export type SQueryMongooseSchema = Schema & { description: DescriptionSchema, model: any }
-export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId | Schema.Types.Mixed | Buffer | Map<String, Object> | Schema.Types.Map | BigInt | Schema.Types.Decimal128 | Schema | Schema.Types.UUID|Object;
-export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId | typeof Schema.Types.Mixed | typeof Buffer | typeof Map | typeof Schema.Types.Map | typeof BigInt | typeof Schema.Types.Decimal128 | typeof Schema | typeof Schema.Types.UUID | DescriptionSchema | { [p: string]: TypeSchema | TypeSchema[] };
+export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId | Schema.Types.Mixed | Buffer | Map<String, Object> | Schema.Types.Map | Schema.Types.Decimal128 | Schema | Schema.Types.UUID | Object;
+export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId | typeof Schema.Types.Mixed | typeof Buffer | typeof Map | typeof Schema.Types.Decimal128| typeof Schema | typeof Schema.Types.UUID | { [p: string]: TypeSchema | TypeSchema[] };
 
 export type TypeRuleSchema = {
   //TODO: bind bindbidirectional // ./_id  ; ../../fileType; 

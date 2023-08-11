@@ -7,8 +7,8 @@ function Auth() {
     const { openAuth ,setOpenAuth , fetchLoginManager} = AuthStore()
     const [name, setName] = useState('')
     const [lastName, setLastName] = useState('');;
-    const [email, setEmail] = useState('m4@gmail.com');
-    const [pass, setPass] = useState('m0');
+    const [email, setEmail] = useState('m1@gmail.com');
+    const [pass, setPass] = useState('m1');
     return (
         <div className="auth" onClick={(e) => {
            if ((e.target as HTMLElement).className == 'auth') setOpenAuth('none');

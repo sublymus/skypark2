@@ -320,13 +320,13 @@ export const createFactory = (
                 if (validId) {
                   accu[property][i] = alienId;
                 }
-              } catch (error) {
+              } catch (error:any) {
                 await backDestroy(ctx, more);
                 return await callPost({
                   ctx,
                   more,
                   res: {
-                    error: "ILLEGAL_ARGUMENT",
+                    error: error.message,
                     status: 404,
                     code: "ILLEGAL_ARGUMENT",
                     message:
