@@ -69,7 +69,6 @@ export async function createArrayInstanceFrom({
     };
 
     return await new Promise((rev) => {
-      if (SQuery.connected) {
         SQuery.emit(
           itemModelPath + ":list",
           {
@@ -120,9 +119,6 @@ export async function createArrayInstanceFrom({
             rev(currentData);
           }
         );
-      } else {
-        console.log(`%c CLIENT_ERROR %c DISCONNECT FROM SERVER`, 'font-weight: bold; font-size: 14px;color: orange; ' ,'font-weight: bold; font-size: 20px;color: red; ');
-      }
     });
   };
   arrayInstance.back = async () => {

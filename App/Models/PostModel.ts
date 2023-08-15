@@ -4,6 +4,14 @@ import { SQuery } from "../../lib/squery/SQuery";
 import MessageModel from "./MessageModel";
 
 let PostSchema = SQuery.Schema({
+  client:{
+    type:String // modelPath user / manager / supervisor
+  },
+  padiezd:{
+    type:Schema.Types.ObjectId,
+    strictAlien:true,
+    impact:false,
+  },
   message: {
     type: Schema.Types.ObjectId,
     ref: MessageModel.modelName,
@@ -16,13 +24,11 @@ let PostSchema = SQuery.Schema({
     type:Schema.Types.ObjectId,
     access:'secret',
     impact:false,
-    required:true,
   }],
   shared:[{
     type:Schema.Types.ObjectId,
     access:'secret',
     impact:false,
-    required:true,
   }],
   statPost:{
     type: {
@@ -35,7 +41,6 @@ let PostSchema = SQuery.Schema({
       type: Schema.Types.ObjectId,
       access:'admin',
       ref: "post",
-      required:true,
     }],
 });
 

@@ -18,13 +18,7 @@ let PadiezdSchema = SQuery.Schema({
     share:{
       only:['client:admin']
     }
-  }],
-  channel: [{
-    type: Schema.Types.ObjectId,
-    ref: 'post',
-    access: 'public',
-    impact: true,
-  }],
+  }]
 });
 
 const PadiezdModel = mongoose.model("padiezd", PadiezdSchema);

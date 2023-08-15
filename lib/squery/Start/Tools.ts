@@ -1,9 +1,10 @@
 import Log from "sublymus_logger";
-import { Controllers, CtrlModelMakerSchema, ListenerPostSchema, ModelControllers ,Tools} from "../Initialize";
+import { Controllers, CtrlModelMakerSchema, ListenerPostSchema, ModelControllers, MoreSchema, ResultSchema, Tools } from "../Initialize";
+import { ContextSchema } from "../Context";
 
 declare module "../Initialize" {
     export interface ToolsInterface {
-        'assigneToNewListElement': (this:{maker:CtrlModelMakerSchema},data: assigneToNewListElementType) => void
+        'assigneToNewListElement': (/*this:{maker:CtrlModelMakerSchema},*/data: assigneToNewListElementType) => void
     }
 }
 
@@ -16,14 +17,24 @@ type assigneToNewListElementType = {
     sourceExtractorPath?: string
     map?: (value: any, option?: assigneToNewListElementType) => any
 }
-const assigneToNewListElement = function (this:{maker:CtrlModelMakerSchema}, data: assigneToNewListElementType) {
-    const listenner :ListenerPostSchema= async ({ res, ctx , more }) => {
+export const assigneToNewListElementData: { [k: string]: assigneToNewListElementType[] } = {}
+const assigneToNewListElement = function (this: { maker: CtrlModelMakerSchema }, data: assigneToNewListElementType) {
+    if (!assigneToNewListElementData[this.maker.option.modelPath]) assigneToNewListElementData[this.maker.option.modelPath] = []
+    assigneToNewListElementData[this.maker.option.modelPath].push(data);
+    this.maker.post('list', assigneTonewElementFunc(data));
+}
+
+export const assigneTonewElementFunc = (data: assigneToNewListElementType): ListenerPostSchema => {
+    const exc: ListenerPostSchema = async ({ res, ctx, more }: { res: ResultSchema, ctx: ContextSchema, more?: MoreSchema }) => {
         try {
             if (!res?.response?.added || res?.response?.added.length <= 0) return;
             const parentModel = ctx.data?.paging?.query?.__parentModel;
             const parts = parentModel.split('_');
             const parentId = parts[1];
             Log('User_LIST', { parentId, parts })
+            setTimeout(() => {
+                Log('des**', 'ERROR_User_LIST_ADD_BUILDING_ID', {  parentId, parts });
+            }, 2000); 
             if (parts[0] != data.parentModelPath || parts[2] != data.parentListProperty) return;
 
             const resExtractor = await Controllers['server']()['extractor']({
@@ -35,6 +46,9 @@ const assigneToNewListElement = function (this:{maker:CtrlModelMakerSchema}, dat
                 }
             })
             Log('User_LIST', { resExtractor })
+            setTimeout(() => {
+                Log('des**', 'ERROR_User_LIST_ADD_BUILDING_ID', { resExtractor });
+            }, 2000); 
             if (!resExtractor?.response) return;
             const sourcRes = await ModelControllers[resExtractor.response.modelPath]()['read']?.({
                 ...ctx,
@@ -43,7 +57,9 @@ const assigneToNewListElement = function (this:{maker:CtrlModelMakerSchema}, dat
             const sourceInstance = sourcRes?.response;
             Log('User_LIST', { sourceInstance })
             if (!sourceInstance) return;
-
+            setTimeout(() => {
+                Log('des**', 'ERROR_User_LIST_ADD_BUILDING_ID', { sourceInstance });
+            }, 2000); 
             /******************************** assigne  to each new element */
             Log('addes', res.response)
             for (const key in res.response.added) {
@@ -63,17 +79,23 @@ const assigneToNewListElement = function (this:{maker:CtrlModelMakerSchema}, dat
                         const targetInstance = await ModelControllers[resExtractor.response.modelPath].option?.model.findOne({ _id: resExtractor.response.id });
                         //Log('User_LIST_foreach', { targetInstance })
                         if (!targetInstance) return;
-                        targetInstance[data.targetProperty] = data.map ? data.map(sourceInstance[data.sourceProperty||''], data) : sourceInstance[data.sourceProperty||''];
+                        targetInstance[data.targetProperty] = data.map ? data.map(sourceInstance[data.sourceProperty || ''], data) : sourceInstance[data.sourceProperty || ''];
                         await targetInstance.save();
+                        setTimeout(() => {
+                            Log('des**', 'ERROR_User_LIST_ADD_BUILDING_ID', { targetInstance });
+                        }, 2000); 
                     }
                 } catch (error) {
                     continue
                 }
             }
         } catch (error) {
-            Log('ERROR_User_LIST_ADD_BUILDING_ID', { error })
+            setTimeout(() => {
+                Log('des**', 'ERROR_User_LIST_ADD_BUILDING_ID', { error });
+            }, 2000);
         }
     }
-    this.maker.post('list', listenner);
+    return exc;
 }
+
 Tools.assigneToNewListElement = assigneToNewListElement;

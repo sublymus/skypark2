@@ -13,8 +13,7 @@ import { AppStore } from './AppStore';
 function App() {
   const { openAuth ,fetchLoginManager} = AuthStore();
   const {openedForm}= UserFormStore()
-  const {testCollector} = AppStore();
-
+ 
   useEffect(()=>{
     //testCollector();
     fetchLoginManager();

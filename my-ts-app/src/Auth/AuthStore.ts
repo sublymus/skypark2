@@ -646,6 +646,12 @@ export const AuthStore = create<AuthState>((set: setType) => ({
         const manager = loginData ? await SQuery.newInstance('manager', { id: signupId }) : await SQuery.currentClientInstance<'manager'>();
         if (!manager) return
 
+        const account = await manager.account;
+        if(!account) return
+        account.email = 'er@fghj.com'
+
+        
+
         const messenger = await manager.messenger;
         //  if (!messenger) return
         const entreprise = await manager.entreprise;

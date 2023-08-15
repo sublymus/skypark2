@@ -40,7 +40,9 @@ function Main() {
             fetchUser({
                 filter: filtre,
                 ids: filtre == 'Building' ? buildingList.filter((b) => !deselectedPBuilding.includes(b._id)).map(p => p._id) : padiezdList.filter((p) => !deselectedPadiezd.includes(p._id)).map(p => p._id),
-                sort,
+                sort :{
+                    [sort]:1
+                },
                 quarterId: quarter?._id
             })
     }, [currentQuarterId, newUserId, buildingList, deselectedPBuilding, padiezdList, deselectedPadiezd, filtre, sort]);

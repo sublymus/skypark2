@@ -31,7 +31,9 @@ TODO: impact != false => dontImpact == true
 
 TODO: le event du prepost doit suivre la forme suivante : " e1 e2 e3" 
 
-TODO: access , seul a voir mais ne peut pas modifier. ( any : r  , client: w r , client:manager: r )
+TODO: access , seul a voir mais ne peut pas modifier. ( any : r  , client: w r , client:manager: r ) 
+
+        =>> complet access / c , r , u , d , for model and id
 
 TODO: proprieter virtuel qu'on peut pas modifier et qui est un ensemble de query , un object de proprieter queryObj ou une fonction  qui retourne un queryObj
 
@@ -53,24 +55,7 @@ TODO: rassenmbler les n parent d'un model donner dans un tableau, du plus proche
 
 /////////////////////////////////////////////////////////////////////////////////////
 
-socket map 
 
-TODO: treminal=> npm squery create:controller
-TODO: folder:{
-    parentAccess:true,
-    access:private,
-}
-
-#TODO: rule:{
-    wacth:"pour suivre si une instance est suprimer on la suprime de la liste ou on rend le property undefined"
-    observator:"/address/building => ../building" //
-    // => binding
-    // <=> bind bidirectionnal
-    // configurer les symboles
-}
-TODO: befor after autoexecute ,
-TODO: access permission shared  niveau Model 
-TODO: et niveau Instance
 
 __SQuery file access au fichier..
 

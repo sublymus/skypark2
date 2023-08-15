@@ -57,14 +57,14 @@ const app: ControllerSchema = {
     },
     userList: async (ctx: ContextSchema): ResponseSchema => {
         Log('userList',ctx.data);
-        const {quarterId , ids, filter:f, sort} = ctx.data as {quarterId: string , ids:string[], filter:'Padiezd' | 'Building', sort:string}
+        const {quarterId , ids, filter:f, sort} = ctx.data as {quarterId: string , ids:string[], filter:'Padiezd' | 'Building', sort:{}}
         if(!quarterId) return;
 
         let filter:string[] = [];
         let padiezdIds :string[] = [];
         if(f=='Building'){
             for (const id of ids) {
-                const building =  await BuildingModel.findOne({_id:id});
+                const building =  await BuildingModel.findOne({_id:id}).sort(sort||{}).allowDiskUse(true);
                 if(!building) continue; 
                 padiezdIds = [...padiezdIds ,...building.padiezdList.map((p:any) => p._id.toString() )] ;
             }

@@ -17,7 +17,8 @@ import {
   ResponseSchema,
   ResultSchema,
 } from "./Initialize";
-import { FileValidator, backDestroy } from "./ModelCtrlManager";
+import { FileValidator, backDestroy, parentInfo } from "./ModelCtrlManager";
+import { assigneToNewListElementData, assigneTonewElementFunc } from "./Start/Tools";
 
 export const createFactory = (
   controller: ModelControllerSchema,
@@ -27,14 +28,14 @@ export const createFactory = (
 ) => {
 
   return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
-   if(option.modelPath == 'account'|| option.modelPath == 'user'){
-    setTimeout(() => {
-      Log('des***', {
-        model: option.modelPath,
-        ...option.schema.description
-      })
-     }, 2000);
-   }
+    // if (option.modelPath == 'account' || option.modelPath == 'user') {
+    //   setTimeout(() => {
+    //     Log('des***', {
+    //       model: option.modelPath,
+    //       ...option.schema.description
+    //     })
+    //   }, 2000);
+    // }
     const service = option.volatile ? "create" : "store";
     ctx = { ...ctx };
     ctx.service = service;
@@ -320,7 +321,7 @@ export const createFactory = (
                 if (validId) {
                   accu[property][i] = alienId;
                 }
-              } catch (error:any) {
+              } catch (error: any) {
                 await backDestroy(ctx, more);
                 return await callPost({
                   ctx,
@@ -469,6 +470,43 @@ export const createFactory = (
         volatile: option.volatile,
         controller,
       });
+
+      const datas = assigneToNewListElementData;
+      const parent = parentInfo(more.__parentModel);
+      if (parent.__parentModel && parent.parentId && parent.parentModelPath && parent.parentProperty) {
+        const list = datas[option.modelPath]||[];
+       
+        for (const data of list) {
+          if (parent.parentModelPath == data.parentModelPath && parent.parentProperty == data.parentListProperty) {
+           
+          setTimeout(async () => {
+            if(!more || !modelInstance) return;
+            const e = await  assigneTonewElementFunc(data)({
+              ctx:{
+                ...ctx,
+                data:{
+                  paging:{
+                    query:{
+                      __parentModel : more.__parentModel
+                    }
+                  }
+                }
+              },
+              res:{
+                response: {
+                  added:[modelInstance._id.toString()],
+                },
+                code:'ok',
+                message:'ok',
+                status:200,
+              }
+            })
+          }, 2000);
+          }
+
+        }
+      }
+
     } catch (error: any) {
       //Log('error', error);
       await backDestroy(ctx, more);

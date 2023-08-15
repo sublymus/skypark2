@@ -65,11 +65,10 @@ interface AppState {
     padiezdList: PadiezdInterface[]
     buildingList: BuildingInterface[],
     userList: (typeof userInit)[],
-    testCollector(): Promise<void>;
     fetchEntreprise: (id: string) => Promise<void>
     fetchBuilding: (id: string) => Promise<void>
     fetchPadiezd: (quarterId: string) => Promise<void>
-    fetchUser: (data: { quarterId: string, ids: string[], filter: 'Padiezd' | 'Building', sort: string }) => Promise<void>
+    fetchUser: (data: { quarterId: string, ids: string[], filter: 'Padiezd' | 'Building', sort: {[k:string]:1 | -1} }) => Promise<void>
 }
 
 type setType = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState>), replace?: boolean | undefined) => void
@@ -82,21 +81,6 @@ export const AppStore = create<AppState>((set: setType) => ({
     padiezdList: [],
     buildingList: [],
     HOST: 'http://localhost:3500',
-    async testCollector() {
-        const collection = await SQuery.collector({
-            $option: {},
-            entreprise: [
-                "64c8e5245b9746a9b450c40",
-                "64c8e5245b9746a9b450c470",
-                "64c8e5245b9746a9b450c40"
-            ],
-            user: ["64c8e5245b9746a9b450c496",
-                "64c8e5255b9746a9b450c4a7",
-                "64c8e5255b9746a9b450c4b8"
-            ]
-        });
-        console.log(`%c testCollector`, 'font-weight: bold; font-size: 20px;color: #345;', { collection });
-    },
     fetchEntreprise: async (id: string) => {
         if (!id) return
         const entreprise = await SQuery.newInstance('entreprise', { id });
