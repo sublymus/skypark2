@@ -1,6 +1,27 @@
 import { UrlData, DescriptionsType, ControllerType } from "./lib/SQueryClient";
 
+const newPostData =  {
+  message: {
+    text: '' as (string | undefined) ,
+  },
+  theme: ""  as (string | undefined)
+}
+const send = {
+  like: true as (boolean | undefined) ,
+  newPostData: {} as (Partial<typeof newPostData> | undefined) ,
+  accountShared: ""  as (string | undefined),
+  postId: ""  as (string | undefined)
+}
 export const Controller = {
+  post: {
+    statPost: {
+      send: {} as Partial<typeof send> &{postId:string},
+      receive: {
+        post:{} as PostInterface,
+        newCommentId : {} as (PostInterface | undefined)
+      }
+    }
+  },
   messenger: {
     createDiscussion: {
       send: {
@@ -86,9 +107,9 @@ export const Controller = {
     childList: {
       send: {
         parentId: '',
-         parentModelPath: '', 
-         childModelPath: '',
-          pagging: {
+        parentModelPath: '',
+        childModelPath: '',
+        pagging: {
           page: 0,
           limit: 0,
           select: {},
@@ -996,7 +1017,10 @@ export const CacheValues = {
     statPost: {
       likes: 0,
       comments: 0,
-      shares: 0
+      shares: 0,
+      commentsCount: 0,
+      totalCommentsCount: 0,
+      isLiked: false
     },
     __createdAt: 0,
     __updatedAt: 0,
@@ -1158,7 +1182,10 @@ export interface PostInterface {
   statPost: {
     likes: number,
     comments: number,
-    shares: number
+    shares: number,
+    commentsCount: number,
+    totalCommentsCount: number,
+    isLiked: boolean
   },
   comments: string[],
   __createdAt: number,

@@ -46,7 +46,7 @@ const Post: ControllerSchema = {
                 change = true;
                 await post.save()
             }
-
+            
             /*************************     SHARED      ********************** */
             if (accountShared) {
                 const accountSharedInsatance = await ModelControllers['account'].option.model.__findOne({ _id: accountShared });
@@ -66,7 +66,7 @@ const Post: ControllerSchema = {
 
             /*************************     COMMENT      ********************** */
 
-            let newCommentId: any;
+            let newComment: any;
             if (ctx?.login.id && newPostData) {
                 const res = await ModelControllers['post']()['list']?.({
                     ...ctx,
@@ -81,7 +81,7 @@ const Post: ControllerSchema = {
                     }
                 })
                 if (!res?.response) return res;
-                newCommentId = res.response.added[0];//////
+                newComment = await ModelControllers['post'].option.model.__findOne({ _id: res.response.added[0] });//////
                 change = true;
             }
 
@@ -116,7 +116,10 @@ const Post: ControllerSchema = {
                             comments: post['comments'].length,
                             shares: post['shared'].length,
                             commentsCount,
-                            totalCommentsCount: (data?.totalItems) || 0
+                            totalCommentsCount: (data?.totalItems) || 0,
+                            isLiked: like || post['like'].find((some_id: any) => {
+                                if (some_id.toString() == ctx.login.id) return true;
+                            })|| false
                         }
                     },
                     __permission: 'admin'
@@ -129,7 +132,7 @@ const Post: ControllerSchema = {
             return {
                 code: "OPERATION_SUCCESS",
                 message: "OPERATION_SUCCESS",
-                response: {post:(result || post) , newCommentId},
+                response: {post:(result || post) , newComment},
                 status: 200
             }
         } catch (error: any) {

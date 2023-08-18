@@ -71,17 +71,29 @@ export const AuthStore = create<AuthState>((set: setType) => ({
     setProfile: async (data, file) => {
         console.log(`%c setProfile`, 'font-weight: bold; font-size: 20px;color: #345;', { data, file });
 
-        const model = await SQuery.createModel('test');
-        await model.delete({
-            id:'64d60c9048cf61fdc8af5b5c'
-        })
-        const test = await model.newInstance({
-            id: "64d60c9048cf61fdc8af5b5c",
-        })
+        const res = await SQuery.service('post','statPost',{
+            postId:'64dde279794553f81b24a998',
 
-        console.log({test});
+        })
+        console.log(res);
+        if(!res?.response) return
 
-        if (!file) return;
+
+
+        const postStat = res.response.post.statPost
+        console.log(postStat);
+        postStat.totalCommentsCount
+        // const model = await SQuery.createModel('test');
+        // await model.delete({
+        //     id:'64d60c9048cf61fdc8af5b5c'
+        // })
+        // const test = await model.newInstance({
+        //     id: "64d60c9048cf61fdc8af5b5c",
+        // })
+
+        // console.log({test});
+
+        // if (!file) return;
         // test.num = (test.num || 0) + 1;
         // test.bigint = (test.bigint||'')+`${(test.num||0) +1}`;
         //   test.stringMap =  test.stringMap?.set(test.num+'','str : '+test.num) //TODO* transformer les donner server en MAp

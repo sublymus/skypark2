@@ -40,12 +40,16 @@ let PostSchema = SQuery.Schema({
       shares: Number,
       commentsCount : Number,
       totalCommentsCount: Number, 
+      isLiked:Boolean
     },
     access:'admin',
     default:{
       likes: 0,
       comments: 0,
-      shares: 0
+      shares: 0,
+      commentsCount : 0,
+      totalCommentsCount: 0, 
+      isLiked:false
     }
   },
   theme:{
@@ -53,7 +57,7 @@ let PostSchema = SQuery.Schema({
   },
   comments: [ {
       type: Schema.Types.ObjectId,
-      access:'public',
+      access:'admin',
       impact:true,
       ref: "post",
     }],
@@ -65,6 +69,7 @@ const maker = MakeModelCtlForm({
   schema: PostSchema,
   model: PostModel
 });
+
 maker.pre('create',async({ctx})=>{
   ctx.data = {
     ...ctx.data,
