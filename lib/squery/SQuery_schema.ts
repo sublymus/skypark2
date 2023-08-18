@@ -100,7 +100,7 @@ export const SQuery_Schema = (description: DescriptionSchema, options?: SchemaOp
   });
 
   schema.post("save", async function (doc: any) {
-    Log('save+++++++', doc);
+    //Log('save+++++++', doc);
     // SQuery.emiter.when('update:' + doc._id.toString(), (val) => {
     //   Log('update:' + doc._id.toString(), val);
     // })

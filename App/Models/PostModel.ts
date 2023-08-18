@@ -29,7 +29,7 @@ let PostSchema = SQuery.Schema({
     impact:false,
   }],
   shared:[{
-    type:Schema.Types.ObjectId,
+    type:String,
     access:'secret',
     impact:false,
   }],
@@ -37,7 +37,9 @@ let PostSchema = SQuery.Schema({
     type: {
       likes: Number,
       comments: Number,
-      shares: Number
+      shares: Number,
+      commentsCount : Number,
+      totalCommentsCount: Number, 
     },
     access:'admin',
     default:{

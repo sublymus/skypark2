@@ -92,12 +92,12 @@ export const createFactory = (
     for (const property in description) {
       const rule = description[property];
       if (ctx.data?.[property] == undefined) {
-        Log('deffff', {
-          property,
-          value: ctx.data?.[property],
-          _default: ctx.data[property] = !Array.isArray(rule) ? rule?._default : rule[0]?._default,
-          rule
-        })
+        // Log('deffff', {
+        //   property,
+        //   value: ctx.data?.[property],
+        //   _default: ctx.data[property] = !Array.isArray(rule) ? rule?._default : rule[0]?._default,
+        //   rule
+        // })
         if (Array.isArray(rule)) {
           ctx.data[property] = rule[0]?._default || [];
         } else {

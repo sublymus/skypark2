@@ -102,7 +102,7 @@ const app: ControllerSchema = {
                 query,
                 options,
             );
-            Log('pagingData', pagingData)
+            // Log('pagingData', pagingData)
             const promise = pagingData.items.map((item: any) => {
                 return formatModelInstance({
                     ...ctx,
