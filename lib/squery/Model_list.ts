@@ -35,6 +35,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       savedlist: [],
       __parentModel: paging?.query?.__parentModel,
       modelPath: option.modelPath,
+      
     };
     console.log('***more', { more });
 
@@ -227,7 +228,13 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
                 ...ctx,
                 data,
               },
-              { ...more },
+              {
+                ...more,
+                parentList : [...parentModelInstance?.__parentList,{
+                  modelPath:parentModelPath,
+                  id:parentId,
+                }],
+              },
             );
             Log('________', res)
             if (!res?.response) {
@@ -360,7 +367,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       pagingData.removed = removed;
 
       const promise = pagingData.items.map((item: any) => {
-        return formatModelInstance(ctx, service, option, item);
+        return formatModelInstance(ctx, option, item);
       });
       await Promise.allSettled(promise);
     } catch (error: any) {

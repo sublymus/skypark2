@@ -3,6 +3,7 @@ import { ContextSchema, authDataSchema } from "./Context";
 import STATUS from "./Errors/STATUS";
 import { ControlSchema, ControllerSchema, ModelControllerSchema, ModelControllers, ResponseSchema } from "./Initialize";
 import { SQuery } from "./SQuery";
+import { AuthDataMap } from "./SQuery_auth";
 
 export class AuthManager {
   login = async (ctx: ContextSchema): ResponseSchema => {
@@ -16,7 +17,7 @@ export class AuthManager {
       //signupExtension: [EmailConfirmartion],
     }
     let loginModelInstance = null;
-    Log("login", ctx.data);
+    Log("login", data , authData);
     //console.log('login',ctx.data);
 
     try {
@@ -87,6 +88,7 @@ export class AuthManager {
       __signupModelPath: authData.signup,
       __signupId: loginModelInstance.__signupId.toString(),
     };
+    Log('TOKEN', {token});
 
     await SQuery.cookies(socket, "token", token);
 

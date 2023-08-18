@@ -28,6 +28,11 @@ let MessageSchema = SQuery.Schema({
             send: Number,
             received: Number,
             seen: Number
+        },
+        default: {
+            send: 0,
+            received: 0,
+            seen: 0
         }
     }
 });

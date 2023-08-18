@@ -173,7 +173,6 @@ const MakeModelCtlForm: (
 
 async function formatModelInstance(
   ctx: ContextSchema,
-  service: ModelServiceAvailable,
   option: ModelFrom_optionSchema & { modelPath: string },
   modelInstance: ModelInstanceSchema,
   deep?: number
@@ -184,7 +183,6 @@ async function formatModelInstance(
   };
   deepPopulate(
     ctx,
-    service,
     option.model.modelName,
     info,
     modelInstance.__key._id.toString() == ctx.__key, (!Number.isNaN(deep)) ? {
@@ -201,7 +199,6 @@ async function formatModelInstance(
 
 function deepPopulate(
   ctx: ContextSchema,
-  service: ModelServiceAvailable,
   ref: string,
   info: PopulateSchema,
   isOwner: boolean,
@@ -231,7 +228,7 @@ function deepPopulate(
             path: p,
           };
           info.populate?.push(info2);
-          deepPopulate(ctx, service, rule.ref || '', info2, isOwner, count);
+          deepPopulate(ctx, rule.ref || '', info2, isOwner, count);
         }
 
       };

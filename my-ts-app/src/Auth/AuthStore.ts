@@ -26,7 +26,8 @@ const pc = {
     __createdAt: 1691325671410,
     __updatedProperty: ['imgProfile', '__updatedAt'],
     __updatedAt: 1691487408642,
-    __v: 27
+    __v: 27,
+    __parentList:[]
 } as ProfileInterface
 
 
@@ -648,7 +649,7 @@ export const AuthStore = create<AuthState>((set: setType) => ({
 
         const account = await manager.account;
         if(!account) return
-        account.email = 'er@fghj.com'
+        //account.email = 'er@fghj.com'
 
         
 

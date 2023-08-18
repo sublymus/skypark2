@@ -14,10 +14,6 @@ let PadiezdSchema = SQuery.Schema({
     ref: "user",
     alien: true,
     impact: false,
-    access:'share',
-    share:{
-      only:['client:admin']
-    }
   }]
 });
 

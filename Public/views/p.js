@@ -96,7 +96,7 @@ export const load = {
           {
             name: 'RIVERA',
             city: 'Bulkari-Center',
-            supervisor:[{
+            supervisors:[{
               account: {
                 name: 'supervisor',
                 email: 'supervisor@gmail.com',

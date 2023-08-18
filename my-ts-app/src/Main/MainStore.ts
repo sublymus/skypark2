@@ -92,10 +92,10 @@ export const MainStore = create<MainState>((set: setType) => ({
         const arrayData = await ArrayChannel?.update({
             paging: { 
                 limit: 50,
-                page: 3,
+                page: 1,
                 sort: {
 
-                    __createdAt: 1,
+                    __createdAt: -1,
                     
                 },
             }

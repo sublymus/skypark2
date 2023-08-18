@@ -41,7 +41,7 @@ function Main() {
                 filter: filtre,
                 ids: filtre == 'Building' ? buildingList.filter((b) => !deselectedPBuilding.includes(b._id)).map(p => p._id) : padiezdList.filter((p) => !deselectedPadiezd.includes(p._id)).map(p => p._id),
                 sort :{
-                    [sort]:1
+                    [sort.toLocaleLowerCase()]:1
                 },
                 quarterId: quarter?._id
             })

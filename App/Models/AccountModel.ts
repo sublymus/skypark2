@@ -10,8 +10,6 @@ let accountSchema = SQuery.Schema({
   name: {
     type: String,
     trim: true,
-    minlength: [3, "trop court"],
-    maxlength: [20, "trop long"],
     required: true,
   },
   email: {
@@ -32,8 +30,6 @@ let accountSchema = SQuery.Schema({
     type: String,
     required: true,
     access: "private",
-    // get: (v) => (v as String).length,
-    // set: (v) => v, // crypter
   },
   telephone: {
     type: String,

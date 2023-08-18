@@ -41,6 +41,7 @@ export const createFactory = (
     ctx.service = service;
     ctx.ctrlName = "" + option.modelPath;
     if (!more) more = {};
+    if (!more.parentList) more.parentList = [];
     if (!more.savedlist) more.savedlist = [];
     if (!more.__parentModel) more.__parentModel = "";
     more.modelPath = option.modelPath;
@@ -231,6 +232,10 @@ export const createFactory = (
             },
             {
               ...more,
+              parentList : [...more.parentList,{
+                modelPath:option.modelPath,
+                id:modelId,
+              }],
               __parentModel:
                 option.modelPath +
                 "_" +
@@ -378,6 +383,11 @@ export const createFactory = (
               },
               {
                 ...more,
+                parentList : [...more.parentList,{
+                  modelPath:option.modelPath,
+                  id:modelId,
+                }],
+                //TODO* renplacer le parent model par parent list avec le format du parent model (string condancer)
                 __parentModel:
                   option.modelPath +
                   "_" +
@@ -455,6 +465,7 @@ export const createFactory = (
     accu["__parentModel"] = more.__parentModel;
     accu["__modePath"] = option.modelPath;
     accu["__createdAt"] = Date.now();
+    accu["__parentList"] = more.parentList;
     //Log("logAccu", { accu });
     try {
       modelInstance = new option.model({
@@ -474,36 +485,35 @@ export const createFactory = (
       const datas = assigneToNewListElementData;
       const parent = parentInfo(more.__parentModel);
       if (parent.__parentModel && parent.parentId && parent.parentModelPath && parent.parentProperty) {
-        const list = datas[option.modelPath]||[];
-       
+        const list = datas[option.modelPath] || [];
+
         for (const data of list) {
           if (parent.parentModelPath == data.parentModelPath && parent.parentProperty == data.parentListProperty) {
-           
-          setTimeout(async () => {
-            if(!more || !modelInstance) return;
-            const e = await  assigneTonewElementFunc(data)({
-              ctx:{
-                ...ctx,
-                data:{
-                  paging:{
-                    query:{
-                      __parentModel : more.__parentModel
+
+            setTimeout(async () => {
+              if (!more || !modelInstance) return;
+              const e = await assigneTonewElementFunc(data)({
+                ctx: {
+                  ...ctx,
+                  data: {
+                    paging: {
+                      query: {
+                        __parentModel: more.__parentModel
+                      }
                     }
                   }
-                }
-              },
-              res:{
-                response: {
-                  added:[modelInstance._id.toString()],
                 },
-                code:'ok',
-                message:'ok',
-                status:200,
-              }
-            })
-          }, 2000);
+                res: {
+                  response: {
+                    added: [modelInstance._id.toString()],
+                  },
+                  code: 'ok',
+                  message: 'ok',
+                  status: 200,
+                }
+              })
+            }, 2000);
           }
-
         }
       }
 

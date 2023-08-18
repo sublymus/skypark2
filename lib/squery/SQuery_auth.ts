@@ -27,15 +27,18 @@ export const SQuery_auth = (authDataOption: authDataOptionSchema) => {
   };
   authData.match.push("__permission");
   AuthDataMap[authData.signup] = authData;
+  Log('AuthDataMap',{AuthDataMap})
   SQuery.io()?.on("connection", (socket: any) => {
     socket.on(
       `login:${authData.signup}`,
       async (data: DataSchema, cb: CallBack) => {
         data = data || {};
         data.__permission = authData.__permission;
+        Log('__permission',data.__permission)
         const authCtrl = new AuthManager();
         const res = await authCtrl.login({
-          ...(await defineContext(socket, "login", "read", data)),
+          ...(await defineContext(socket, "login", "read", {})),
+          data,
           authData,
         });
         cb?.(res);

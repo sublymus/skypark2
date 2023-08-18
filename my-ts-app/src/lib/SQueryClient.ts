@@ -6,6 +6,8 @@ import { createInstanceFrom } from "./Instance";
 
 /*
 
+{"__parentList.modelPath":'padiezd', "__parentList.id":"64db3adeed8fc9b464f979ef"}
+
 Affiche ses log Zoo
 
 interface AuthState { 
@@ -167,17 +169,13 @@ interface InitInterface {
   setJSON?: (key: string, JSON: string) => Promise<void>,
   getJSON?: () => Promise<string>
 }
-export async function createSQueryFrom<D extends DescriptionsType, C extends { [key in keyof D]: C[key] }, Ctrl extends ControllerType>(Descriptions: D, CacheValues: C, Controller: Ctrl, init: InitInterface) {
+export function createSQueryFrom<D extends DescriptionsType, C extends { [key in keyof D]: C[key] }, Ctrl extends ControllerType>(Descriptions: D, CacheValues: C, Controller: Ctrl, init: InitInterface) {
 
   init.socket.on("storeCookie", async (cookie: string, cb) => {
     await init.setCookie(cookie);
     cb(init.getCookie());
   });
-  //init
-
-   console.log('available cookies', await init.getCookie());
-   
-
+  
   type ModelType<K extends keyof D> = D[K];
   type SortType<K extends keyof D> = {
     [key in keyof (D[K])]?: 1 | -1
@@ -240,7 +238,7 @@ export async function createSQueryFrom<D extends DescriptionsType, C extends { [
   type BaseInstance<K extends keyof D> = {
     update(data: { [key in keyof Partial<D[K]>]: CreateAbstractModel<K, key> }): void
     when(event: E<K>, listener: ((v: V<K>, e: EventInfo<V<K>>) => void),uid?: string): void;
-    extractor<K extends keyof D>(extractorPath: string): Promise<BaseInstance<K> | null>;
+    extractor<K extends keyof D>(extractorPath: string): ReturnType<typeof getInstanceType<D[K], K>>;
     $modelPath: K;
     $parentModelPath: string | undefined;
     $parentId: string | undefined;
@@ -521,7 +519,7 @@ export async function createSQueryFrom<D extends DescriptionsType, C extends { [
     }
 
   };
-  //type cacheFromParams = ;
+  
   (async()=>{
     const cookie =  await init.getCookie();
     console.log('cookie',cookie);

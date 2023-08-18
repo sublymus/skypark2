@@ -2,71 +2,63 @@ import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
 import { CtrlManager } from "../../lib/squery/CtrlManager";
 import { ControllerSchema, Controllers, ModelControllers, ModelInstanceSchema, ResponseSchema } from "../../lib/squery/Initialize";
+import { SQuery } from "../../lib/squery/SQuery";
 const Post: ControllerSchema = {
-    allUserPost:async (ctx: ContextSchema): ResponseSchema => {
-    const arrayData = ModelControllers['post']()['list']?.({
-        ...ctx
-    })
+    allUserPost: async (ctx: ContextSchema): ResponseSchema => {
+        const arrayData = ModelControllers['post']()['list']?.({
+            ...ctx
+        })
         return arrayData
     },
     comments: async (ctx: ContextSchema): ResponseSchema => {
-        const { modelPath , id, property, newPostData } = ctx.data;
-        const parent: ModelInstanceSchema|null = await ModelControllers[modelPath]?.option.model.findOne({ _id: id });
-        if(!parent) return  {
+        const { id, newPostData } = ctx.data;
+        const parent: ModelInstanceSchema | null = await ModelControllers['post']?.option.model.findOne({ _id: id });
+        if (!parent) return {
             error: "NOT_FOUND",
             code: "NOT_FOUND",
             message: "Post don't exist",
             status: 404,
         }
-        parent[property] = [...(parent[property] || [])];
-        let newCommentId :any;
-        if(ctx?.login.id){
+
+        let newCommentId: any;
+        if (ctx?.login.id && newPostData) {
             const res = await ModelControllers['post']()['list']?.({
                 ...ctx,
-                __permission: ctx[modelPath]?.[property]?.__permission||ctx.__permission,
+                //  __permission: ctx[modelPath]?.[property]?.__permission||ctx.__permission,
                 data: {
-                    addNew: newPostData? [newPostData]:undefined,
+                    addNew: newPostData && [newPostData],
                     paging: {
                         query: {
-                            __parentModel: modelPath+"_" + id + "_"+property+"_post"
+                            __parentModel: 'post' + "_" + id + "_" + 'comments' + "_post"
                         }
                     }
                 }
             })
-            if(!res?.response) return res;
+            if (!res?.response) return res;
             newCommentId = res.response.added;
         }
-        const deep = async (parent:ModelInstanceSchema , property:string, data: { allComments: number }) => {
-            try {
-                if (parent?.[property]?.toString() && Array.isArray(parent[property])) {
-                    data.allComments += parent[property].length;
-                    const promise =parent[property].map((postId: any) => {
-                        return new Promise(async (rev) => {
-                            const post: ModelInstanceSchema|null = await ModelControllers['post'].option.model.findOne({ _id: postId });
-                            if(post) await deep(post,'comments', data);
-                            rev('');
-                        })
-                    });
-                    (await Promise.allSettled(promise));
-                }
-            } catch (error) {
-                return;
+
+        const res = await SQuery.service('app', 'childList', {
+            parentModelPath: 'post', childModelPath: 'post', pagging: {
             }
+        }, ctx);
+        let data: any = {}
+        Log('res', { res })
+        if (!res?.response) data = {};
+        else {
+            data = res.response;
         }
-        let data = {
-            allComments: 0,
-        }
-        const newParent = ( await ModelControllers[modelPath]?.option.model.findOne({ _id: id }));
-        await deep(newParent , property, data);
-        const commentsCount = newParent?.[property]?.length||0;
-        
+
+        const newParent = (await ModelControllers['post']?.option.model.__findOne({ _id: id }));
+        const commentsCount = newParent?.['comments']?.length || 0;
+
         return {
             code: "OPERATION_SUCCESS",
             message: "OPERATION_SUCCESS",
             response: {
                 commentsCount,
                 newCommentId,
-                totalCommentsCount: data.allComments
+                totalCommentsCount: (data?.totalItems) || 0
             },
             status: 200
         }
@@ -74,7 +66,7 @@ const Post: ControllerSchema = {
     like: async (ctx: ContextSchema): ResponseSchema => {
         try {
             const { like, postId } = ctx.data;
-            const post: ModelInstanceSchema|null = await ModelControllers['post'].option.model.findOne({ _id: postId });
+            const post = await ModelControllers['post'].option.model.__findOne({ _id: postId });
             if (!post) {
                 return {
                     error: "NOT_FOUND",
@@ -83,51 +75,33 @@ const Post: ControllerSchema = {
                     message: "Post not found"
                 }
             }
-            post['like'] = [...(post['like'] || [])];
-            const getUserId = async (ctx: ContextSchema): Promise<string> => {
-                const currentUser = await ModelControllers[ctx.signup.modelPath].option.model.findOne({ _id: ctx.signup.id });
-                if (!currentUser) {
-                    throw new Error("CurrentUser don't exist");
-                }
-                return currentUser._id.toString()
+            if (!ctx.login.id) {
+                throw new Error("CurrentUser don't exist");
             }
             if (like == true) {
-                if ((!!ctx.signup?.id)) {
-                    /** on recupere le  sender(UserModel)*/
-                    let include = false;
-                    const userId = await getUserId(ctx);
-                    post['like'].forEach((some_id: any) => {
-                        if (some_id.toString() == userId) include = true;
-                    })
-                    if (!include) {
-                        post['like'].push(userId);
-                        Log('Like_Push', '%%%% true %%%%%%')
-                        await post.save();
-                        Log('Like_Save', '%%%%% true %%%%%')
-                    }
-
+                console.log('2345678', 'ok in true');
+                const include = post['like'].find((some_id: any) => {
+                    if (some_id.toString() == ctx.login.id) return true;
+                })
+                if (!include) {
+                    post['like'].push(ctx.login.id);
+                    await post.save();
                 }
             } else if (like == false) {
-                if (!!ctx.signup?.id) {
-                    /** on recupere le  sender(UserModel)*/
-                    const userId = await getUserId(ctx);
-                    post['like'] = post['like'].filter((some_id: any) => {
-                        return !(some_id.toString() == userId);
-                    });
-                    Log('Like_Push', '%%%%% false %%%%%')
-                    await post.save();
-                    Log('Like_Save', '%%%%% false %%%%%')
-                }
+                console.log('2345678', 'ok in false');
+                post['like'] = post['like'].filter((some_id: any) => {
+                    return !(some_id.toString() == ctx.login.id);
+                });
+                await post.save();
             }
-            // TODO* mettre
-            Log('post', post)
+
             return {
                 code: "OPERATION_SUCCESS",
                 message: "OPERATION_SUCCESS",
                 response: post['like'].length,
                 status: 200
             }
-        } catch (error:any) {
+        } catch (error: any) {
             return {
                 error: "OPERATION_FAILED",
                 status: 404,
@@ -138,16 +112,15 @@ const Post: ControllerSchema = {
     }
 }
 
-
 CtrlManager({
-    ctrl: { post:Post },
+    ctrl: { post: Post },
     access: {
         like: "any"
     }
-}).pre('comments', async ({ctx}) => {
+}).pre('comments', async ({ ctx }) => {
     ctx.post = {
-        comments:{
-            __permission:'admin'
+        comments: {
+            __permission: 'admin'
         }
     }
- })
+})

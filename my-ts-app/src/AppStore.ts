@@ -21,7 +21,7 @@ declare module "zustand" {
 */
 
 
-export const SQuery = await createSQueryFrom(Descriptions, CacheValues, Controller, {
+export const SQuery = createSQueryFrom(Descriptions, CacheValues, Controller, {
     socket: io('http://localhost:3500', {
         extraHeaders: {},
     }),
@@ -129,7 +129,18 @@ export const AppStore = create<AppState>((set: setType) => ({
     fetchUser: async (data) => {
         console.log(`%c fetchUser`, 'font-weight: bold; font-size: 20px;color: #345;', { data });
         if (!data.quarterId) return
-        const res = await SQuery.service('app', 'userList', data);
+        const res = await SQuery.service('app', 'childList', {
+            childModelPath:'account',
+            pagging:{
+                limit:20,
+                page:1,
+                query:{},
+                select:{},
+                sort:{},
+            },
+            parentId:data.quarterId,
+            parentModelPath:'quarter',
+        });
         if (!res.response) return
         const userList = res.response as any as (typeof userInit)[];
         console.log({ userList });

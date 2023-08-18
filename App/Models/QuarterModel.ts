@@ -6,16 +6,6 @@ import BuildingModel from "./BuildingModel";
 import SupervisorModel from "./SupervisorModel";
 
 let QuarterSchema = SQuery.Schema({
-    users: [{
-        type: Schema.Types.ObjectId,
-        ref: "user",
-        alien: true,
-        impact: false,
-        access:'share',
-        share:{
-          only:['client:admin']
-        }
-      }],
     name: {
         type: String,
         required: true,

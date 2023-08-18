@@ -9,12 +9,7 @@ let favoritesSchema = SQuery.Schema({
     type: Schema.Types.ObjectId,
     ref: FolderModel.modelName,
     impact: true,
-  }],
-  likeList: [{
-    type: Schema.Types.ObjectId,
-    ref: 'user',
   }]
-
 });
 const FavoritesModel = mongoose.model("favorites", favoritesSchema);
 

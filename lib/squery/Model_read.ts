@@ -60,7 +60,7 @@ export const readFactory = (controller: ModelControllerSchema, option: Model_opt
       more.__parentModel = modelInstance.__parentModel;
       more.modelId = ctx.data.id;
       //Log('aboutAccessRead', { ctx, service, option, modelInstance })
-      await formatModelInstance(ctx, service, option, modelInstance , ctx.data.deep);
+      await formatModelInstance(ctx, option, modelInstance , ctx.data.deep);
       //await modelInstance.select(i)
     } catch (error:any) {
       return await callPost({

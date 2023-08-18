@@ -49,6 +49,10 @@ export type MoreSchema = {
   lastInstance?: any,
   modelId?: string,
   __parentModel?: string,
+  parentList?: {
+    modelPath:string,
+    id:string,
+  }[],
 };
 export type ControlSchema = (
   context: ContextSchema,

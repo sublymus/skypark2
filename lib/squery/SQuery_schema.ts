@@ -43,6 +43,13 @@ export const SQuery_Schema = (description: DescriptionSchema, options?: SchemaOp
     type: Schema.Types.ObjectId,
     access: 'public'
   };
+  description.__parentList =[ {
+    type: {
+      modelPath:String,
+      id:String
+    },
+    access: "admin",
+  }];
   for (const p in description) {
     const rule = description[p];
 
@@ -65,7 +72,7 @@ export const SQuery_Schema = (description: DescriptionSchema, options?: SchemaOp
       }
     } else {
       if (rule.default) {
-        rule._default = rule.default
+        rule._default = rule.default || rule._default;
         delete rule.default
       }
       if (rule._default) {

@@ -7,7 +7,7 @@ import PadiezdModel from "./PadiezdModel";
 
 let addressSchema = SQuery.Schema({
 
-  localisation: {
+  location: {
     type: String,
     trim: true,
   },
