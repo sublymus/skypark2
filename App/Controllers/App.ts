@@ -26,12 +26,7 @@ export const AppController = new SQuery.Controller({
 
             Log('buildingList', { buildingList })
 
-            return {
-                response: buildingList,
-                code: 'ok',
-                message: 'ok',
-                status: 200,
-            }
+            RESPONSE_BREAKER(ctx, buildingList)
         },
         padiezdList: async (ctx: ContextSchema): ResponseSchema => {
             Log('padiezdList', ctx.data);

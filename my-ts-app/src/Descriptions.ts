@@ -1,24 +1,47 @@
-import { UrlData, DescriptionsType, ControllerType } from "./lib/SQueryClient";
-
-const newPostData =  {
+import { UrlData, DescriptionsType, ControllerType, ArrayDataInit } from "./lib/SQueryClient";
+const post = {} as Partial<PostInterface>
+const survey = {} as Partial<SurveyInterface>
+const newPostData = {
+  ...post,
   message: {
-    text: '' as (string | undefined) ,
-  },
-  theme: ""  as (string | undefined)
-}
+    text: '' as (string | undefined),
+  } as MessageInterface,
+  survey: {
+    ...survey,
+    options: [] as LabelInterface[]
+  }
+};
 const send = {
-  like: true as (boolean | undefined) ,
-  newPostData: {} as (Partial<typeof newPostData> | undefined) ,
-  accountShared: ""  as (string | undefined),
-  postId: ""  as (string | undefined)
+  like: true as (boolean | undefined),
+  newPostData: {} as (Partial<typeof newPostData> | undefined),
+  accountShared: "" as (string | undefined),
+  postId: "" as (string | undefined)
 }
 export const Controller = {
   post: {
-    statPost: {
-      send: {} as Partial<typeof send> &{postId:string},
+    // allUserPost:{
+    //   send:{},
+    //   receive:ArrayDataInit
+    // },
+    survey: {
       receive: {
-        post:{} as PostInterface,
-        newCommentId : {} as (PostInterface | undefined)
+        newLabel:'',
+        lastLabel:'',
+        totalVotes:0,
+        delay: 0,
+        limiteDate:0
+      },
+      send: { postId: '', labelId: '' }
+    },
+    statPost: {
+      send: {} as Partial<typeof send> & { postId: string },
+      receive: {
+        newCommentId: '',
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        totalCommentsCount: 0,
+        isLiked: false
       }
     }
   },
@@ -261,6 +284,58 @@ export const Descriptions = {
       },
     }]
   },
+  label: {
+    label: {
+      type: String
+    },
+    votes: {
+      type: Number,
+    },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
+    __parentList: [{
+      type: {
+        modelPath: String,
+        id: String
+      },
+    }]
+  },
+  survey: {
+    options: [{
+      type: String,
+      ref: 'label' as const,
+      required: true,
+    }],
+    totalVotes: {
+      type: Number,
+    },
+    delay: {
+      type: Number,
+      required: true,
+    },
+    _id: {
+      type: String
+    },
+    __createdAt: {
+      type: Number
+    },
+    __updatedAt: {
+      type: Number
+    },
+    __parentList: [{
+      type: {
+        modelPath: String,
+        id: String
+      },
+    }]
+  },
   post: {
     client: {
       type: String, // modelPath user / manager / supervisor,
@@ -272,6 +347,10 @@ export const Descriptions = {
     },
     theme: {
       type: String
+    },
+    survey: {
+      type: String,
+      ref: 'survey' as const
     },
     statPost: {
       type: {
@@ -1007,12 +1086,31 @@ export const CacheValues = {
     __updatedAt: 0,
     __parentList: [],
   } as MessageInterface,
+
+  label: {
+    _id: '',
+    label: '',
+    votes: 0,
+    __createdAt: 0,
+    __updatedAt: 0,
+    __parentList: []
+  } as LabelInterface,
+  survey: {
+    _id: '',
+    options: [],
+    totalVotes: 0,
+    delay: 0,
+    __createdAt: 0,
+    __updatedAt: 0,
+    __parentList: [],
+  } as SurveyInterface,
   post: {
     _id: '',
     message: '',
     comments: [],
     client: '',
     padiezd: '',
+    survey: '',
     theme: '',
     statPost: {
       likes: 0,
@@ -1100,6 +1198,29 @@ export const CacheValues = {
     __parentList: [],
   } as TestInterface
 } satisfies CacheType
+export interface LabelInterface {
+  _id: string,
+  label: string,
+  votes: number,
+  __createdAt: number,
+  __updatedAt: number,
+  __parentList: {
+    modelPath: string,
+    id: string
+  }[]
+}
+export interface SurveyInterface {
+  _id: string,
+  options: string[],
+  totalVotes: number,
+  delay: number,
+  __createdAt: number,
+  __updatedAt: number,
+  __parentList: {
+    modelPath: string,
+    id: string
+  }[],
+}
 export interface TestInterface {
   simpleArray?: number[],
   fileArray?: UrlData[],

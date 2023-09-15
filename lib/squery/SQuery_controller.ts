@@ -32,9 +32,27 @@ export class Controller <NAME extends string = string , SERVICES extends Service
                         more,
                     });
                     if (preRes) return preRes
+                    let rest :ResultSchema|void|undefined;
+                    try {
+                        rest = await serviceList[service](ctx, more) ;
+                    } catch (error:any) {
+                        
+
+                        try {
+                            const res = JSON.parse(error.message);
+                            if((res.error||res.response)&&res.status ){
+                                rest = {...res, status: parseInt(res.status.split(':')[0]) , code:res.status.split(':')[1] };
+                                //@ts-ignore
+                                delete rest?.debug
+                                Log("@@@@@@@@@@@@",rest);
+                            }
+                        } catch (error) {
+                            
+                        }
+                    }
                     return await this.#callPost({
                         ctx,
-                        res: await serviceList[service](ctx, more) || UNDIFINED_RESULT,
+                        res:rest||UNDIFINED_RESULT ,
                         more
                     });
                 };

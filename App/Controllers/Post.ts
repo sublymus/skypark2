@@ -1,7 +1,8 @@
-import { LabelController } from '../Models/LabelModel';
+
+import { LabelController } from './../Models/LabelModel';
 import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
-import { ResponseSchema, superD } from "../../lib/squery/Initialize";
+import { ModelControllerInterface, ResponseSchema, superD } from "../../lib/squery/Initialize";
 import { SQuery } from "../../lib/squery/SQuery";
 import { Local } from "../../lib/squery/SQuery_init";
 import { ModelControllers } from "../Tools/ModelControllers";
@@ -9,7 +10,9 @@ import { EXIST_BREAKER } from "../Tools/Breaker";
 import { PostController as PostModelCTRL } from './../Models/PostModel';
 import { SurveyController } from "../Models/SurveyModel";
 import mongoose from 'mongoose';
-
+import { ModelController } from '../../lib/squery/SQuery_ModelController';
+import { AccountController } from '../Models/AccountModel';
+type DOC<Ctrl extends  ModelControllerInterface<any,any, any,any>> = Ctrl extends  ModelController<any ,any,infer DES> ? mongoose.Document<any, any, superD<DES>>&superD<DES> & { [k: string]: any }: ModelController<any,any,any>
 export const PostController = new SQuery.Controller({
     name: 'post',
     services: {
@@ -48,34 +51,35 @@ export const PostController = new SQuery.Controller({
                 const l = new LabelController.model({})
                 const result = await Promise.allSettled(labelsPromise);
                 Log('result', result)
-                type DOC = mongoose.Document<any, any, superD<typeof LabelController.model.schema.description>> & superD<typeof LabelController.model.schema.description> & { [k: string]: any }
+                
                 const labels = result
                     .filter((data) => {
                         return data.status == 'fulfilled';
                     })
                     .map((data) => {
                         //@ts-ignore
-                        return data.value as DOC;
+                        return data.value as DOC<typeof LabelController>;
                     });
-                let lastVote = '';
-                let newVote = '';
-                const changedLabel: { [k: string]: DOC } = {};
+                let lastLabel = '';
+                let newLabel = '';
+                const changedLabel: { [k: string]: DOC<typeof LabelController> } = {};
+                
                 let totalVotes = 0;
 
                 for (const label of labels) {
                     totalVotes += label.clients?.length||0;
-                    if (!lastVote) {
+                    if (!lastLabel) {
 
                         const newClients = label.clients?.filter(vote => {
                             const r = ctx.login.id + ':' + label._id?.toString() != vote;
-                            Log('@@@', {r, lastVote,vote,b: !lastVote && !r})
-                            if (!lastVote && !r) {
-                                lastVote = vote;
+                            Log('@@@', {r, lastLabel,vote,b: !lastLabel && !r})
+                            if (!lastLabel && !r) {
+                                lastLabel = vote;
                             }
                             return r;
                         });
-                        Log('newClients', {newClients, lastVote})
-                        if (lastVote) {
+                        Log('newClients', {newClients, lastLabel})
+                        if (lastLabel) {
 
                             label.clients = newClients;
                             label.votes = newClients?.length
@@ -87,7 +91,7 @@ export const PostController = new SQuery.Controller({
                         label.clients?.push(vote);
                         label.votes =  label.clients?.length
                         changedLabel[label._id.toString()] = label;
-                        newVote = vote;
+                        newLabel = vote;
                     }
                 }
                 for (const key in changedLabel) {
@@ -102,10 +106,11 @@ export const PostController = new SQuery.Controller({
                 limite = limite < 0 ? 0:limite
                 return {
                     response: {
-                        newVote,
-                        lastVote,
+                        newLabel,
+                        lastLabel,
                         totalVotes,
-                        delay : limite
+                        delay : limite,
+                        limiteDate : (survey?.__createdAt||0)+(survey?.delay||0)
                     },
                     status:200,
                     message:'ok',
@@ -125,7 +130,7 @@ export const PostController = new SQuery.Controller({
                 console.log(ctx.data);
 
                 const { like, newPostData, accountShared, postId } = ctx.data;
-                const post = await ModelControllers['post']?.model.findOne({ _id: postId });
+                const post = await PostModelCTRL.model.findOne({ _id: postId });
                 if (!post) {
                     return {
                         error: "NOT_FOUND",
@@ -159,7 +164,7 @@ export const PostController = new SQuery.Controller({
 
                 /*************************     SHARED      ********************** */
                 if (accountShared) {
-                    const accountSharedInsatance = await Local.ModelControllers['account'].model.findOne({ _id: accountShared });
+                    const accountSharedInsatance = await AccountController.model.findOne({ _id: accountShared });
                     if (accountSharedInsatance) {
                         const code = ctx.login.id + ':' + accountShared;
                         const include = post['shared']?.find((_code: any) => {
@@ -176,9 +181,9 @@ export const PostController = new SQuery.Controller({
 
                 /*************************     COMMENT      ********************** */
 
-                let newComment: any;
+                let newComment: DOC<typeof PostModelCTRL>|null= null;
                 if (ctx?.login.id && newPostData) {
-                    const res = await Local.ModelControllers['post']?.services['list']?.({
+                    const res = await PostModelCTRL.services['list']?.({
                         ...ctx,
                         __permission: 'admin',
                         data: {
@@ -191,7 +196,7 @@ export const PostController = new SQuery.Controller({
                         }
                     })
                     if (!res?.response) return res;
-                    newComment = await Local.ModelControllers['post'].model.findOne({ _id: res.response.added[0] });//////
+                    newComment = await PostModelCTRL.model.findOne({ _id: res.response.added[0] });//////
                     change = true;
                 }
 
@@ -210,8 +215,8 @@ export const PostController = new SQuery.Controller({
 
 
                 let result = {
-
-                    likes: post['like']?.length,
+                    newCommentId: newComment?._id.toString(),
+                    likes: post.like?.length,
                     comments: post['comments']?.length,
                     shares: post['shared']?.length,
                     totalCommentsCount: (data?.totalItems) || 0,
