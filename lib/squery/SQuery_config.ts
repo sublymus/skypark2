@@ -18,8 +18,8 @@ export interface ConfigInterface {
         preflightContinue?:boolean
     }
 }
-let _conf :any= {
-    execDir: ["/App/Models", "/App/Controllers", "/App/Tools", "/Start"],
+export const  defaultConfig :ConfigInterface= {
+    execDir:[],
     afterExec: [],//TODO
     beforeExec: [],//TODO
     fileDir:['fs'],
@@ -28,19 +28,4 @@ let _conf :any= {
     TOKEN_KEY: 'a',
     URL_KEY: 'a',
     IO_CORS:{}
-} 
-type ConfigType = {
-    get conf() : ConfigInterface,
-    set conf(conf:ConfigInterface)  
-}
-export const Config: ConfigType ={
-    get conf() {
-        return _conf as ConfigInterface
-    },
-    set conf(conf:ConfigInterface){
-        _conf = {
-            ..._conf,
-            ...conf
-        }
-    }
- }
+} as any as ConfigInterface

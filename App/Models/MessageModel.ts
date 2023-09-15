@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 let MessageSchema = SQuery.Schema({
@@ -37,14 +36,12 @@ let MessageSchema = SQuery.Schema({
     }
 });
 
-const MessageModel = mongoose.model("message", MessageSchema);
-
-const ctrlMaker = MakeModelCtlForm({
+export const MessageController = new SQuery.ModelController({
+    name:'message',
     schema: MessageSchema,
-    model: MessageModel
-});
-ctrlMaker.pre('create', async ({ ctx }) => {
+  });
+  
+  MessageController.pre('create', async ({ ctx }) => {
     if (ctx.__permission == 'admin') return;
     ctx.data.account = ctx.login.id;
-})
-export default MessageModel;
+});

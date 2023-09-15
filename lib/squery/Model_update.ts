@@ -2,35 +2,41 @@ import Log from "sublymus_logger";
 import { accessValidator } from "./AccessManager";
 import { ContextSchema } from "./Context";
 import STATUS from "./Errors/STATUS";
-import { Controllers, DescriptionSchema, EventPostSchema, EventPreSchema, ModelControllerSchema, ModelControllers, ModelFrom_optionSchema, ModelInstanceSchema, Model_optionSchema, MoreSchema, ResponseSchema, ResultSchema } from "./Initialize";
+import { DescriptionSchema, EventPostSchema, EventPreSchema, ModelControllerSchema, ModelInstanceSchema, MoreSchema, ResponseSchema, ResultSchema } from "./Initialize";
 import { FileValidator } from "./FileManager";
+import { Local } from "./SQuery_init";
+import { ModelController } from "./SQuery_ModelController";
 
-export const updateFactory = (controller: ModelControllerSchema, option: Model_optionSchema, callPost: (e: EventPostSchema) => ResponseSchema, callPre: (e: EventPreSchema) => Promise<void | ResultSchema>) => {
+export const updateFactory =  (
+  controller: ModelController,
+  callPost: (e: EventPostSchema) => ResponseSchema,
+  callPre: (e: EventPreSchema) => Promise<void | ResultSchema>
+) => {
   return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
     const service = "update";
     ctx = { ...ctx };
     ctx.service = service;
-    ctx.ctrlName = option.modelPath;
+    ctx.ctrlName = controller.name;
     if (!more) more = {};
     if (!more.savedlist) more.savedlist = [];
     more.__parentModel = "";
-    more.modelPath = option.modelPath;
-    if (!accessValidator({
-      ctx,
-      rule: option,
-      type: "controller"
-    })) {
-      return await callPost({
-        ctx,
-        more,
-        res: {
-          error: "BAD_AUTH_CONTROLLER",
-          ...(await STATUS.BAD_AUTH(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
-          })),
-        },
-      });
-    }
+    more.modelPath = controller.name;
+    // if (!accessValidator({
+    //   ctx,
+    //   rule: option,
+    //   type: "controller"
+    // })) {
+    //   return await callPost({
+    //     ctx,
+    //     more,
+    //     res: {
+    //       error: "BAD_AUTH_CONTROLLER",
+    //       ...(await STATUS.BAD_AUTH(ctx, {
+    //         target: controller.name.toLocaleUpperCase(),
+    //       })),
+    //     },
+    //   });
+    // }
     const preRes = await callPre({
       ctx,
       more,
@@ -38,10 +44,10 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
     if (preRes) return preRes
 
     let modelInstance: ModelInstanceSchema|null|undefined;
-    const description: DescriptionSchema = option.schema.description;
+    const description: DescriptionSchema = controller.model.schema.description;
 
     try {
-      modelInstance = await option.model.__findOne({
+      modelInstance = await controller.model.findOne({
         _id: ctx.data.id,
       });
       if (!modelInstance) {
@@ -51,7 +57,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
           res: {
             error: "NOT_FOUND",
             ...(await STATUS.NOT_FOUND(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
+              target: controller.name.toLocaleUpperCase(),
             })),
           },
         });
@@ -82,7 +88,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
               !!rule.strictAlien,
               "isStr: ",
               isStr,
-              option.modelPath,
+              controller.name,
               "result: ",
               !!rule.strictAlien && !isStr
             );
@@ -94,7 +100,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
               try {
                 const alienId = ctx.data[p];
                 Log('log',{alienId , oldId})
-                const validId = (await Controllers['server']()['instanceId']({
+                const validId = (await Local.Controllers['server'].services['instanceId']({
                   ...ctx,
                   data: {
                     id: alienId,
@@ -113,8 +119,8 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
               Log('serperLog',{
                 [p]:ctx.data[p]
               })
-              try {const ctrl = ModelControllers[rule.ref]();
-                const res =( await (ctrl.create || ctrl.store)?.({
+              try {const ctrl = Local.ModelControllers[rule.ref];
+                const res = await (ctrl?.services.create ({
                   ...ctx,
                   data: {
                     ...ctx.data[p]
@@ -135,11 +141,11 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
              if(!oldId) continue;
 
               const impact = rule.impact != false;
-              let res: ResultSchema|undefined;
+              let res: ResultSchema|void |undefined;
               Log("impact", { impact, rule });
               if (impact) {
-                const ctrl = ModelControllers[rule.ref]();
-                res = await (ctrl.delete || ctrl.destroy)?.(
+                const ctrl = Local.ModelControllers[rule.ref];
+                res = await ctrl?.services.delete(
                   {
                     ...ctx,
                     data: { id: oldId },
@@ -172,7 +178,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
                   ctx.data[p],
                   modelInstance[p],
                   {
-                    modelPath: option.modelPath,
+                    modelPath: controller.name,
                     id: ctx.data.id,
                     property: p
                   }
@@ -184,7 +190,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
                   res: {
                     error: "UPLOAD_ERROR",
                     ...(await STATUS.OPERATION_FAILED(ctx, {
-                      target: option.modelPath.toLocaleUpperCase(),
+                      target: controller.name.toLocaleUpperCase(),
                       message: error.message,
                     })),
                   },
@@ -221,7 +227,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
         res: {
           error: "OPERATION_FAILED",
           ...(await STATUS.NOT_FOUND(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
+            target: controller.name.toLocaleUpperCase(),
             message: error.message,
           })),
         },
@@ -237,7 +243,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
         res: {
           error: "OPERATION_FAILED",
           ...(await STATUS.OPERATION_FAILED(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
+            target: controller.name.toLocaleUpperCase(),
             message: error.message,
           })),
         },
@@ -249,7 +255,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
       more,
       res: {
         response: (
-          await controller.read?.({
+          await controller.services.read({
             ...ctx,
             data: {
               id: modelInstance._id.toString(),
@@ -257,7 +263,7 @@ export const updateFactory = (controller: ModelControllerSchema, option: Model_o
           })
         )?.response,
         ...(await STATUS.OPERATION_SUCCESS(ctx, {
-          target: option.modelPath.toLocaleUpperCase(),
+          target: controller.name.toLocaleUpperCase(),
         })),
       },
     });

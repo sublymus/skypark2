@@ -1,8 +1,8 @@
 import { parse, serialize } from "cookie";
 import jwt from "jsonwebtoken";
 import Log from "sublymus_logger";
-import { Config } from "./Config";
-import { Server, Socket } from "socket.io";
+import { Socket } from "socket.io";
+import { SQuery } from "./SQuery";
 
 export const SQuery_cookies = async (source:Socket|null|string, key?: string, value?: any) => {
   let decoded: any = {};
@@ -12,7 +12,7 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
     const p = parse(cookie||'');
     //console.log({p});
     const squery_session = JSON.parse(p.squery_session);
-    decoded = jwt.verify(squery_session, Config.conf.TOKEN_KEY||'') || {};
+    decoded = jwt.verify(squery_session, SQuery.Config.TOKEN_KEY||'') || {};
   } catch (error:any) {
     Log("jwtError", error.message);
   }
@@ -29,7 +29,7 @@ export const SQuery_cookies = async (source:Socket|null|string, key?: string, va
       {
         ...payload,
       },
-      Config.conf.TOKEN_KEY||''
+      SQuery.Config.TOKEN_KEY||''
     );
   };
 

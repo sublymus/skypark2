@@ -1,8 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import Log from "sublymus_logger";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import MessageModel from "./MessageModel";
+import {MessageController} from "./MessageModel";
 
 let DiscussionSchema = SQuery.Schema({
   
@@ -33,21 +31,14 @@ let DiscussionSchema = SQuery.Schema({
   },
   channel: [{
     type: Schema.Types.ObjectId,
-    ref:MessageModel.modelName,
+    ref:MessageController.name,
     access: 'public',
     impact: true,
     required:true
   }],
 });
 
-const DiscussionModel = mongoose.model("discussion", DiscussionSchema);
-
-const maker = MakeModelCtlForm({
+export const DiscussionController = new SQuery.ModelController({
+  name:'discussion',
   schema: DiscussionSchema,
-  model: DiscussionModel,
-  volatile:true
 });
-
-maker.pre("create", async ({ ctx }) => {
-});
-export default DiscussionModel;

@@ -1,8 +1,9 @@
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
+import { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
-import MessageModel from "./MessageModel";
-import PadiezdModel from "./PadiezdModel";
+import { PadiezController } from "./PadiezdModel";
+import { MessageController } from "./MessageModel";
+import { Controllers } from "../Tools/Controllers";
+import { SurveyController } from "./SurveyModel";
 
 let PostSchema = SQuery.Schema({
   client:{
@@ -11,13 +12,13 @@ let PostSchema = SQuery.Schema({
   },
   padiezd:{
     type:Schema.Types.ObjectId,
-    ref:PadiezdModel.modelName,
+    ref:PadiezController.name,
     strictAlien:true,
     impact:false,
   },
   message: {
     type: Schema.Types.ObjectId,
-    ref: MessageModel.modelName,
+    ref: MessageController.name,
     required: true,
   },
   type:{
@@ -55,6 +56,10 @@ let PostSchema = SQuery.Schema({
   theme:{
     type:String
   },
+  survey:{
+    type:Schema.Types.ObjectId,
+    ref:SurveyController.name
+  },
   comments: [ {
       type: Schema.Types.ObjectId,
       access:'admin',
@@ -63,22 +68,35 @@ let PostSchema = SQuery.Schema({
     }],
 });
 
-const PostModel = mongoose.model("post", PostSchema);
-
-const maker = MakeModelCtlForm({
-  schema: PostSchema,
-  model: PostModel
+export const PostController = new SQuery.ModelController({
+  name:'post',
+  schema: PostSchema
 });
 
-maker.pre('create',async({ctx})=>{
+PostController.pre('create',async({ctx})=>{
   ctx.data = {
     ...ctx.data,
     data:{
       client : ctx.signup.modelPath
     }
   }
+}).post('read',async ({ctx,more, res},)=>{
+  
+  const result  = await Controllers.post.services.statPost({
+    ...ctx,
+    data:{
+      postId:ctx.data.id||ctx.data._id
+    }
+  });
+  const rrr =  {
+    ...res,
+    response:{
+      ...JSON.parse(JSON.stringify(res.response)),
+      statPost:{
+        ...result?.response
+      }
+    }
+  }
+  
+  return rrr;
 })
-
-
-export default PostModel;
-

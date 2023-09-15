@@ -70,9 +70,9 @@ __SQuery file access au fichier..
 =======================================   SQuery.Auth  ==================================================
 - on ne peut pas creat un signupMode en avec le __key du ctx, tout creation d'un signupModel entre la creation d'un __key unique pour ce dernier;
 - on peut ajouter un cookis dans le socket partout dans le code
-SQuery.cookies(socket , 'property', value ); //clientCookies
-SQuery.cookies(socket , 'property'); //value
-SQuery.cookies(socket  ); // { property:value , ...}
+SQuery.Cookies(socket , 'property', value ); //clientCookies
+SQuery.Cookies(socket , 'property'); //value
+SQuery.Cookies(socket  ); // { property:value , ...}
 
 =======================================   SQuery.View  ==================================================
 =======================================   context  ==================================================

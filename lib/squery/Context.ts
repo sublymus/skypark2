@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import { ModelServiceAllowed } from "./Initialize";
 
 type MoreProperty = {
   [p: string]: any;

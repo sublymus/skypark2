@@ -1,28 +1,23 @@
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
+import { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
-import DiscussionModel from "./DiscussionModel";
+import {DiscussionController} from "./DiscussionModel";
 
 let MessengerSchema = SQuery.Schema({
   listDiscussion: [
     {
       type: Schema.Types.ObjectId,
-      ref: DiscussionModel.modelName,
+      ref: DiscussionController.name,
       alien: true,
     },
   ],
   archives:  [{
     type: Schema.Types.ObjectId,
-    ref: DiscussionModel.modelName,
+    ref: DiscussionController.name,
     alien: true,
   }],
 });
 
-const MessengerModel = mongoose.model("messenger", MessengerSchema);
-
-MakeModelCtlForm({
+export const MessengerController = new SQuery.ModelController({
+  name:'messenger',
   schema: MessengerSchema,
-  model: MessengerModel,
 });
-
-export default MessengerModel;

@@ -1,6 +1,8 @@
 import Log from "sublymus_logger";
-import { Controllers, CtrlModelMakerSchema, ListenerPostSchema, ModelControllers, MoreSchema, ResultSchema, Tools } from "../Initialize";
+import {  ListenerPostSchema, MoreSchema, ResultSchema, Tools } from "../Initialize";
 import { ContextSchema } from "../Context";
+import { Local } from "../SQuery_init";
+import { ModelController } from "../SQuery_ModelController";
 
 declare module "../Initialize" {
     export interface ToolsInterface {
@@ -18,10 +20,10 @@ type assigneToNewListElementType = {
     map?: (value: any, option?: assigneToNewListElementType) => any
 }
 export const assigneToNewListElementData: { [k: string]: assigneToNewListElementType[] } = {}
-const assigneToNewListElement = function (this: { maker: CtrlModelMakerSchema }, data: assigneToNewListElementType) {
-    if (!assigneToNewListElementData[this.maker.option.modelPath]) assigneToNewListElementData[this.maker.option.modelPath] = []
-    assigneToNewListElementData[this.maker.option.modelPath].push(data);
-    this.maker.post('list', assigneTonewElementFunc(data));
+const assigneToNewListElement = function (this: { controller: ModelController }, data: assigneToNewListElementType) {
+    if (!assigneToNewListElementData[this.controller.name]) assigneToNewListElementData[this.controller.name] = []
+    assigneToNewListElementData[this.controller.name].push(data);
+    this.controller.post('list', assigneTonewElementFunc(data));
 }
 
 export const assigneTonewElementFunc = (data: assigneToNewListElementType): ListenerPostSchema => {
@@ -37,7 +39,7 @@ export const assigneTonewElementFunc = (data: assigneToNewListElementType): List
             }, 2000); 
             if (parts[0] != data.parentModelPath || parts[2] != data.parentListProperty) return;
 
-            const resExtractor = await Controllers['server']()['extractor']({
+            const resExtractor = await Local.Controllers['server'].services['extractor']({
                 ...ctx,
                 data: {
                     modelPath: data.parentModelPath,
@@ -50,7 +52,7 @@ export const assigneTonewElementFunc = (data: assigneToNewListElementType): List
                 Log('des**', 'ERROR_User_LIST_ADD_BUILDING_ID', { resExtractor });
             }, 2000); 
             if (!resExtractor?.response) return;
-            const sourcRes = await ModelControllers[resExtractor.response.modelPath]()['read']?.({
+            const sourcRes = await Local.ModelControllers[resExtractor.response.modelPath]?.services.read({
                 ...ctx,
                 data: { id: resExtractor.response.id }
             });
@@ -66,7 +68,7 @@ export const assigneTonewElementFunc = (data: assigneToNewListElementType): List
                 try {
                     if (Object.prototype.hasOwnProperty.call(res.response.added, key)) {
                         const userId = res.response.added[key];
-                        const resExtractor = await Controllers['server']()['extractor']({
+                        const resExtractor = await Local.Controllers['server'].services['extractor']({
                             ...ctx,
                             data: {
                                 modelPath: 'user',
@@ -76,7 +78,7 @@ export const assigneTonewElementFunc = (data: assigneToNewListElementType): List
                         })
                         //Log('User_LIST_foreach', { resExtractor })
                         if (!resExtractor?.response) return
-                        const targetInstance = await ModelControllers[resExtractor.response.modelPath].option?.model.findOne({ _id: resExtractor.response.id });
+                        const targetInstance = await Local.ModelControllers[resExtractor.response.modelPath]?.model.findOne({ _id: resExtractor.response.id });
                         //Log('User_LIST_foreach', { targetInstance })
                         if (!targetInstance) return;
                         targetInstance[data.targetProperty] = data.map ? data.map(sourceInstance[data.sourceProperty || ''], data) : sourceInstance[data.sourceProperty || ''];

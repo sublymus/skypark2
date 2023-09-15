@@ -1,5 +1,3 @@
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 let folderSchema = SQuery.Schema({
@@ -17,10 +15,7 @@ let folderSchema = SQuery.Schema({
 
 });
 
-const FolderModel = mongoose.model("folder", folderSchema);
-
-MakeModelCtlForm({
+export const FolderController = new SQuery.ModelController({
+  name:'folder',
   schema: folderSchema,
-  model: FolderModel
-})
-export default FolderModel;
+});

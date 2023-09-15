@@ -1,19 +1,14 @@
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
+import { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
-import AddressModel from "./AddressModel";
-import BuildingModel from "./BuildingModel";
-import ConstructionManagerModel from "./SupervisorModel";
-import ProfileModel from "./ProfileModel";
-import ManagerModel from "./ManagerModel";
-import QuarterModel from "./QuarterModel";
-import EntrepriseManagerModel from "./SupervisorModel";
+import {AddressController} from "./AddressModel";
+import {ProfileController} from "./ProfileModel";
+import {ManagerController} from "./ManagerModel";
+import {QuarterController} from "./QuarterModel";
 
 let EntrepiseSchema = SQuery.Schema({
   managers: [{
     type: Schema.Types.ObjectId,
-    //ref: ConstructionManagerModel.modelName,
-    ref: ManagerModel.modelName,
+    ref: ManagerController.name,
     impact:false,
     access:'share',
     share:{
@@ -22,7 +17,7 @@ let EntrepiseSchema = SQuery.Schema({
   }],
   quarters: [{
     type: Schema.Types.ObjectId,
-    ref: QuarterModel.modelName,
+    ref: QuarterController.name,
     impact:false,
     access:'share',
     share:{
@@ -31,7 +26,7 @@ let EntrepiseSchema = SQuery.Schema({
   }],
   address: {
     type: Schema.Types.ObjectId,
-    ref: AddressModel.modelName,
+    ref: AddressController.name,
   },
   telephone: [{
     type: String,
@@ -47,19 +42,14 @@ let EntrepiseSchema = SQuery.Schema({
   },
   profile: {
     type: Schema.Types.ObjectId,
-    ref: ProfileModel.modelName,
+    ref: ProfileController.name,
   },
   creationDate: {
     type: Number,
   },
 });
 
-const EntrepiseModel = mongoose.model("entreprise", EntrepiseSchema);
-
-const ctrlMaker = MakeModelCtlForm({
+export const EntrepriseController = new SQuery.ModelController({
+  name:'entreprise',
   schema: EntrepiseSchema,
-  model: EntrepiseModel,
 });
-
-
-export default EntrepiseModel;

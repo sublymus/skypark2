@@ -1,7 +1,6 @@
 //PadiezdModel
 
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
+import { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
 
 let PadiezdSchema = SQuery.Schema({
@@ -17,11 +16,7 @@ let PadiezdSchema = SQuery.Schema({
   }]
 });
 
-const PadiezdModel = mongoose.model("padiezd", PadiezdSchema);
-
-const maker = MakeModelCtlForm({
-  schema: PadiezdSchema,
-  model: PadiezdModel
+export const PadiezController = new SQuery.ModelController({
+  name:'padiezd',
+  schema: PadiezdSchema
 });
-
-export default PadiezdModel;

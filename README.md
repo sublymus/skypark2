@@ -116,7 +116,7 @@ import {SQuery } from "squery";
 
 const client: ControllerSchema = {
     currentUser: async (ctx: ContextSchema): ResponseSchema => {
-        const token = await SQuery.cookies(ctx.socket, 'token');
+        const token = await SQuery.Cookies(ctx.socket, 'token');
         return {
             response: {
                 signup: {
@@ -321,20 +321,19 @@ vous etre libre de choisir l'architecture de fichier qui vous convient. Cependan
 |-Start
 |  |-InitDB.ts
 |  |-InitAuth.ts
-|-squeryconfig.ts
 ```
-Pour executer les fichier au demarage du server vous devez informer `Config.conf`
+Pour executer les fichier au demarage du server vous devez informer ` SQuery.Config`
 ```javascript
 import { Config } from "squery/Config";
 
 declare module "squery/Config" {
   export interface ConfigInterface {
-    //ajouter des proprier au Config.conf
+    //ajouter des proprier au  SQuery.Config
     PORT:number,
   }
 }
 
-Config.conf ={
+ SQuery.Config ={
   //donner des valeur a vos propriters
     PORT:3500,
     // indiquer l'emplacement des dossiers suivant.

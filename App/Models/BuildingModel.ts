@@ -1,7 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import PadiezdModel from "./PadiezdModel";
+import { PadiezController } from "./PadiezdModel";
 
 let buildingSchema = SQuery.Schema({
   name: {
@@ -14,17 +13,14 @@ let buildingSchema = SQuery.Schema({
   },
   padiezdList: [{
     type: Schema.Types.ObjectId,
-    ref: PadiezdModel.modelName,
+    ref: PadiezController.name,
     access:'admin',
   }],
   
 });
 
-const BuildingModel = mongoose.model("building", buildingSchema);
-
-const maker = MakeModelCtlForm({
+export const BuildingController = new SQuery.ModelController({
+  name:'building',
   schema: buildingSchema,
-  model: BuildingModel
 });
 
-export default BuildingModel;

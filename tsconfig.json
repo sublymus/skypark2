@@ -7,6 +7,7 @@
     "node_modules"
   ],
   "compilerOptions": {
+    
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "ESNext",
@@ -20,4 +21,5 @@
   "ts-node": {
     "esm": true
   }
+
 }

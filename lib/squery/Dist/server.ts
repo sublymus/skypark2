@@ -10,8 +10,8 @@ import cookieParser from 'cookie-parser';
 import { Config } from "./lib/squery/Config";
 
 const app = express();
-const server = app.listen(Config.conf.PORT, () => {
-  console.log('Server running at http://localhost:' + Config.conf.PORT);
+const server = app.listen( SQuery.Config.PORT, () => {
+  console.log('Server running at http://localhost:' +  SQuery.Config.PORT);
 });
 
 app.use(cookieParser());

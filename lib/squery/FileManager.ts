@@ -3,16 +3,15 @@ import mongoose from "mongoose";
 import fs from "node:fs";
 import path from "node:path";
 import Log from "sublymus_logger";
-import { Config } from "./Config";
 import { ContextSchema } from "./Context"
 import {
   FileSchema,
   InstanceDataPathsType,
-  ModelServiceAvailable,
-  RuleSchema,
+  ModelServiceAllowed,
   TypeRuleSchema,
   UrlDataType,
 } from "./Initialize";
+import { SQuery } from "./SQuery";
 
 function isValideType(ruleTypes: string[], type: string): boolean {
   const typeSide = (type || "").split("/");
@@ -44,7 +43,7 @@ type instanceDataType=  {
 }
 export async function FileValidator(
   ctx: ContextSchema,
-  service: ModelServiceAvailable,
+  service: ModelServiceAllowed,
   rule: TypeRuleSchema,
   files: (FileSchema|InstanceDataPathsType)[],
   dataPaths: InstanceDataPathsType[],
@@ -58,7 +57,7 @@ export async function FileValidator(
     rule.file.type = rule.file.type || ["*/*"];
     rule.file.type = rule.file.type.length == 0 ? ["*/*"] : rule.file.type;
     rule.file.size = rule.file.size || 2_000_000;
-    rule.file.dir = rule.file.dir || Config.conf.fileDir;
+    rule.file.dir = rule.file.dir ||  SQuery.Config.fileDir;
     rule.file.length = rule.file.length || 1;
 
     let sizeMin =
@@ -190,9 +189,7 @@ export async function FileValidator(
       return dataPaths;
     },
   };
-  if (service == "store") service = "create";
-  else if (service == "destroy") service = "delete";
-
+  
   return await Map[service]();
 }
 
@@ -203,12 +200,12 @@ function deletePath(dataPath: InstanceDataPathsType) {
   Log("onUpdateData", dataPath);
   const urlData: UrlDataType = jwt.verify(
     ulr,
-    Config.conf.URL_KEY || ''
+     SQuery.Config.URL_KEY || ''
   ) as UrlDataType;
   const actualPath = urlData?.realPath;
   if (!actualPath) return;
-  if (fs.existsSync(Config.conf.rootDir + actualPath)) {
-    fs.unlink(Config.conf.rootDir + actualPath, (err) => {
+  if (fs.existsSync( SQuery.Config.rootDir + actualPath)) {
+    fs.unlink( SQuery.Config.rootDir + actualPath, (err) => {
       if (err) {
         Log("important", "can not delete", err);
       }
@@ -243,7 +240,7 @@ function createPath(file:FileSchema , ruleFileDir:string , rule:TypeRuleSchema ,
         ...instanceData,
         createdAt: Date.now(),
       },
-      Config.conf.URL_KEY || ''
+       SQuery.Config.URL_KEY || ''
     ) + "." +extension;
   let p = (rule.file?.dir || []).join("/") + "/" + dataPath;
   p = p.startsWith("/") ? p : "/" + p;

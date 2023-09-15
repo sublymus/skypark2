@@ -1,15 +1,11 @@
-import mongoose, { ObjectId, Schema } from "mongoose";
-import { SQueryMongooseSchema } from "../../lib/squery/Initialize";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
+import  { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
-import UserModel from "./UserModel";
-import AppModel from "./AppModel";
-import Log from "sublymus_logger";
+import {AppController} from "./AppModel";
 
 const AdminSchema = SQuery.Schema({
     app:{
         type:  Schema.Types.ObjectId,
-        ref:AppModel.modelName,
+        ref:'app',
         access:'admin',
     },
     email: {
@@ -29,21 +25,8 @@ const AdminSchema = SQuery.Schema({
     },
     
 });
-export const AdminModel = mongoose.model("admin", AdminSchema);
 
-const maker = MakeModelCtlForm({
-    model: AdminModel,
-    schema: AdminSchema,
-    volatile: true,
+export const AdminController = new SQuery.ModelController({
+  name:'admin',
+  schema: AdminSchema,
 });
-maker.pre('create',async({ctx,more})=>{
-    ctx.data.key = new mongoose.Types.ObjectId().toString();
-    const app = await AppModel.findOne();
-    if(app){
-        ctx.data.app = (app?._id as mongoose.Types.ObjectId)?.toString();
-        app.admins.push(more?.modelId);
-        app.save();
-    }
-})
-
-export default AdminModel;

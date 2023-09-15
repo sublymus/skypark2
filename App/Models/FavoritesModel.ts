@@ -1,21 +1,17 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import FolderModel from "./FolderModel";
+import {FolderController} from "./FolderModel";
 
 let favoritesSchema = SQuery.Schema({
 
   folders: [{
     type: Schema.Types.ObjectId,
-    ref: FolderModel.modelName,
+    ref: FolderController.name,
     impact: true,
   }]
 });
-const FavoritesModel = mongoose.model("favorites", favoritesSchema);
 
-MakeModelCtlForm({
+export const FavoritesController = new SQuery.ModelController({
+  name:'favorites',
   schema: favoritesSchema,
-  model: FavoritesModel,
 });
-
-export default FavoritesModel;

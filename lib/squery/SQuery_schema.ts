@@ -1,57 +1,59 @@
-import { access } from 'fs';
 import { FlatRecord, ResolveSchemaOptions, Schema, SchemaOptions } from "mongoose";
 import { DescriptionSchema, SQueryMongooseSchema } from "./Initialize";
-import { Global, SQuery } from "./SQuery";
 import mongoosePaginate from "mongoose-paginate-v2";
 import mongoose_unique_validator from "mongoose-unique-validator";
 import Log from "sublymus_logger";
-
-export const SQuery_Schema = (description: DescriptionSchema, options?: SchemaOptions<FlatRecord<any>, {}, {}, {}, {}> | ResolveSchemaOptions<{}>): SQueryMongooseSchema => {
-  description.__parentModel = {
+import { SQuery } from './SQuery';
+const defaultRules = {
+  __parentModel : {
     type: String,
     access: "admin",
-  };
-  description.__key = {
+  },
+  __key : {
     type: Schema.Types.ObjectId,
     access: "secret",
-  };
+  },
 
-  description.__permission = {
+  __permission : {
     type: String,
     access: "secret",
-  };
-  description.__signupId = {
+  },
+  __signupId : {
     type: String,
     access: "secret",
-  };
+  },
 
-  description.__createdAt = {
+  __createdAt : {
     type: Number,
     access: "admin",
-  };
-  description.__updatedAt = {
+  },
+  __updatedAt : {
     type: Number,
     access: "admin",
-  };
-  description.__updatedProperty = [
+  },
+  __updatedProperty : [
     {
       type: String,
       access: "secret",
     },//64438cae5f4ed54dc6cefa6f
-  ];
-  description._id = {
+  ],
+  _id : {
     type: Schema.Types.ObjectId,
     access: 'public'
-  };
-  description.__parentList =[ {
+  },
+  __parentList :[ {
     type: {
       modelPath:String,
       id:String
     },
     access: "admin",
-  }];
-  for (const p in description) {
-    const rule = description[p];
+  }],
+} satisfies DescriptionSchema;
+export const SQuery_Schema = <DES extends DescriptionSchema>(description: DES, options?: SchemaOptions<FlatRecord<any>, {}, {}, {}, {}> | ResolveSchemaOptions<{}>): SQueryMongooseSchema<DES & typeof defaultRules> => {
+  const _description = {...description ,...defaultRules } as DES & typeof defaultRules
+  
+  for (const p in _description) {
+    const rule = _description[p];
 
     if (Array.isArray(rule) && rule[0].type === SQuery.FileType) {
       if (!rule[0].file)
@@ -84,7 +86,7 @@ export const SQuery_Schema = (description: DescriptionSchema, options?: SchemaOp
     }
 
   }
-  const schema = new Schema(description as any, {
+  const schema = new Schema(_description as any, {
     ...options
   });
 
@@ -94,7 +96,7 @@ export const SQuery_Schema = (description: DescriptionSchema, options?: SchemaOp
   schema.pre("save", async function () {
     this.__updatedAt = Date.now();
     this.__updatedProperty = (this.modifiedPaths() as string[]).filter((updatedProperty) => {
-      const rule = description[updatedProperty];
+      const rule = _description[updatedProperty];
       return Array.isArray(rule) ? rule[0].access !== 'secret' : rule?.access !== 'secret';
     });
   });
@@ -106,7 +108,7 @@ export const SQuery_Schema = (description: DescriptionSchema, options?: SchemaOp
     // })
     let canEmit = false;
     doc.__updatedProperty.forEach((p: string) => {
-      const rule = description[p];
+      const rule = _description[p];
       if (p == '__updatedProperty' || p == '__updatedAt') {
         return;
       } else if (Array.isArray(rule) && rule[0]?.access != 'secret' && rule[0]?.emit != false) {
@@ -119,14 +121,12 @@ export const SQuery_Schema = (description: DescriptionSchema, options?: SchemaOp
     //console.log(doc.__updatedProperty, canEmit);
     if (!canEmit) return;
 
-    Global.io?.emit("update:" + doc._id.toString(), {
+    SQuery.IO?.emit("update:" + doc._id.toString(), {
       id: doc._id.toString(),
       doc,
       properties: doc.__updatedProperty,
     });
   });
-  (schema as any).description = description;
-  return schema as SQueryMongooseSchema;
+  (schema as any).description = _description;
+  return schema as SQueryMongooseSchema<DES & typeof defaultRules>;
 };
-
-

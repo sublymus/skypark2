@@ -1,12 +1,11 @@
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
+import { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
-import ProfileModel from "./ProfileModel";
+import {ProfileController} from "./ProfileModel";
 
 let ActivitySchema = SQuery.Schema({
   poster: {
     type: Schema.Types.ObjectId,
-    ref: ProfileModel.modelName,
+    ref: ProfileController.name,
     required: true,
   },
   channel: [{
@@ -32,13 +31,7 @@ let ActivitySchema = SQuery.Schema({
   }]
 });
 
-const ActivityModel = mongoose.model('activity', ActivitySchema)
-
-MakeModelCtlForm({
+export const ActivityController = new SQuery.ModelController({
+  name:'activity',
   schema: ActivitySchema,
-  model: ActivityModel,
-  volatile: true
-
-})
-
-export default ActivityModel
+});

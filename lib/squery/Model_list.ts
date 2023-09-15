@@ -1,40 +1,46 @@
+import { Local } from './SQuery_init';
 import Log from "sublymus_logger";
 import { accessValidator } from "./AccessManager";
 import { ContextSchema } from "./Context";
 import STATUS from "./Errors/STATUS";
-import { Controllers, DescriptionSchema, EventPostSchema, EventPreSchema, ModelControllerSchema, ModelControllers, ModelFrom_optionSchema, ModelInstanceSchema, Model_optionSchema, MoreSchema, ResponseSchema, ResultSchema } from "./Initialize";
+import { DescriptionSchema, EventPostSchema, EventPreSchema, ModelControllerSchema, ModelInstanceSchema, MoreSchema, ResponseSchema, ResultSchema } from "./Initialize";
 import { backDestroy, formatModelInstance } from "./ModelCtrlManager";
 import { SQuery } from "./SQuery";
+import { ModelController } from './SQuery_ModelController';
 
-export const listFactory = (controller: ModelControllerSchema, option: Model_optionSchema, callPost: (e: EventPostSchema) => ResponseSchema, callPre: (e: EventPreSchema) => Promise<void | ResultSchema>) => {
-  return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
+export const listFactory =  (
+  controller: ModelController,
+  callPost: (e: EventPostSchema) => ResponseSchema,
+  callPre: (e: EventPreSchema) => Promise<void | ResultSchema>
+) => {
+   return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
     const service = "list";
     ctx = { ...ctx };
     ctx.service = service;
-    ctx.ctrlName = option.modelPath;
-    if (!accessValidator({
-      ctx,
-      rule: option,
-      type: "controller"
-    })) {
-      return await callPost({
-        ctx,
-        more,
-        res: {
-          error: "BAD_AUTH_CONTROLLER",
-          ...(await STATUS.BAD_AUTH(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
-          })),
-        },
-      });
-    }
+    ctx.ctrlName = controller.name;
+    // if (!accessValidator({
+    //   ctx,
+    //   rule: option,
+    //   type: "controller"
+    // })) {
+    //   return await callPost({
+    //     ctx,
+    //     more,
+    //     res: {
+    //       error: "BAD_AUTH_CONTROLLER",
+    //       ...(await STATUS.BAD_AUTH(ctx, {
+    //         target: controller.name.toLocaleUpperCase(),
+    //       })),
+    //     },
+    //   });
+    // }
     let { paging, addNew, addId, remove } = ctx.data;
     let parentModelInstance: ModelInstanceSchema | null | undefined;
     more = {
       ...more,
       savedlist: [],
       __parentModel: paging?.query?.__parentModel,
-      modelPath: option.modelPath,
+      modelPath: controller.name,
       
     };
     console.log('***more', { more });
@@ -56,8 +62,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
     let removed: string[] = [];
     //Log("__parentModel", parts);
 
-    const parentDescription: DescriptionSchema | undefined =
-      ModelControllers[parentModelPath]?.option?.schema.description;
+    const parentDescription: DescriptionSchema | undefined =Local.ModelControllers[parentModelPath]?.model.schema.description;
     let parentPropertyRule = parentDescription?.[parentProperty];
     if (Array.isArray(parentPropertyRule)) {
       parentPropertyRule = parentPropertyRule?.[0];
@@ -66,9 +71,9 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
     }
 
     try {
-      parentModelInstance = await ModelControllers[
+      parentModelInstance = await Local.ModelControllers[
         parentModelPath
-      ]?.option?.model.__findOne({
+      ]?.model.findOne({
         _id: parentId,
       });
     } catch (error) {
@@ -111,7 +116,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
           res: {
             error: "ILLEGAL_ARGUMENT",
             ...(await STATUS.OPERATION_FAILED(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
+              target: controller.name.toLocaleUpperCase(),
               message:
                 "__parentModel must be defined: <parentModelPath>_<parentId>_<parentProperty>",
             })),
@@ -131,11 +136,11 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
         const promises = addId.map((id) => {
           return new Promise<string>(async (rev, rej) => {
             try {
-              const validId = (await Controllers['server']()['instanceId']({
+              const validId = (await Local.Controllers['server'].services['instanceId']({
                 ...ctx,
                 data: {
                   id,
-                  modelPath: option.modelPath,
+                  modelPath: controller.name,
                 }
               }))?.response
               if (!validId) {
@@ -171,10 +176,10 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
         if (Array.isArray(remove)) {
           for (const id of remove) {
             const impact = parentPropertyRule.impact != false;
-            let res: ResultSchema | undefined;
+            let res: ResultSchema | void|undefined;
             //Log("impact", { impact, parentProperty, parentPropertyRule });
             if (impact) {
-              res = await ModelControllers[option.modelPath]().delete?.(
+              res = await Local.ModelControllers[controller.name]?.services.delete(
                 {
                   ...ctx,
                   data: { id },
@@ -207,7 +212,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
           res: {
             error: "OPERATION_FAILED4",
             ...(await STATUS.OPERATION_FAILED(ctx, {
-              target: option.modelPath.toLocaleUpperCase(),
+              target: controller.name.toLocaleUpperCase(),
               message: error.message,
             })),
           },
@@ -218,12 +223,12 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       Log("addNew_is_array", Array.isArray(addNew));
       if (Array.isArray(addNew) && parentPropertyRule.strictAlien != true) {
         Log("Je_peux_cree_dans_la_list", true);
-        const ctrl = ModelControllers[option.modelPath]();
-        more.__parentModel = parentModelPath + '_' + parentId + '_' + parentProperty + '_' + option.modelPath;
+        const ctrl = Local.ModelControllers[controller.name];
+        more.__parentModel = parentModelPath + '_' + parentId + '_' + parentProperty + '_' + controller.name;
         const promises = addNew.map((data) => {
           return new Promise(async (rev, rej) => {
             if (!more?.__parentModel) rej(null);
-            const res = await (ctrl.create || ctrl.store)?.(
+            const res = await ctrl?.services.create(
               {
                 ...ctx,
                 data,
@@ -274,7 +279,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
           Log('added', { added })
           if (parentPropertyRule.emit != false) {
             setTimeout(() => {
-              SQuery.io()?.emit('list/' + parentModelPath + '/' + parentProperty + ':' + parentId, {
+              SQuery.IO?.emit('list/' + parentModelPath + '/' + parentProperty + ':' + parentId, {
                 added,
                 removed
               })
@@ -288,7 +293,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
             res: {
               error: "OPERATION_FAILED1",
               ...(await STATUS.OPERATION_FAILED(ctx, {
-                target: option.modelPath.toLocaleUpperCase(),
+                target: controller.name.toLocaleUpperCase(),
                 message: error.message,
               })),
             },
@@ -297,7 +302,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       }
 
     } else {
-      Log("je_ne_peux_pas_modifier", { addId, addNew, remove, query: paging.query, isParentUser });
+      Log("je_ne_peux_pas_modifier", { addId, addNew, remove, query: paging.query, isParentUser , name :controller.name});
     }
     //Log('parent', parentModelInstance);
     //Log('parentModelInstance', { parentModelInstance })
@@ -356,9 +361,9 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
 
     let pagingData = null;
     try {
-      pagingData = await ModelControllers[
-        option.modelPath
-      ].option?.model.paginate?.(
+      pagingData = await Local.ModelControllers[
+        controller.name
+      ]?.model.paginate(
         query,
         options
       );
@@ -367,7 +372,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       pagingData.removed = removed;
 
       const promise = pagingData.items.map((item: any) => {
-        return formatModelInstance(ctx, option, item);
+        return formatModelInstance(ctx, controller, item);
       });
       await Promise.allSettled(promise);
     } catch (error: any) {
@@ -388,7 +393,7 @@ export const listFactory = (controller: ModelControllerSchema, option: Model_opt
       res: {
         response: pagingData,
         ...(await STATUS.OPERATION_SUCCESS(ctx, {
-          target: option.modelPath.toLocaleUpperCase(),
+          target: controller.name.toLocaleUpperCase(),
         })),
       },
     });

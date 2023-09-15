@@ -1,9 +1,10 @@
 import Log from "sublymus_logger";
 import { ContextSchema, authDataSchema } from "./Context";
 import STATUS from "./Errors/STATUS";
-import { ControlSchema, ControllerSchema, ModelControllerSchema, ModelControllers, ResponseSchema } from "./Initialize";
+
+import { ResponseSchema } from "./Initialize";
 import { SQuery } from "./SQuery";
-import { AuthDataMap } from "./SQuery_auth";
+import { Local } from "./SQuery_init";
 
 export class AuthManager {
   login = async (ctx: ContextSchema): ResponseSchema => {
@@ -34,9 +35,9 @@ export class AuthManager {
 
         filter[property] = data[property];
       });
-      loginModelInstance = await ModelControllers[
+      loginModelInstance = await Local.ModelControllers[
         authData.login
-      ].option?.model.findOne(filter);
+      ]?.model.findOne(filter);
       Log("loginModelInstance", loginModelInstance);
     } catch (error:any) {
       Log("ERROR_loginModelInstance", error);
@@ -82,7 +83,7 @@ export class AuthManager {
     const token = {
       __key: loginModelInstance.__key,
       __permission: authData.__permission,
-      __loginId: loginModelInstance._id.toString(),
+      __loginId: (loginModelInstance._id as any ).toString(),
       __loginModelPath: authData.login,
       __email: loginModelInstance.email,
       __signupModelPath: authData.signup,
@@ -90,7 +91,7 @@ export class AuthManager {
     };
     Log('TOKEN', {token});
 
-    await SQuery.cookies(socket, "token", token);
+    await SQuery.Cookies(socket, "token", token);
 
     return {
       response: {
@@ -139,8 +140,8 @@ export class AuthManager {
       };
     }
     const more: any = {};
-    const ctrl =  ModelControllers[authData.signup]();
-    const res =  await (ctrl.create || ctrl.store)?.(ctx, more);
+    const ctrl =  Local.ModelControllers[authData.signup];
+    const res =  await ctrl?.services.create(ctx, more);
     Log("ici", res);
     if (!res?.response) {
       return {

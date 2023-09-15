@@ -1,19 +1,35 @@
 import express from "express";
 import path from "path";
-import cookieSession from 'cookie-session'
 import cors from 'cors'
-import { Socket } from "socket.io";
-import './squeryconfig'
-import { SQuery } from "./lib/squery/SQuery";
+import { Server, Socket } from "socket.io";
 import Log from "sublymus_logger";
 import cookieParser from 'cookie-parser';
-import { Config } from "./lib/squery/Config";
+import { SQuery } from "./lib/squery/SQuery";
+import { Controllers } from "./App/Tools/Controllers";
+import { ModelControllers } from "./App/Tools/ModelControllers";
+declare module "./lib/squery/SQuery_config" {
+  export interface ConfigInterface {
+    PORT:number,
+    tempDir?:string
+    tempDuration?:number,
+  }
+}
+
+SQuery.Config ={
+    PORT:3500,
+    tempDir:'/temp',
+    tempDuration:24*60*60*1000,
+    URL_KEY:'Log("<{-_-}>","\\(^_^)/")',
+    TOKEN_KEY:'Log("(-^-)","(- _-)")',
+    rootDir:__dirname,
+    execDir:['/Start'],
+}
 
 const start = ['static', 'asset-manifest', 'favicon', 'logo', 'manifest', 'robots', 'index']
 
 const app = express();
-const server = app.listen(Config.conf.PORT, () => {
-  console.log('Server running at http://localhost:' + Config.conf.PORT);
+const httpServer = app.listen( SQuery.Config.PORT, () => {
+  console.log('Server running at http://localhost:' + SQuery.Config.PORT);
 });
 
 app.use(cookieParser());
@@ -30,7 +46,7 @@ app.get("/test", (req, res) => {
 app.get("*", async (req, res) => {
   if (req.path.startsWith('/fs') ) {
     try {
-      const urlData = await SQuery.files.accessValidator(req.url, req.cookies)
+      const urlData = await SQuery.Files.accessValidator(req.url, req.cookies)
       if (!urlData) return res.status(404).send('File Not Found')
       return res.sendFile(path.join(__dirname, urlData.realPath));
     } catch (error) {
@@ -43,7 +59,16 @@ app.get("*", async (req, res) => {
   res.sendFile(filePath);
 });
 
-const io = SQuery.io(server);
+const io = SQuery.init(new Server(httpServer, {
+  maxHttpBufferSize: 1e10,
+  cors: SQuery.Config.IO_CORS,
+  cookie: {
+    name: "io",
+    path: "/",
+    httpOnly: false,
+    sameSite: "lax",
+  },
+}), Controllers,ModelControllers);
 SQuery.emiter.when('ert', (val) => {
   console.log(val);
 

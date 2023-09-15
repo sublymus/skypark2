@@ -9,7 +9,7 @@ declare module "./lib/squery/Config" {
   }
 }
 
-Config.conf ={
+ SQuery.Config ={
     PORT:3500,
     tempDir:'/temp',
     tempDuration:24*60*60*1000,

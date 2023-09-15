@@ -1,74 +1,68 @@
 import mongoose from "mongoose";
 import Log from "sublymus_logger";
-import { accessValidator } from "./AccessManager";
 import { ContextSchema } from "./Context";
 import STATUS from "./Errors/STATUS";
 import {
-  Controllers,
   DescriptionSchema,
   EventPostSchema,
   EventPreSchema,
-  ModelControllerSchema,
-  ModelControllers,
-  ModelFrom_optionSchema,
-  ModelInstanceSchema,
-  Model_optionSchema,
   MoreSchema,
   ResponseSchema,
   ResultSchema,
 } from "./Initialize";
 import { FileValidator, backDestroy, parentInfo } from "./ModelCtrlManager";
 import { assigneToNewListElementData, assigneTonewElementFunc } from "./Start/Tools";
+import { Local } from "./SQuery_init";
+import { ModelController } from "./SQuery_ModelController";
 
 export const createFactory = (
-  controller: ModelControllerSchema,
-  option: Model_optionSchema,
+  controller: ModelController,
   callPost: (e: EventPostSchema) => ResponseSchema,
   callPre: (e: EventPreSchema) => Promise<void | ResultSchema>
 ) => {
 
   return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
-    // if (option.modelPath == 'account' || option.modelPath == 'user') {
+    // if (controller.name == 'account' || controller.name == 'user') {
     //   setTimeout(() => {
     //     Log('des***', {
-    //       model: option.modelPath,
+    //       model: controller.name,
     //       ...option.schema.description
     //     })
     //   }, 2000);
     // }
-    const service = option.volatile ? "create" : "store";
+    const service = "create";
     ctx = { ...ctx };
     ctx.service = service;
-    ctx.ctrlName = "" + option.modelPath;
+    ctx.ctrlName = controller.name;
     if (!more) more = {};
     if (!more.parentList) more.parentList = [];
     if (!more.savedlist) more.savedlist = [];
     if (!more.__parentModel) more.__parentModel = "";
-    more.modelPath = option.modelPath;
+    more.modelPath = controller.name;
 
-    if (
-      !accessValidator({
-        ctx,
-        rule: option,
-        type: "controller",
-      })
-    ) {
-      return await callPost({
-        ctx,
-        more,
-        res: {
-          error: "BAD_AUTH_CONTROLLER",
-          ...(await STATUS.BAD_AUTH(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
-          })),
-        },
-      });
-    }
+    // if (
+    //   !accessValidator({
+    //     ctx,
+    //     rule: option,
+    //     type: "controller",
+    //   })
+    // ) {
+    //   return await callPost({
+    //     ctx,
+    //     more,
+    //     res: {
+    //       error: "BAD_AUTH_CONTROLLER",
+    //       ...(await STATUS.BAD_AUTH(ctx, {
+    //         target: controller.name.toLocaleUpperCase(),
+    //       })),
+    //     },
+    //   });
+    // }
 
     const modelId = new mongoose.Types.ObjectId().toString();
-    const description: DescriptionSchema = option.schema.description;
+    const description: DescriptionSchema = controller.model.schema.description;
     more.modelId = modelId;
-    more.modelPath = option.modelPath;
+    more.modelPath = controller.name;
     const preRes = await callPre({
       ctx,
       more,
@@ -76,7 +70,7 @@ export const createFactory = (
     if (preRes) return preRes
 
     const accu: MoreSchema = {};
-    let modelInstance: ModelInstanceSchema | null = null;
+    let modelInstance: any = null;
 
     if (!ctx.__key)
       return callPost({
@@ -112,7 +106,7 @@ export const createFactory = (
         // Log("log2", { 
         //   property,
         //   value: ctx.data[property],
-        //   modelPath: option.modelPath,
+        //   modelPath: controller.name,
         // });
         if (!Array.isArray(rule) && rule.ref) {
           const isStr = typeof ctx.data[property] == "string";
@@ -125,7 +119,7 @@ export const createFactory = (
           //     !!rule.strictAlien,
           //     "isStr: ",
           //     isStr,
-          //     option.modelPath,
+          //     controller.name,
           //     "result: ",
           //     !!rule.strictAlien && !isStr
           // );
@@ -141,7 +135,7 @@ export const createFactory = (
                 message:
                   "the property not a alien @01 ; value must be creation data object;" +
                   "<" +
-                  option.modelPath +
+                  controller.name +
                   ">:<" +
                   service +
                   "> , can not create child :<" +
@@ -180,7 +174,7 @@ export const createFactory = (
                   code: "ILLEGAL_ARGUMENT",
                   message:
                     "<" +
-                    option.modelPath +
+                    controller.name +
                     ">:<" +
                     service +
                     "> , can not create child @02:<" +
@@ -206,7 +200,7 @@ export const createFactory = (
                 message:
                   "the property strictAlien.. ; value must be id;" +
                   "<" +
-                  option.modelPath +
+                  controller.name +
                   ">:<" +
                   service +
                   "> , can not create child @03:<" +
@@ -219,13 +213,13 @@ export const createFactory = (
               },
             });
           }
-          const ctrl = ModelControllers[rule.ref]();
+          const ctrl = Local.ModelControllers[rule.ref];
           // Log("log", {
           //     property,
           //     value: ctx.data[property],
-          //     modelPath: option.modelPath,
+          //     modelPath: controller.name,
           // });
-          const res = await (ctrl.create || ctrl.store)?.(
+          const res = await ctrl?.services.create(
             {
               ...ctx,
               data: ctx.data[property],
@@ -233,11 +227,11 @@ export const createFactory = (
             {
               ...more,
               parentList : [...more.parentList,{
-                modelPath:option.modelPath,
+                modelPath:controller.name,
                 id:modelId,
               }],
               __parentModel:
-                option.modelPath +
+                controller.name +
                 "_" +
                 modelId +
                 "_" +
@@ -247,7 +241,7 @@ export const createFactory = (
             }
           );
           if (!res?.response) {
-            // Log('log', { res, property, value: ctx.data[property], modelPath: option.modelPath })
+            // Log('log', { res, property, value: ctx.data[property], modelPath: controller.name })
 
             Log('defffff', res)
             await backDestroy(ctx, more);
@@ -261,7 +255,7 @@ export const createFactory = (
                 code: "ACCESS_NOT_FOUND",
                 message:
                   "<" +
-                  option.modelPath +
+                  controller.name +
                   ">:<" +
                   service +
                   "> , can not create child @04:<" +
@@ -280,13 +274,13 @@ export const createFactory = (
             ? ctx.data[property]
             : [];
           accu[property] = [];
-          const ctrl = ModelControllers[rule[0].ref]();
+          const ctrl =  Local.ModelControllers[rule[0].ref];
           for (let i = 0; i < ctx.data[property].length; i++) {
             //Log('******', { property }, ' = ', accu[property][i], ' value = ', ctx.data[property][i]);
             // Log('info', 'alien = ', rule[0].alien, ' if ', (rule[0].alien && typeof ctx.data[property][i] == 'string'))
             const isStr = typeof ctx.data[property][i] == "string";
             const isAlien = !!(rule[0].alien || rule[0].strictAlien);
-            // Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, option.modelPath, 'result: ', (!!rule[0].strictAlien) && !isStr)
+            // Log('alien', 'strictAlien: ', !!rule[0].strictAlien, 'isStr: ', isStr, controller.name, 'result: ', (!!rule[0].strictAlien) && !isStr)
             if (!isAlien && isStr) {
               await backDestroy(ctx, more);
               return await callPost({
@@ -299,7 +293,7 @@ export const createFactory = (
                   message:
                     "the property not a alien.. ; value must be creation data object;" +
                     "<" +
-                    option.modelPath +
+                    controller.name +
                     ">:<" +
                     service +
                     "> , can not create child @05:<" +
@@ -315,7 +309,7 @@ export const createFactory = (
               try {
                 const alienId = ctx.data[property][i];
                 const validId = (
-                  await Controllers["server"]()["instanceId"]({
+                  await Local.Controllers["server"].services["instanceId"]({
                     ...ctx,
                     data: {
                       id: alienId,
@@ -337,7 +331,7 @@ export const createFactory = (
                     code: "ILLEGAL_ARGUMENT",
                     message:
                       "<" +
-                      option.modelPath +
+                      controller.name +
                       ">:<" +
                       service +
                       "> , can not create child@06:<" +
@@ -363,7 +357,7 @@ export const createFactory = (
                   message:
                     "the property strictAlien.. ; value must be id;" +
                     "<" +
-                    option.modelPath +
+                    controller.name +
                     ">:<" +
                     service +
                     "> , can not create child @07:<" +
@@ -376,7 +370,7 @@ export const createFactory = (
                 },
               });
             }
-            const res = await (ctrl.create || ctrl.store)?.(
+            const res = await ctrl?.services.create(
               {
                 ...ctx,
                 data: ctx.data[property][i],
@@ -384,12 +378,12 @@ export const createFactory = (
               {
                 ...more,
                 parentList : [...more.parentList,{
-                  modelPath:option.modelPath,
+                  modelPath:controller.name,
                   id:modelId,
                 }],
                 //TODO* renplacer le parent model par parent list avec le format du parent model (string condancer)
                 __parentModel:
-                  option.modelPath +
+                  controller.name +
                   "_" +
                   modelId +
                   "_" +
@@ -402,7 +396,7 @@ export const createFactory = (
               res,
               property,
               value: ctx.data[property][i],
-              modelPath: option.modelPath,
+              modelPath: controller.name,
             });
             if (!res?.response) {
               await backDestroy(ctx, more);
@@ -429,7 +423,7 @@ export const createFactory = (
               ctx.data[property],
               [], /// les paths existant
               {
-                modelPath: option.modelPath,
+                modelPath: controller.name,
                 id: modelId,
                 property: property,
               }
@@ -443,7 +437,7 @@ export const createFactory = (
               res: {
                 error: "NOT_CREATED",
                 ...(await STATUS.NOT_CREATED(ctx, {
-                  target: option.modelPath.toLocaleUpperCase(),
+                  target: controller.name.toLocaleUpperCase(),
                   message: error.message,
                 })),
               },
@@ -463,12 +457,12 @@ export const createFactory = (
     }
     accu["__key"] = ctx.__key;
     accu["__parentModel"] = more.__parentModel;
-    accu["__modePath"] = option.modelPath;
+    accu["__modePath"] = controller.name;
     accu["__createdAt"] = Date.now();
     accu["__parentList"] = more.parentList;
     //Log("logAccu", { accu });
     try {
-      modelInstance = new option.model({
+      modelInstance = new controller.model({
         ...accu,
         _id: modelId,
       });
@@ -478,14 +472,13 @@ export const createFactory = (
       more.savedlist.push({
         modelId,
         __key: ctx.__key,
-        volatile: option.volatile,
-        controller,
+        controller
       });
 
       const datas = assigneToNewListElementData;
       const parent = parentInfo(more.__parentModel);
       if (parent.__parentModel && parent.parentId && parent.parentModelPath && parent.parentProperty) {
-        const list = datas[option.modelPath] || [];
+        const list = datas[controller.name] || [];
 
         for (const data of list) {
           if (parent.parentModelPath == data.parentModelPath && parent.parentProperty == data.parentListProperty) {
@@ -528,7 +521,7 @@ export const createFactory = (
         res: {
           error: "NOT_CREATED",
           ...(await STATUS.NOT_CREATED(ctx, {
-            target: option.modelPath.toLocaleUpperCase(),
+            target: controller.name.toLocaleUpperCase(),
             message: error.message,
           })),
         },
@@ -541,7 +534,7 @@ export const createFactory = (
       res: {
         response: modelId,
         ...(await STATUS.CREATED(ctx, {
-          target: option.modelPath.toLocaleUpperCase(),
+          target: controller.name.toLocaleUpperCase(),
         })),
       },
     });

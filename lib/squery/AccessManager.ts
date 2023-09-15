@@ -88,9 +88,6 @@ export function accessValidator(option: {
     },
   };
 
-  if (service == "store") service = "create";
-  else if (service == "destroy") service = "delete";
-
   if (type == "controller" && access == undefined) access = "public";
   else if (type == "controller" && access == "private") access = "secret";
   else if (type == "property" && access == undefined) access = "default";

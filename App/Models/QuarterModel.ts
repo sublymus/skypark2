@@ -1,9 +1,8 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import ActivityModel from "./ActivityModel";
-import BuildingModel from "./BuildingModel";
-import SupervisorModel from "./SupervisorModel";
+import {ActivityController} from "./ActivityModel";
+import {BuildingController} from "./BuildingModel";
+import {SupervisorController} from "./SupervisorModel";
 
 let QuarterSchema = SQuery.Schema({
     name: {
@@ -16,11 +15,11 @@ let QuarterSchema = SQuery.Schema({
     },
     buildings: [{
         type: Schema.Types.ObjectId,
-        ref: BuildingModel.modelName,
+        ref: BuildingController.name,
     }],
     supervisors:[{
         type:Schema.Types.ObjectId,
-        ref:SupervisorModel.modelName
+        ref:SupervisorController.name
     }],
     Thread: [{
         type: Schema.Types.ObjectId,
@@ -30,15 +29,12 @@ let QuarterSchema = SQuery.Schema({
     }],
     activities: [{
         type: Schema.Types.ObjectId,
-        ref: ActivityModel.modelName,
+        ref: ActivityController.name,
     }]
 });
 
 
-const QuarterModel = mongoose.model("quarter", QuarterSchema);
-
-MakeModelCtlForm({
-    schema: QuarterSchema,
-    model: QuarterModel
-});
-export default QuarterModel;
+export const QuarterController = new SQuery.ModelController({
+    name:'quarter',
+    schema: QuarterSchema
+  });

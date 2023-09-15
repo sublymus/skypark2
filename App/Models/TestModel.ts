@@ -1,5 +1,4 @@
-import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
+import { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
 import { FileType } from "../../my-ts-app/src/lib/SQueryClient";
 const defaultImage: FileType = {
@@ -63,12 +62,7 @@ let TestSchema = SQuery.Schema({
   },
 });
 
-const TestModel = mongoose.model("test", TestSchema);
-
-const maker = MakeModelCtlForm({
-  schema: TestSchema,
-  model: TestModel,
-})
-
-
-export default TestModel;
+export const TestController = new SQuery.ModelController({
+  name:'test',
+  schema: TestSchema
+});

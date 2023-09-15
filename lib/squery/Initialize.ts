@@ -1,7 +1,93 @@
-import './execAuto'
-import mongoose, { Callback, FilterQuery, ProjectionType, QueryOptions, QueryWithHelpers, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { ContextSchema } from "./Context";
-import EventEmiter from './event/eventEmiter';
+import { Controller } from './SQuery_controller';
+import { ModelController } from './SQuery_ModelController';
+
+/****************************************************************** */
+/********************         Controller Type     *******************/
+/****************************************************************** */
+
+export interface ControllerInterface< D extends servicesDescriptionInterface, N extends string, S extends ServiceListInterface> extends ControllerAddonInterface<D, N, S>, ControllerInfoInterface<D, N, S> {
+
+}
+export interface servicesDescriptionInterface {
+  [key: string]: {
+    data: any,
+    result: any
+  }
+}
+export interface ControllerAddonInterface<D extends servicesDescriptionInterface, N extends string, S extends ServiceListInterface> {
+  //tools: ToolsInterface
+  pre: (service: keyof S, listener: ListenerPreSchema) => ControllerInterface<D,N, S>;
+  post: (service: keyof S, listener: ListenerPostSchema) => ControllerInterface<D,N, S>;
+}
+
+
+export interface ControllerInfoInterface<D extends servicesDescriptionInterface, N extends string, S extends ServiceListInterface> {
+  services: S,
+  name: N,
+  servicesDescription?: D,
+};
+
+
+export interface ServiceListInterface {
+  [p: string]: ServiceInterface
+}
+
+
+export type ServiceInterface = (
+  context: ContextSchema,
+  more?: MoreSchema
+) => ResponseSchema;
+
+
+export interface  ControllerCollectionInterface{
+  [p: string]: Controller;
+}
+
+
+/****************************************************************** */
+/********************      ModelController Type     *****************/
+/****************************************************************** */
+//SQueryMongooseSchema
+type PropertyTypeOf<T extends DescriptionSchema, key extends keyof T> = T[key] extends TypeRuleSchema[] ? T[key][0]['type'] : T[key] extends TypeRuleSchema ? T[key]['type'] : any;
+type PropertyType<T extends DescriptionSchema, key extends keyof T> = T[key] extends TypeRuleSchema[] ? T[key][0]['type'] : T[key] extends TypeRuleSchema ? T[key]['of'] : any;
+
+type Value<T extends DescriptionSchema, key extends keyof T> = T[key] extends { type:typeof Schema.Types.ObjectId} ? Schema.Types.ObjectId|string : T[key] extends { type: typeof String } ? string : T[key] extends { type: typeof Number } ? number : T[key] extends { type: typeof Boolean } ? boolean  : T[key] extends { type: typeof Map } ? Map<string, PropertyTypeOf<T, key>> : PropertyType<T, string & key>;
+type ArrayValue<T extends DescriptionSchema, key extends keyof T> =  T[key] extends Array<{type:typeof Schema.Types.ObjectId}> ? (Schema.Types.ObjectId|string)[]  : T[key] extends Array<{ type: typeof String }> ? string[] : T[key] extends Array<{ type: typeof Number }> ? number[] : T[key] extends Array<{ type: typeof Boolean }> ? boolean[] : T[key] extends Array<{ type: typeof Map }> ? Map<string, PropertyTypeOf<T, key>>[] : PropertyType<T, string & key>[]
+export type superD <T extends DescriptionSchema>= {
+  [key in keyof T as `${string & key}`]?: T[key] extends Array<{}> ? ArrayValue<T, key> : Value< T, key>
+};
+export type SQueryMongooseSchema<D extends DescriptionSchema> = mongoose.Schema<superD<D>, mongoose.Model< superD<D>, any, any, any, any>, {}, {}, {}, {}, mongoose.DefaultSchemaOptions> & { description: D }
+
+//ModelControllerInterface
+export interface ModelControllerInterface< D extends servicesDescriptionInterface, N extends string ,S extends ServiceListInterface, DES extends DescriptionSchema> extends ControllerInfoInterface<D,N,S>{
+  volatile:boolean,
+  model:mongoose.Model<superD<DES>>,
+  schema:D
+}
+export interface ModelOptionInterface<S, N extends string> { schema: S , name: N, volatile?: boolean }
+export interface  ModelControllerCollectionInterface{
+  [p: string]: ModelController<any,any,any>;
+}
+export type ModelControllerSchema = {
+  create?: ServiceInterface;
+  store?: ServiceInterface;
+  read?: ServiceInterface;
+  show?: ServiceInterface;
+  list?: ServiceInterface;
+  update?: ServiceInterface;
+  write?: ServiceInterface;
+  delete?: ServiceInterface;
+  destroy?: ServiceInterface;
+};
+
+
+/****************************************************************** */
+/********************      RESPONSE Type     *****************/
+/****************************************************************** */
+
+
 export type StatusSchema = {
   code: string,
   message: string,
@@ -29,7 +115,12 @@ export type successCaseSchema = {
   error?: any;
 };
 export type ResultSchema = (successCaseSchema | ErrorCaseSchema) & StatusSchema;
-export type ResponseSchema = Promise<ResultSchema | undefined>;
+export type ResponseSchema = Promise<ResultSchema |void| undefined>;
+
+
+/****************************************************************** */
+/********************      RESPONSE Type     *****************/
+/****************************************************************** */
 
 export type MiddlewareSchema = (context: ContextSchema) => ResponseSchema | Promise<void | undefined>;
 
@@ -38,8 +129,7 @@ export type GlobalMiddlewareSchema = MiddlewareSchema[];
 export type savedSchema = {
   modelId: string;
   __key: string;
-  volatile: boolean;
-  controller: ModelControllerSchema;
+  controller: ModelController<any,any,any>;
 };
 export type MoreSchema = {
   [p: string]: any;
@@ -54,27 +144,11 @@ export type MoreSchema = {
     id:string,
   }[],
 };
-export type ControlSchema = (
-  context: ContextSchema,
-  more?: MoreSchema
-) => ResponseSchema;
 
-export type ControllerSchema = {
-  [p: string]: ControlSchema
-}
-export type ModelControllerSchema = {
-  create?: ControlSchema;
-  store?: ControlSchema;
-  read?: ControlSchema;
-  show?: ControlSchema;
-  list?: ControlSchema;
-  update?: ControlSchema;
-  write?: ControlSchema;
-  delete?: ControlSchema;
-  destroy?: ControlSchema;
-};
+/** Controller Model Interface */
+
 export type ModelServiceAllowed = "create" | "read" | "list" | "update" | "delete";
-export type ModelServiceAvailable = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
+//export type ModelServiceAvailable = "create" | "store" | "read" | "list" | "update" | "delete" | "destroy";
 export type ModelAccessAvailable = 'private' | 'public' | 'secret' | 'admin' | 'default' | 'share' | undefined;
 export type ControllerAccesSchema = "public" | "share" | "admin" | "secret";
 export type EventPreSchema = {
@@ -99,63 +173,7 @@ export type ListenerPreSchema = (e: EventPreSchema) => Promise<void | ResultSche
 
 export type ListenerPostSchema = (e: EventPostSchema) => Promise<void | ResultSchema>;
 
-export type ModelControllerConfigSchema = {
-  option: Model_optionSchema;
-  pre: (service: ModelServiceAvailable, listener: ListenerPreSchema) => CtrlModelMakerSchema;
-  post: (service: ModelServiceAvailable, listener: ListenerPostSchema) => CtrlModelMakerSchema;
-  tools: ToolsInterface & { maker: CtrlModelMakerSchema },
-}
-export type ControllerConfigSchema = {
-  option: SaveCtrlOptionSchema;
-  tools: ToolsInterface & { maker: CtrlMakerSchema }
-  pre: (service: string, listener: ListenerPreSchema) => CtrlMakerSchema;
-  post: (service: string, listener: ListenerPostSchema) => CtrlMakerSchema;
-}
-export type CtrlModelMakerSchema = (() => ModelControllerSchema) & ModelControllerConfigSchema;
-export type CtrlMakerSchema = (() => ControllerSchema) & ControllerConfigSchema
-export type SaveCtrlOptionSchema = {
-  ctrl: {
-    [p: string]: ControllerSchema
-  },
-  access?: {
-    [p: string]: 'any' | 'user' | 'admin'
-  },
-};
-export type ModelControllersStorage = {
-  [p: string]: CtrlModelMakerSchema;
-};
-export type ControllersStorage = {
-  [p: string]: CtrlMakerSchema;
-};
-export type bindData = {
-  pattern: string,
-  map?: {
-    toLeft(v: any): any,
-    toRight(v: any): any
-  },
-  rootParts?: string[];
-  rootIdParts?: {
-    [p: string]: {
-      parts: string[]
-    }
-  },
-  mode?: "bidirectional" | "unidirectional",
-  emiter?: EventEmiter
-}
-export type ModelFrom_optionSchema = {
-  schema: SQueryMongooseSchema;
-  model: mongoose.Model<any, unknown, unknown, unknown, any> & { paginate?: (...arg: any[]) => any };
-  volatile?: boolean;
-  access?: ControllerAccesSchema;
-  bind?: bindData[],
-  query?: {
-    [q: string]: {
-      [p: string]: any
-    }
-  }
-};
 
-export type Model_optionSchema = ModelFrom_optionSchema & { volatile: boolean, modelPath: string, model: & { __findOne: (filter?: any, projection?: any, options?: any, callback?: any) => Promise<ModelInstanceSchema | null | undefined> } }
 
 export type FilterSchema = {
   [p: string]: any;
@@ -174,6 +192,7 @@ export type PopulateSchema = {
 };
 
 export type PopulateAllSchema = PopulateSchema[];
+
 export type ModelInstanceSchema = {
   [p: string]: any;
   populate: (info: PopulateAllSchema | PopulateSchema) => Promise<void>;
@@ -202,14 +221,9 @@ export type ModelInstanceSchema = {
 export interface ModelToolsInterface {
 
 }
-export interface ToolsInterface {
-  [key: string]: (this: { maker: CtrlModelMakerSchema | CtrlMakerSchema }, data: any) => void
-}
+
 export const Tools: ToolsInterface = {} as ToolsInterface
 export const GlobalMiddlewares: GlobalMiddlewareSchema = [];
-export const ModelControllers: ModelControllersStorage = {};
-export const Controllers: ControllersStorage = {};
-export type SQueryMongooseSchema = Schema & { description: DescriptionSchema, model: any }
 export type valueSchema = String | Number | Boolean | Date | Array<TypeSchema> | mongoose.Schema.Types.ObjectId | Schema.Types.Mixed | Buffer | Map<String, Object> | Schema.Types.Map | Schema.Types.Decimal128 | Schema | Schema.Types.UUID | Object;
 export type TypeSchema = typeof String | typeof Number | typeof Boolean | typeof Date | typeof Array | typeof mongoose.Schema.Types.ObjectId | typeof Schema.Types.Mixed | typeof Buffer | typeof Map | typeof Schema.Types.Decimal128| typeof Schema | typeof Schema.Types.UUID | { [p: string]: TypeSchema | TypeSchema[] };
 
@@ -284,3 +298,12 @@ export type RuleSchema = TypeRuleSchema | TypeRuleSchema[]
 export type DescriptionSchema = {
   [key: string]: RuleSchema;
 } 
+
+
+
+type selectProperty<T, V> = {
+  [k in keyof T]: T[k] extends (V) ? k : undefined;
+};
+export type SELECT<T, V> = Exclude<selectProperty<T, V>[keyof selectProperty<T, V>], undefined>;
+
+export type DESELECT<T, V> = Exclude<keyof T, Exclude<selectProperty<T, V>[keyof selectProperty<T, V>], undefined>>;

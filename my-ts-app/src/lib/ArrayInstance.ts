@@ -89,7 +89,7 @@ export async function createArrayInstanceFrom({
             // et chaque responce du server cree un nouveau currentData or arrayData
 
             // let t = {}
-            currentData.items.forEach((item: { _id: any }, i: any) => {
+            currentData.items.forEach((item: { _id: string }, i: number) => {
               let first = true;
               let instance: null = null;
               Object.defineProperties(itemsInstance, {

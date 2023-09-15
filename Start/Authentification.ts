@@ -1,17 +1,17 @@
 import { SQuery } from "../lib/squery/SQuery";
-SQuery.auth({
+SQuery.Auth({
   login: "account",
   match: ["email", "password"],
   signup: "user",
 });
 
-SQuery.auth({
+SQuery.Auth({
   login: "account",
   match: ["email", "password"],
   signup: "manager",
 });
 
-SQuery.auth({
+SQuery.Auth({
   login: "admin",
   match: ["email", "password"],
   signup: "admin",

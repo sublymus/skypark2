@@ -1,13 +1,12 @@
 import mongoose, { ObjectId, Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import EntrepiseModel from './EntrepriseModel';
-import AdminModel from "./AdminModel";
+import {EntrepriseController} from './EntrepriseModel';
+import {AdminController} from "./AdminModel";
 
 let AppSchema = SQuery.Schema({
   entreprises: [{
     type: Schema.Types.ObjectId,
-    ref: EntrepiseModel.modelName,
+    ref: EntrepriseController.name,
     impact:false,
     access:'share',
     share:{
@@ -24,27 +23,24 @@ let AppSchema = SQuery.Schema({
   }]
 });
 
-const AppModel = mongoose.model("app", AppSchema);
-
-const maker = MakeModelCtlForm({
+export const AppController = new SQuery.ModelController({
+  name:'app',
   schema: AppSchema,
-  model: AppModel,
-  volatile:true
 });
 
-maker.pre('create',async()=>{
-    const app = await AppModel.findOne();
+AppController.pre('create',async()=>{
+    const app = await AppController.model.findOne();
     if(app) {
       return {
-        response:(app._id as ObjectId).toString(),
+        response:app._id.toString(),
         code:'OPERATION_SUCCESS',
         message:'OPERATION_SUCCESS',
         status:200
       };
     }
 }).post('create',async({more})=>{
-  const admins = await AdminModel.find();
-  admins.forEach(admin=>{
+  const admins = await AdminController.model.find();
+  admins.forEach((admin:any)=>{
     admin.app = more?.modelId;
     more?.modelInstance?.admins?.push(admin._id);
     admin.save();
@@ -52,4 +48,4 @@ maker.pre('create',async()=>{
   more?.modelInstance?.save();
 })
 
-export default AppModel;
+export default AppController;

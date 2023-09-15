@@ -1,11 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 import { ContextSchema } from "../../lib/squery/Context";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import AddressModel from "./AddressModel";
-import FavoritesModel from "./FavoritesModel";
-import ProfileModel from "./ProfileModel";
-import Log from "sublymus_logger";
+import {AddressController} from "./AddressModel";
+import {FavoritesController} from "./FavoritesModel";
+import {ProfileController} from "./ProfileModel";
+
 let accountSchema = SQuery.Schema({
   name: {
     type: String,
@@ -37,11 +36,11 @@ let accountSchema = SQuery.Schema({
   },
   address: {
     type: Schema.Types.ObjectId,
-    ref: AddressModel.modelName,
+    ref: AddressController.name,
   },
   favorites: {
     type:Schema.Types.ObjectId,
-    ref: FavoritesModel.modelName,
+    ref: FavoritesController.name,
     access: "private",
     default:{
       folders: [],
@@ -50,23 +49,23 @@ let accountSchema = SQuery.Schema({
   },
   profile: {
     type: Schema.Types.ObjectId,
-    ref: ProfileModel.modelName,
+    ref: ProfileController.name,
     default:{
       imgProfile: [],
       banner: [],
     }
   },
 });
-const d = accountSchema.description
-const AccountModel = mongoose.model("account", accountSchema);
 
-const maker = MakeModelCtlForm({
+export const AccountController = new SQuery.ModelController({
+  name:'account',
   schema: accountSchema,
-  model: AccountModel,
-})
-maker.pre("store", async function youyou ({ ctx })  {
+});
+
+
+AccountController.pre("create", async function youyou ({ ctx })  {
   const userTarg = getTarg(ctx);
-  const account = await AccountModel.findOne({
+  const account = await AccountController.model.findOne({
     userTarg: userTarg,
   });
   if (account) {
@@ -83,6 +82,3 @@ function getTarg(ctx: ContextSchema) {
   );
   return targ || Math.round(Math.random() * 1000000).toString(32);
 }
-
-
-export default AccountModel;

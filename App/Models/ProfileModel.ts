@@ -1,5 +1,3 @@
-import mongoose from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 
 let profileSchema = SQuery.Schema({
@@ -27,11 +25,7 @@ let profileSchema = SQuery.Schema({
 
 });
 
-const ProfileModel = mongoose.model("profile", profileSchema);
-
-MakeModelCtlForm({
-  schema: profileSchema,
-  model: ProfileModel,
-  volatile: false,
+export const ProfileController = new SQuery.ModelController({
+  name:'profile',
+  schema: profileSchema
 });
-export default ProfileModel;

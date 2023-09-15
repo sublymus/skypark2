@@ -1,49 +1,53 @@
-import Log from "sublymus_logger";
-import { accessValidator } from "./AccessManager";
 import STATUS from "./Errors/STATUS";
 import { FileValidator } from "./FileManager";
-import { DescriptionSchema, EventPostSchema, EventPreSchema, ModelControllerSchema, ModelControllers, ModelFrom_optionSchema, ModelInstanceSchema, Model_optionSchema, MoreSchema, ResponseSchema, ResultSchema } from "./Initialize";
+import { DescriptionSchema, EventPostSchema, EventPreSchema, ModelInstanceSchema, ModelOptionInterface, MoreSchema, ResponseSchema, ResultSchema } from "./Initialize";
 import { ContextSchema } from "./Context";
+import { ModelController } from "./SQuery_ModelController";
+import { Local } from "./SQuery_init";
 
-export const deleteFactory = (controller: ModelControllerSchema, option: Model_optionSchema, callPost: (e: EventPostSchema) => ResponseSchema, callPre: (e: EventPreSchema) => Promise<void | ResultSchema>) => {
+export const deleteFactory = (
+    controller: ModelController,
+    callPost: (e: EventPostSchema) => ResponseSchema,
+    callPre: (e: EventPreSchema) => Promise<void | ResultSchema>
+  ) => {
     return async (
         ctx: ContextSchema,
         more?: MoreSchema
     ): ResponseSchema => {
-        const service = option.volatile ? "delete" : "destroy";
+        const service =  "delete";
         ctx = { ...ctx };
         ctx.service = service;
-        ctx.ctrlName = option.modelPath;
+        ctx.ctrlName = controller.name;
         if (!more) more = {};
         if (!more.savedlist) more.savedlist = [];
         more.__parentModel = "";
-        more.modelPath = option.modelPath;
+        more.modelPath = controller.name;
 
-        if (!accessValidator({
-            ctx,
-            rule: option,
-            type: "controller"
-        })) {
-            return await callPost({
-                ctx,
-                more,
-                res: {
-                    error: "BAD_AUTH_CONTROLLER",
-                    ...(await STATUS.BAD_AUTH(ctx, {
-                        target: option.modelPath.toLocaleUpperCase(),
-                    })),
-                },
-            });
-        }
+        // if (!accessValidator({
+        //     ctx,
+        //     rule: option,
+        //     type: "controller"
+        // })) {
+        //     return await callPost({
+        //         ctx,
+        //         more,
+        //         res: {
+        //             error: "BAD_AUTH_CONTROLLER",
+        //             ...(await STATUS.BAD_AUTH(ctx, {
+        //                 target: controller.name.toLocaleUpperCase(),
+        //             })),
+        //         },
+        //     });
+        // }
         const preRes = await callPre({
             ctx,
             more,
         });
         if (preRes) return preRes
         let modelInstance: ModelInstanceSchema|null|undefined;
-        const description: DescriptionSchema = option.schema.description;
+        const description: DescriptionSchema = controller.model.schema.description;
         try {
-            modelInstance = await option.model.__findOne({
+            modelInstance = await controller.model.findOne({
                 _id: ctx.data.id,
                 __key: ctx.__key,
             });
@@ -54,7 +58,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: Model_o
                     res: {
                         error: "NOT_FOUND_MODEL_INSTANCE",
                         ...(await STATUS.NOT_FOUND(ctx, {
-                            target: option.modelPath.toLocaleUpperCase(),
+                            target: controller.name.toLocaleUpperCase(),
                         })),
                     },
                 });
@@ -66,8 +70,8 @@ export const deleteFactory = (controller: ModelControllerSchema, option: Model_o
                 if (Object.prototype.hasOwnProperty.call(description, p)) {
                     const rule = description[p];
                     if (!Array.isArray(rule) && rule.ref && rule.impact != false) {
-                        const ctrl = ModelControllers[rule.ref]();
-                        const res = await (ctrl.delete || ctrl.destroy)?.({
+                        const ctrl = Local.ModelControllers[rule.ref];
+                        const res = await ctrl?.services.delete({
                             ...ctx,
                             data: {
                                 __key: ctx.__key,
@@ -78,17 +82,17 @@ export const deleteFactory = (controller: ModelControllerSchema, option: Model_o
                             //////// tres important ///////////
                         }
                     } else if (Array.isArray(rule) && rule[0].ref) {
-                        // for (let i = 0; i < modelInstance[p].length; i++) {
-                        //     const ctrl = ModelControllers[rule[0].ref]();
-                        //     const res = await (ctrl.delete || ctrl.destroy)({
-                        //         ...ctx,
-                        //         data: {
-                        //             ...ctx.data,
-                        //             id: modelInstance[p][i],
-                        //         },
-                        //     });
-                        // }
-                        const res = await ModelControllers[rule[0].ref]().list?.({
+                        for (let i = 0; i < modelInstance[p].length; i++) {
+                            const ctrl = Local.ModelControllers[rule[0].ref];
+                            const res = await ctrl?.services.delete ({
+                                ...ctx,
+                                data: {
+                                    ...ctx.data,
+                                    id: modelInstance[p][i],
+                                },
+                            });
+                        }
+                        const res = await Local.ModelControllers[rule[0].ref]?.services.list?.({
                             ...ctx,
                             data: {
                                 remove: modelInstance[p] || [],
@@ -105,7 +109,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: Model_o
                                 ctx.data[p],
                                 modelInstance[p],
                                 {
-                                    modelPath: option.modelPath,
+                                    modelPath: controller.name,
                                     id: ctx.data.id,
                                     property: p
                                 }
@@ -117,7 +121,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: Model_o
                                 res: {
                                     error: "FILE_REMOVE_ERROR",
                                     ...(await STATUS.NOT_FOUND(ctx, {
-                                        target: option.modelPath.toLocaleUpperCase(),
+                                        target: controller.name.toLocaleUpperCase(),
                                         message: error.message,
                                     })),
                                 },
@@ -133,7 +137,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: Model_o
                 res: {
                     error: "DELETE_ERROR",
                     ...(await STATUS.NOT_FOUND(ctx, {
-                        target: option.modelPath.toLocaleUpperCase(),
+                        target: controller.name.toLocaleUpperCase(),
                         message: error.message,
                     })),
                 },
@@ -148,7 +152,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: Model_o
                 res: {
                     error: "NOT_DELETED",
                     ...(await STATUS.NOT_DELETED(ctx, {
-                        target: option.modelPath.toLocaleUpperCase(),
+                        target: controller.name.toLocaleUpperCase(),
                         message: error.message,
                         /////////////////    super important  //////////////////////
                     })),
@@ -162,7 +166,7 @@ export const deleteFactory = (controller: ModelControllerSchema, option: Model_o
             res: {
                 response: more.modelId,
                 ...(await STATUS.DELETED(ctx, {
-                    target: option.modelPath.toLocaleUpperCase(),
+                    target: controller.name.toLocaleUpperCase(),
                 })),
             },
         });

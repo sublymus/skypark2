@@ -1,9 +1,8 @@
 import mongoose, { Schema } from "mongoose";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
-import BuildingModel from "./BuildingModel";
-import QuarterModel from "./QuarterModel";
-import PadiezdModel from "./PadiezdModel";
+import {BuildingController} from "./BuildingModel";
+import {QuarterController} from "./QuarterModel";
+import {PadiezController} from "./PadiezdModel";
 
 let addressSchema = SQuery.Schema({
 
@@ -13,13 +12,13 @@ let addressSchema = SQuery.Schema({
   },
   quarter: {
     type: Schema.Types.ObjectId,
-    ref: QuarterModel.modelName,
+    ref: QuarterController.name,
     strictAlien: true,
     impact: false
   },
   building: {
     type: Schema.Types.ObjectId,
-    ref: BuildingModel.modelName,
+    ref: BuildingController.name,
     impact: false,
     strictAlien: true,
   },
@@ -33,7 +32,7 @@ let addressSchema = SQuery.Schema({
   },
   padiezd: {
     type: Schema.Types.ObjectId,
-    ref: PadiezdModel.modelName,
+    ref: PadiezController.name,
     impact: false,
     strictAlien: true,
   },
@@ -47,12 +46,7 @@ let addressSchema = SQuery.Schema({
   },
 });
 
-const AddressModel = mongoose.model("address", addressSchema);
-
-MakeModelCtlForm({
+export const AddressController = new SQuery.ModelController({
+  name:'address',
   schema: addressSchema,
-  model: AddressModel,
-  volatile: false,
 });
-
-export default AddressModel;

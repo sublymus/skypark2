@@ -1,10 +1,6 @@
-import mongoose, { Schema } from "mongoose";
-import Log from "sublymus_logger";
-import { Controllers, ModelControllers, Tools } from "../../lib/squery/Initialize";
-import { MakeModelCtlForm } from "../../lib/squery/ModelCtrlManager";
+import { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
-import AccountModel from "./AccountModel";
-import MessengerModel from "./MessengerModel";
+import {MessengerController} from "./MessengerModel";
 
 let userSchema = SQuery.Schema({
   account: {
@@ -14,7 +10,7 @@ let userSchema = SQuery.Schema({
   },
   messenger: { 
     type: Schema.Types.ObjectId,
-    ref: MessengerModel.modelName,
+    ref: MessengerController.name,
     access: 'private',
     default:{
       listDiscussion: [],
@@ -28,62 +24,58 @@ let userSchema = SQuery.Schema({
   }
 });
 
- const UserModel = mongoose.model("user", userSchema);
-
-const maker = MakeModelCtlForm({
-  model: UserModel,
+ export const UserController = new SQuery.ModelController({
+  name:'user',
   schema: userSchema
 });
 
-maker.tools.assigneToNewListElement({
-  parentModelPath: 'padiezd',
-  parentListProperty: 'users',
-  targetExtractorPath: './account/address',
-  targetProperty: 'padiezd',
-  sourceExtractorPath: './',//padiezd
-  sourceProperty: '_id',
-  map: (id, option) => {
-    Log('soureceID', { id, option })
-    return id
-  }
-});
-maker.tools.assigneToNewListElement({
-  parentModelPath: 'padiezd',
-  parentListProperty: 'users',
-  targetExtractorPath: './account/address',
-  targetProperty: 'building',
-  sourceExtractorPath: '../',//building
-  sourceProperty: '_id',
-  map: (id, option) => {
-    Log('soureceID', { id, option })
-    return id
-  }
-});
+// UserController.tools.assigneToNewListElement({
+//   parentModelPath: 'padiezd',
+//   parentListProperty: 'users',
+//   targetExtractorPath: './account/address',
+//   targetProperty: 'padiezd',
+//   sourceExtractorPath: './',//padiezd
+//   sourceProperty: '_id',
+//   map: (id, option) => {
+//     Log('soureceID', { id, option })
+//     return id
+//   }
+// });
+// UserController.tools.assigneToNewListElement({
+//   parentModelPath: 'padiezd',
+//   parentListProperty: 'users',
+//   targetExtractorPath: './account/address',
+//   targetProperty: 'building',
+//   sourceExtractorPath: '../',//building
+//   sourceProperty: '_id',
+//   map: (id, option) => {
+//     Log('soureceID', { id, option })
+//     return id
+//   }
+// });
 
-maker.tools.assigneToNewListElement({
-  parentModelPath: 'padiezd',
-  parentListProperty: 'users',
-  targetExtractorPath: './account/address',
-  targetProperty: 'quarter',
-  sourceExtractorPath: '../../',//quarter
-  sourceProperty: '_id',
-  map: (id, option) => {
-    Log('soureceID', { id, option })
-    return id
-  }
-});
+// UserController.tools.assigneToNewListElement({
+//   parentModelPath: 'padiezd',
+//   parentListProperty: 'users',
+//   targetExtractorPath: './account/address',
+//   targetProperty: 'quarter',
+//   sourceExtractorPath: '../../',//quarter
+//   sourceProperty: '_id',
+//   map: (id, option) => {
+//     Log('soureceID', { id, option })
+//     return id
+//   }
+// });
 
-maker.tools.assigneToNewListElement({
-  parentModelPath: 'padiezd',
-  parentListProperty: 'users',
-  targetExtractorPath: './',
-  targetProperty: 'entreprise',
-  sourceExtractorPath: '../../../',//entreprise
-  sourceProperty: '_id',
-  map: (id, option) => {
-    Log('soureceID', { id, option })
-    return id
-  }
-});
-
-export default UserModel;
+// UserController.tools.assigneToNewListElement({
+//   parentModelPath: 'padiezd',
+//   parentListProperty: 'users',
+//   targetExtractorPath: './',
+//   targetProperty: 'entreprise',
+//   sourceExtractorPath: '../../../',//entreprise
+//   sourceProperty: '_id',
+//   map: (id, option) => {
+//     Log('soureceID', { id, option })
+//     return id
+//   }
+// });
