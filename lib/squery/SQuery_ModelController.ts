@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import { ContextSchema } from "./Context"
-import { DescriptionSchema, EventPostSchema, EventPreSchema, ListenerPostSchema, ListenerPreSchema, ModelControllerInterface, ModelOptionInterface, ModelServiceAllowed, MoreSchema, ResponseSchema, ResultSchema, SQueryMongooseSchema, superD } from "./Initialize"
+import { DescriptionSchema, EventPostSchema, EventPreSchema, ListenerPostSchema, ListenerPreSchema, ModelControllerInterface, ModelOptionInterface, ModelServiceAllowed, MoreSchema, ResponseSchema, ResultSchema, SQueryMongooseSchema, Tools, ToolsInterface, servicesDescriptionInterface, superD } from "./Initialize"
 import Log from "sublymus_logger"
 import { createFactory } from "./Model_Create"
 import { readFactory } from "./Model_read"
@@ -38,37 +38,41 @@ class ModelServices< S extends any ,N extends string = string , D extends extrac
  }
  
  type extractD<T> = T extends SQueryMongooseSchema<infer U>  ? U :DescriptionSchema
+
+ const servicesDescription = {
+  create:{
+     data:{} ,
+     result:{}
+  },
+  read:{
+     data:{} ,
+     result:{}
+  },
+  list:{
+     data:{},
+     result:{}
+  },
+  update:{
+     data:{} ,
+     result:{}
+  },
+  delete:{
+     data:{} ,
+     result:{}
+  }
+} satisfies servicesDescriptionInterface;
  export class ModelController< S extends any = any,N extends string = string , D extends extractD<S> = extractD<S>> implements ModelControllerInterface<any, N, any,D >{
  
     name = '' as N;
     volatile = true;
     schema: SQueryMongooseSchema<D>;
-    servicesDescription = {
-      create:{
-         data:{} as {[key:string]:any},
-         result:{}
-      },
-      read:{
-         data:{} as {[key:string]:any},
-         result:{}
-      },
-      list:{
-         data:{} as {[key:string]:any},
-         result:{}
-      },
-      update:{
-         data:{} as {[key:string]:any},
-         result:{}
-      },
-      delete:{
-         data:{} as {[key:string]:any},
-         result:{}
-      }
-    };
-   
+    
+    servicesDescription = servicesDescription;
     services : ModelServices<S,N> ; 
     model = {} as mongoose.Model<superD<D>> & {schema: {description:D}}&{[k:string]:any}
+    tools:ToolsInterface &{controller:ModelController<S, N,D>};
     constructor(private option:ModelOptionInterface<S,N>){
+      this.tools = {...Tools,controller:this}
        this.schema = option.schema as any as SQueryMongooseSchema<D>;
        this.name = this.option.name as N;
        this.volatile = this.option.volatile??true;
@@ -121,7 +125,7 @@ class ModelServices< S extends any ,N extends string = string , D extends extrac
      };
  
  
-    pre(service: ModelServiceAllowed,listener: ListenerPreSchema){
+    pre(service: string,listener: ListenerPreSchema){
        if (!this.#EventManager[service]) {
           this.#EventManager[service] = {
            pre: [],
@@ -131,7 +135,7 @@ class ModelServices< S extends any ,N extends string = string , D extends extrac
        this.#EventManager[service].pre.push(listener);
        return this;
     }
-     post (service: ModelServiceAllowed,listener: ListenerPostSchema) {
+     post (service: string,listener: ListenerPostSchema) {
        if (!this.#EventManager[service]) {
           this.#EventManager[service] = {
            pre: [],

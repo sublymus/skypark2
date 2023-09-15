@@ -42,7 +42,6 @@ export const AppController = new SQuery.Controller({
                 __parentModel: {
                     $in: filter
                 }
-
             })
 
             Log('padiezdList', { padiezdList })

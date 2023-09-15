@@ -18,8 +18,8 @@ export interface servicesDescriptionInterface {
 }
 export interface ControllerAddonInterface<D extends servicesDescriptionInterface, N extends string, S extends ServiceListInterface> {
   //tools: ToolsInterface
-  pre: (service: keyof S, listener: ListenerPreSchema) => ControllerInterface<D,N, S>;
-  post: (service: keyof S, listener: ListenerPostSchema) => ControllerInterface<D,N, S>;
+  pre: (service: keyof S&string ,listener: ListenerPreSchema) => ControllerInterface<D,N, S>;
+  post: (service: keyof S&string , listener: ListenerPostSchema) => ControllerInterface<D,N, S>;
 }
 
 
@@ -61,7 +61,7 @@ export type superD <T extends DescriptionSchema>= {
 export type SQueryMongooseSchema<D extends DescriptionSchema> = mongoose.Schema<superD<D>, mongoose.Model< superD<D>, any, any, any, any>, {}, {}, {}, {}, mongoose.DefaultSchemaOptions> & { description: D }
 
 //ModelControllerInterface
-export interface ModelControllerInterface< D extends servicesDescriptionInterface, N extends string ,S extends ServiceListInterface, DES extends DescriptionSchema> extends ControllerInfoInterface<D,N,S>{
+export interface ModelControllerInterface< D extends servicesDescriptionInterface, N extends string ,S extends ServiceListInterface, DES extends DescriptionSchema> extends ControllerInterface<D,N,S>{
   volatile:boolean,
   model:mongoose.Model<superD<DES>>,
   schema:D

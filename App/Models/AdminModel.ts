@@ -1,4 +1,4 @@
-import  { Schema } from "mongoose";
+import  mongoose, { Schema } from "mongoose";
 import { SQuery } from "../../lib/squery/SQuery";
 import {AppController} from "./AppModel";
 
@@ -30,3 +30,10 @@ export const AdminController = new SQuery.ModelController({
   name:'admin',
   schema: AdminSchema,
 });
+
+AdminController.pre('create',async({ctx})=>{
+ctx.data = {
+    ...ctx.data,
+    key:new mongoose.Types.ObjectId().toString()
+}
+})
