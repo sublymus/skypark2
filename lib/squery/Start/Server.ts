@@ -186,26 +186,31 @@ export const ServerController = new Controller({
       }
     },
     instanceId: async (ctx: ContextSchema): ResponseSchema => {
-      const local_modelInstance = await Local.ModelControllers[
-        ctx.data.modelPath
-      ]?.model.model.findOne({
-        _id: ctx.data.id,
-      });
-      if (!local_modelInstance) {
-        Log(
-          "ERROR_validId",
-          `Id not found; modePath:${ctx.data.modelPath} Id: ${ctx.data.id} `
-        );
-        throw new Error(
-          `Id not found; modePath:${ctx.data.modelPath} Id: ${ctx.data.id}`
-        );
+      try {
+        const local_modelInstance = await Local.ModelControllers[
+          ctx.data.modelPath
+        ]?.model.findOne({
+          _id: ctx.data.id,
+        });
+        if (!local_modelInstance) {
+          Log(
+            "ERROR_validId",
+            `Id not found; modePath:${ctx.data.modelPath} Id: ${ctx.data.id} `
+          );
+          throw new Error(
+            `Id not found; modePath:${ctx.data.modelPath} Id: ${ctx.data.id}`
+          );
+        }
+        return {
+          response: true,
+          status: 404,
+          code: "OPERATION_SUCCESS",
+          message: "OPERATION_SUCCESS",
+        };
+      } catch (error) {
+       console.log(error);
+       
       }
-      return {
-        response: true,
-        status: 404,
-        code: "OPERATION_SUCCESS",
-        message: "OPERATION_SUCCESS",
-      };
     },
     validId: async (ctx: ContextSchema): ResponseSchema => {
       try {

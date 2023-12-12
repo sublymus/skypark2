@@ -27,6 +27,15 @@ let QuarterSchema = SQuery.Schema({
         access: 'public',
         impact: true,
     }],
+    supervisorThread: [{
+        type: Schema.Types.ObjectId,
+        ref: 'post',
+        access: 'share',
+        share:{
+            only:['client:supervisor']
+        },
+        impact: true,
+    }],
     activities: [{
         type: Schema.Types.ObjectId,
         ref: ActivityController.name,

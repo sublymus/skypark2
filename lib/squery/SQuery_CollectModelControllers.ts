@@ -18,6 +18,6 @@ export  function CollectModelControllers<T extends ModelControllerCollectionInte
     type D = A[keyof A];
     type ModelControllerType ={ 
        [n in D]: C[SELECT<A,n>];
-    }
+    } & {    [p:string]: any}
    return _controllers  as  ModelControllerType
 }

@@ -12,7 +12,8 @@ import { SurveyController } from "../Models/SurveyModel";
 import mongoose from 'mongoose';
 import { ModelController } from '../../lib/squery/SQuery_ModelController';
 import { AccountController } from '../Models/AccountModel';
-type DOC<Ctrl extends  ModelControllerInterface<any,any, any,any>> = Ctrl extends  ModelController<any ,any,infer DES> ? mongoose.Document<any, any, superD<DES>>&superD<DES> & { [k: string]: any }: ModelController<any,any,any>
+import { Controllers } from '../Tools/Controllers';
+type DOC<Ctrl extends ModelControllerInterface<any, any, any, any>> = Ctrl extends ModelController<any, any, infer DES> ? mongoose.Document<any, any, superD<DES>> & superD<DES> & { [k: string]: any } : ModelController<any, any, any>
 export const PostController = new SQuery.Controller({
     name: 'post',
     services: {
@@ -37,12 +38,12 @@ export const PostController = new SQuery.Controller({
                 if (!labelId) {
                     throw new Error("Label don't exist");
                 }
-                
+
 
                 const survey = await SurveyController.model.findOne({ _id: post.survey?.toString() });
 
                 if (!survey?.options) return;
-                if (((survey?.__createdAt||0)+(survey?.delay||0)) <Date.now()) return;
+                if (((survey?.__createdAt || 0) + (survey?.delay || 0)) < Date.now()) return;
 
                 Log('survey', survey)
                 const labelsPromise = survey.options.map(async (vote) => {
@@ -51,7 +52,7 @@ export const PostController = new SQuery.Controller({
                 const l = new LabelController.model({})
                 const result = await Promise.allSettled(labelsPromise);
                 Log('result', result)
-                
+
                 const labels = result
                     .filter((data) => {
                         return data.status == 'fulfilled';
@@ -63,22 +64,22 @@ export const PostController = new SQuery.Controller({
                 let lastLabel = '';
                 let newLabel = '';
                 const changedLabel: { [k: string]: DOC<typeof LabelController> } = {};
-                
+
                 let totalVotes = 0;
 
                 for (const label of labels) {
-                    totalVotes += label.clients?.length||0;
+                    totalVotes += label.clients?.length || 0;
                     if (!lastLabel) {
 
                         const newClients = label.clients?.filter(vote => {
                             const r = ctx.login.id + ':' + label._id?.toString() != vote;
-                            Log('@@@', {r, lastLabel,vote,b: !lastLabel && !r})
+                            Log('@@@', { r, lastLabel, vote, b: !lastLabel && !r })
                             if (!lastLabel && !r) {
                                 lastLabel = vote;
                             }
                             return r;
                         });
-                        Log('newClients', {newClients, lastLabel})
+                        Log('newClients', { newClients, lastLabel })
                         if (lastLabel) {
 
                             label.clients = newClients;
@@ -89,7 +90,7 @@ export const PostController = new SQuery.Controller({
                     if (label._id?.toString() == labelId) {
                         const vote = ctx.login.id + ':' + labelId;
                         label.clients?.push(vote);
-                        label.votes =  label.clients?.length
+                        label.votes = label.clients?.length
                         changedLabel[label._id.toString()] = label;
                         newLabel = vote;
                     }
@@ -101,20 +102,20 @@ export const PostController = new SQuery.Controller({
                         await label.save();
                     }
                 }
-                Log('length',survey?.__createdAt,survey?.delay, Date.now());
-                let limite =(survey?.__createdAt||0)+(survey?.delay||0)-Date.now()
-                limite = limite < 0 ? 0:limite
+                Log('length', survey?.__createdAt, survey?.delay, Date.now());
+                let limite = (survey?.__createdAt || 0) + (survey?.delay || 0) - Date.now()
+                limite = limite < 0 ? 0 : limite
                 return {
                     response: {
                         newLabel,
                         lastLabel,
                         totalVotes,
-                        delay : limite,
-                        limiteDate : (survey?.__createdAt||0)+(survey?.delay||0)
+                        delay: limite,
+                        limiteDate: (survey?.__createdAt || 0) + (survey?.delay || 0)
                     },
-                    status:200,
-                    message:'ok',
-                    code:'ok'
+                    status: 200,
+                    message: 'ok',
+                    code: 'ok'
                 }
             } catch (error: any) {
                 return {
@@ -161,6 +162,32 @@ export const PostController = new SQuery.Controller({
                     }) || [];
                     change = true;
                 }
+                if (change) {
+                    const account = await ModelControllers['account'].model.findOne({ _id: ctx.login.id });
+                    const favorites = await ModelControllers['favorites'].model.findOne({ _id: account?.favorites?.toString() });
+                    if (favorites) {
+
+                        if (like == true) {
+                            //@ts-ignore
+                            favorites.elements = [...favorites.elements, {
+                                //@ts-ignore
+                                id: post._id.toString(),
+                                //@ts-ignore
+                                modelName: 'post'
+                            }]
+                        }
+                        
+                        if (like == false) {
+                            //@ts-ignore
+                            favorites.elements = [...favorites.elements?.filter((val) => {
+                                //@ts-ignore
+                                return val.id != post._id.toString();
+                            })]
+                        }
+                        await favorites?.save()
+                    }
+                    await post.save();
+                }
 
                 /*************************     SHARED      ********************** */
                 if (accountShared) {
@@ -181,13 +208,13 @@ export const PostController = new SQuery.Controller({
 
                 /*************************     COMMENT      ********************** */
 
-                let newComment: DOC<typeof PostModelCTRL>|null= null;
+                let newComment: DOC<typeof PostModelCTRL> | null = null;
                 if (ctx?.login.id && newPostData) {
                     const res = await PostModelCTRL.services['list']?.({
-                        ...ctx,
+                      /*************************     COMMENT      ********************** */   ...ctx,
                         __permission: 'admin',
                         data: {
-                            addNew: newPostData,
+                            addNew: [newPostData],
                             paging: {
                                 query: {
                                     __parentModel: 'post' + "_" + postId + "_" + 'comments' + "_post"
@@ -195,6 +222,8 @@ export const PostController = new SQuery.Controller({
                             }
                         }
                     })
+                    console.log('res****', res);
+
                     if (!res?.response) return res;
                     newComment = await PostModelCTRL.model.findOne({ _id: res.response.added[0] });//////
                     change = true;

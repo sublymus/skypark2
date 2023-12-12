@@ -85,6 +85,7 @@ export async function createArrayInstanceFrom({ modelPath: parentModel, id: pare
                                     //console.log('@ @ @ first:', first,'itemsInstance['+i+']',', currentData ', t);
                                     if (first) {
                                          first = false;
+                                         console.log({ modelPath: itemModelPath, id: item._id });
                                          instance = await createInstanceFrom({ modelPath: itemModelPath, id: item._id });
                                         // t[i] = instance;
                                     }

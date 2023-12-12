@@ -8,12 +8,12 @@ import { backDestroy, formatModelInstance } from "./ModelCtrlManager";
 import { SQuery } from "./SQuery";
 import { ModelController } from './SQuery_ModelController';
 
-export const listFactory =  (
+export const listFactory = (
   controller: ModelController,
   callPost: (e: EventPostSchema) => ResponseSchema,
   callPre: (e: EventPreSchema) => Promise<void | ResultSchema>
 ) => {
-   return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
+  return async (ctx: ContextSchema, more?: MoreSchema): ResponseSchema => {
     const service = "list";
     ctx = { ...ctx };
     ctx.service = service;
@@ -41,9 +41,9 @@ export const listFactory =  (
       savedlist: [],
       __parentModel: paging?.query?.__parentModel,
       modelPath: controller.name,
-      
+
     };
-    console.log('***more', { more });
+    //console.log('***more', { more });
 
     const preRes = await callPre({
       ctx,
@@ -62,7 +62,7 @@ export const listFactory =  (
     let removed: string[] = [];
     //Log("__parentModel", parts);
 
-    const parentDescription: DescriptionSchema | undefined =Local.ModelControllers[parentModelPath]?.model.schema.description;
+    const parentDescription: DescriptionSchema | undefined = Local.ModelControllers[parentModelPath]?.model.schema.description;
     let parentPropertyRule = parentDescription?.[parentProperty];
     if (Array.isArray(parentPropertyRule)) {
       parentPropertyRule = parentPropertyRule?.[0];
@@ -79,7 +79,7 @@ export const listFactory =  (
     } catch (error) {
 
     }
-    const isParentUser = parentModelInstance?.id == ctx.__key;
+    const isParentUser = parentModelInstance?.__key._id.toString() == ctx.__key;
     // Log("PARENTMODEL", parentModelInstance.__key._id.toString());
 
     let validAddId = [];
@@ -90,7 +90,7 @@ export const listFactory =  (
     //   key: ctx.__key,
     //   permission: ctx.__permission,
     // });
-    console.log('parentPropertyRule', parentPropertyRule, parts);
+    //console.log('parentPropertyRule', parentPropertyRule, parts);
 
     if (
       parentPropertyRule &&
@@ -130,12 +130,14 @@ export const listFactory =  (
       const isAlien = !!(
         parentPropertyRule.alien || parentPropertyRule.strictAlien
       );
-      Log("isAlien", isAlien);
+      //Log("isAlien", isAlien);
       if (Array.isArray(addId) && isAlien) {
         Log("Je_peux_ajouter_dans_la_list", true);
         const promises = addId.map((id) => {
           return new Promise<string>(async (rev, rej) => {
             try {
+              Log('id___',{ id,
+                modelPath: controller.name,})
               const validId = (await Local.Controllers['server'].services['instanceId']({
                 ...ctx,
                 data: {
@@ -143,6 +145,7 @@ export const listFactory =  (
                   modelPath: controller.name,
                 }
               }))?.response
+              Log('validid',validId);
               if (!validId) {
                 return rej(null);
               }
@@ -150,6 +153,7 @@ export const listFactory =  (
               parentModelInstance?.[parentProperty].forEach((idInLis: string) => {
                 if (idInLis == id) canAdd = false;
               });
+              Log('exite__________',canAdd)
               rev(canAdd ? id : null);
             } catch (error) {
               rej(null);
@@ -165,7 +169,7 @@ export const listFactory =  (
             return data.value;
           });
         validAddId.push(...validResult);
-
+        Log('valideId', validAddId)
       }
 
 
@@ -176,7 +180,7 @@ export const listFactory =  (
         if (Array.isArray(remove)) {
           for (const id of remove) {
             const impact = parentPropertyRule.impact != false;
-            let res: ResultSchema | void|undefined;
+            let res: ResultSchema | void | undefined;
             //Log("impact", { impact, parentProperty, parentPropertyRule });
             if (impact) {
               res = await Local.ModelControllers[controller.name]?.services.delete(
@@ -219,8 +223,8 @@ export const listFactory =  (
         });
       }
       /***********************  AddNew  ****************** */
-      Log("strictAlien", parentPropertyRule.strictAlien);
-      Log("addNew_is_array", Array.isArray(addNew));
+      //Log("strictAlien", parentPropertyRule.strictAlien);
+      Log("addNew", addNew, Array.isArray(addNew) && parentPropertyRule.strictAlien != true);
       if (Array.isArray(addNew) && parentPropertyRule.strictAlien != true) {
         Log("Je_peux_cree_dans_la_list", true);
         const ctrl = Local.ModelControllers[controller.name];
@@ -235,9 +239,9 @@ export const listFactory =  (
               },
               {
                 ...more,
-                parentList : [...parentModelInstance?.__parentList,{
-                  modelPath:parentModelPath,
-                  id:parentId,
+                parentList: [...parentModelInstance?.__parentList, {
+                  modelPath: parentModelPath,
+                  id: parentId,
                 }],
               },
             );
@@ -265,7 +269,7 @@ export const listFactory =  (
         validAddId.length > 0
       const canSave = hasNewId ||
         (Array.isArray(remove) && remove.length > 0);
-      Log('added', { added, validAddNew, addId, addNew, validAddId, canSave, hasNewId })
+      //Log('added', { added, validAddNew, addId, addNew, validAddId, canSave, hasNewId })
       if (canSave) {
         try {
           if (hasNewId) {
@@ -302,7 +306,7 @@ export const listFactory =  (
       }
 
     } else {
-      Log("je_ne_peux_pas_modifier", { addId, addNew, remove, query: paging.query, isParentUser , name :controller.name});
+      Log("je_ne_peux_pas_modifier", { addId, addNew, remove, query: paging.query, isParentUser, name: controller.name });
     }
     //Log('parent', parentModelInstance);
     //Log('parentModelInstance', { parentModelInstance })
@@ -367,7 +371,7 @@ export const listFactory =  (
         query,
         options
       );
-      Log('werty', { pagingData, ...query, options })
+      // Log('werty', { pagingData, ...query, options })
       pagingData.added = added;
       pagingData.removed = removed;
 

@@ -57,7 +57,9 @@ export async function FileValidator(
     rule.file.type = rule.file.type || ["*/*"];
     rule.file.type = rule.file.type.length == 0 ? ["*/*"] : rule.file.type;
     rule.file.size = rule.file.size || 2_000_000;
-    rule.file.dir = rule.file.dir ||  SQuery.Config.fileDir;
+    rule.file.dir = rule.file.dir ||  SQuery.Config.fileDir || ['fs'];
+    console.log('file dir', rule.file.dir ,'----' , SQuery.Config.fileDir );
+    
     rule.file.length = rule.file.length || 1;
 
     let sizeMin =
@@ -230,7 +232,7 @@ function createPath(file:FileSchema , ruleFileDir:string , rule:TypeRuleSchema ,
   extension;
   
   //Log('length',file.buffer?.length);
-  Log('file', file)
+  Log('file', file);
   fs.writeFileSync(path, file.buffer, file.encoding || "binary");
 
   const dataPath =

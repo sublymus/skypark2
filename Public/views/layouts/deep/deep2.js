@@ -27,7 +27,7 @@ export class Deep extends BaseComponent {
             ['.title']: (title) => {
                 title.textContent = this.modelPath;
             },
-          
+
             ['.extarctorPath']: (input) => {
                 input.addEventListener('blur', async () => {
                     const extracted = await this.instance.extractor(input.value);
@@ -127,7 +127,17 @@ export class Deep extends BaseComponent {
                                     cb: (elem) => $('.container').append(elem),
                                 })
                             } else if (Array.isArray(rule)) {
-                                ////*console.log('***********   Array.isArray(rule)  **************', rule);
+                                const txt = this.instance.$cache[property]?_('textarea', '', JSON.stringify(this.instance.$cache[property], null, 2)):'undefined';
+                                const div = _('div', '',
+                                    _('h3', '', property),
+                                    txt
+                                );
+                                $('.container').append(div);
+                                this.instance.when('refresh:' + property,async () => {
+                                    console.log('cache',this.instance.$cache[property]);
+                                   this.waitAnim(txt, 'value',JSON.stringify(await this.instance[property], null, 2) );
+                                })
+
                             } else {
                                 // //console.log('********', rule, property, this.instance);
                                 this.emit('createInput', {
@@ -218,9 +228,9 @@ export class Deep extends BaseComponent {
                     let list_a = [];
                     const fileElm = _('input', ['multiple', 'type:file', 'class:file']);
                     fileElm.addEventListener("change", async () => {
-                        this.instance[data.property] =[... await this.instance[data.property],...fileElm.files];
+                        this.instance[data.property] = [... await this.instance[data.property], ...fileElm.files];
                     });
-                    let fileCtn =  _('div', 'input-ctn');
+                    let fileCtn = _('div', 'input-ctn');
                     const inputCtn = _('div', 'input-ctn',
                         _('h3', 'property', data.property),
                         fileElm,
@@ -231,28 +241,28 @@ export class Deep extends BaseComponent {
                         const a = _('div', 'input-ctn');
                         fileCtn.replaceWith(a)
                         fileCtn = a;
-                        list_a= [];
-                        _e.value?.forEach((fileData , i) => {
+                        list_a = [];
+                        _e.value?.forEach((fileData, i) => {
                             const filePath = fileData.url;
                             console.log({ fileData });
-                            const del = _('div','delete-file','x');
-                            del.addEventListener('click',async()=>{
+                            const del = _('div', 'delete-file', 'x');
+                            del.addEventListener('click', async () => {
                                 const arr = await this.instance[data.property];
-                                arr.splice(i,1);
-                                console.log('del',arr);
+                                arr.splice(i, 1);
+                                console.log('del', arr);
 
                                 this.instance[data.property] = arr;
                             })
                             const add = _('input', ['multiple', 'type:file', 'class:add-file']);
-                            add.addEventListener('change',async ()=>{
+                            add.addEventListener('change', async () => {
                                 const arr = await this.instance[data.property];
                                 const l = [];
                                 for (let i = 0; i < add.files.length; i++) {
-                                    l[i]= add.files[i];
+                                    l[i] = add.files[i];
                                 }
-                                arr.splice(i+1,0,...l);
+                                arr.splice(i + 1, 0, ...l);
                                 console.log('add', arr);
-                                this.instance[data.property] = arr ;
+                                this.instance[data.property] = arr;
                             })
                             list_a.push(_('li', 'file-path',
                                 _('a', ['target:_blank', 'href:' + filePath], filePath.length > 40 ? filePath.substring(0, 40) + '...' : filePath),

@@ -62,7 +62,7 @@ let PostSchema = SQuery.Schema({
   },
   comments: [ {
       type: Schema.Types.ObjectId,
-      access:'admin',
+      access:'public',
       impact:true,
       ref: "post",
     }],

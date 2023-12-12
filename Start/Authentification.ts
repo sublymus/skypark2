@@ -4,6 +4,11 @@ SQuery.Auth({
   match: ["email", "password"],
   signup: "user",
 });
+SQuery.Auth({
+  login: "account",
+  match: ["email", "password"],
+  signup: "supervisor",
+});
 
 SQuery.Auth({
   login: "account",

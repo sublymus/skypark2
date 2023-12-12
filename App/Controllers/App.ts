@@ -13,9 +13,9 @@ export const AppController = new SQuery.Controller({
     name: 'app',
     services: {
         buildingList: async (ctx): ResponseSchema => {
-            Log('padiezdList', ctx.data);
+          //  Log('padiezdList', ctx.data);
             const quarter = await QuarterController.model.findOne({ _id: ctx.data.quarterId });
-            Log('quarter', { quarter });
+            //Log('quarter', { quarter });
             if (!EXIST_BREAKER(ctx, quarter, `for quarterId=${ctx.data.quarterId}, quarter don't exist`)) return
 
             const buildingList = await BuildingController.model.find({
@@ -24,34 +24,34 @@ export const AppController = new SQuery.Controller({
                 }
             })
 
-            Log('buildingList', { buildingList })
+           // Log('buildingList', { buildingList })
 
             RESPONSE_BREAKER(ctx, buildingList)
         },
         padiezdList: async (ctx: ContextSchema): ResponseSchema => {
-            Log('padiezdList', ctx.data);
+           // Log('padiezdList', ctx.data);
             const quarter = await QuarterController.model.findOne({ _id: ctx.data.quarterId });
-            Log('quarter', { quarter });
+           // Log('quarter', { quarter });
             if (!quarter) return
 
             const filter = quarter.buildings?.map((b: any) => {
                 return 'building_' + b._id.toString() + "_padiezdList_padiezd"
             });
-            Log('filter', { filter });
+           // Log('filter', { filter });
             const padiezdList = await PadiezController.model.find({
                 __parentModel: {
                     $in: filter
                 }
             })
 
-            Log('padiezdList', { padiezdList })
+            //Log('padiezdList', { padiezdList })
 
             RESPONSE_BREAKER(ctx, padiezdList)
         },
         childList: async (ctx: ContextSchema): ResponseSchema => {
             //TODO*
             //on garde en memoire les (n)10 1er parent et pour les parent du dernier parent on intere l'operation
-            Log('accountList', ctx.data);
+            //Log('accountList', ctx.data);
             const { parentId, parentModelPath, childModelPath, pagging } = ctx.data as {
                 parentId: string, parentModelPath: string, childModelPath: string, pagging: {
                     page?: number,
@@ -109,7 +109,7 @@ export const AppController = new SQuery.Controller({
                 });
                 await Promise.allSettled(promise);
             } catch (error: any) {
-                Log("someError", error)
+                //Log("someError", error)
                 return
             }
 
@@ -128,7 +128,7 @@ export const AppController = new SQuery.Controller({
     }
 });
 
-console.log('@@@@@@@@', AppController);
+//console.log('@@@@@@@@', AppController);
 
 
 AppController.servicesDescription?.buildingList.data

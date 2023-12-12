@@ -16,6 +16,7 @@ declare module "./lib/squery/SQuery_config" {
 }
 
 SQuery.Config ={
+  fileDir:['fs'],
     PORT:3500,
     tempDir:'/temp',
     tempDuration:24*60*60*1000,

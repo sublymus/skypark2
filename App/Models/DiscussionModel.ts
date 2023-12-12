@@ -28,6 +28,7 @@ let DiscussionSchema = SQuery.Schema({
   isGroup:{
     type:Boolean,
     required: true,
+    default:false
   },
   channel: [{
     type: Schema.Types.ObjectId,

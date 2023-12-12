@@ -8,7 +8,6 @@ import { ModelController } from './SQuery_ModelController';
 /****************************************************************** */
 
 export interface ControllerInterface< D extends servicesDescriptionInterface, N extends string, S extends ServiceListInterface> extends ControllerAddonInterface<D, N, S>, ControllerInfoInterface<D, N, S> {
-
 }
 export interface servicesDescriptionInterface {
   [key: string]: {
