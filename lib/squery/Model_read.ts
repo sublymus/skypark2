@@ -1,4 +1,5 @@
 
+import Log from "sublymus_logger";
 import { ContextSchema } from "./Context";
 import STATUS from "./Errors/STATUS";
 import { EventPostSchema, EventPreSchema, ModelControllerSchema, ModelInstanceSchema, MoreSchema, ResponseSchema, ResultSchema } from "./Initialize";
@@ -46,6 +47,7 @@ export const readFactory = (
       modelInstance = await controller.model.findOne({
         _id: ctx.data.id,
       });
+      Log('CONTROLLER',{controller , modelInstance});
 
       //Log('__permission', ctx.__permission, '__key', ctx.__key, 'instance__key', modelInstance.__key);
       if (!modelInstance) {
@@ -72,7 +74,7 @@ export const readFactory = (
         ctx,
         more,
         res: {
-          error: "NOT_FOUND",
+          error: "SERVER_ERROR",
           ...(await STATUS.NOT_FOUND(ctx, {
             target: controller.name.toLocaleUpperCase(),
             message: error.message,

@@ -3,7 +3,6 @@ import EventEmiter, { listenerSchema } from "./event/eventEmiter";
 
 const InstanceCache: any = {};
 
-
 export async function createInstanceFrom({ modelPath, id, SQuery, _cache }: { modelPath: string, id?: string, SQuery: any, _cache?: { _id: string, __createdAt: number, __updatedAt: number } }) {
 
   const _id = id || _cache?._id || '';
@@ -13,6 +12,7 @@ export async function createInstanceFrom({ modelPath, id, SQuery, _cache }: { mo
   if (InstanceCache[cachKey]) {
     return InstanceCache[cachKey];
   }
+
   if (!_id || !modelPath) {
     console.error(`you are trying to read a undefined property, modelPath :${modelPath} , id:${id}, _cache._id:${_cache?._id} `);
     return null;
@@ -75,23 +75,23 @@ export async function createInstanceFrom({ modelPath, id, SQuery, _cache }: { mo
   });
   //////
   async function emitRefresh(properties?: any) {
-    let Objproperties: any = {};
+    // let Objproperties: any = {};
 
-    for (let index = 0; index < properties.length; index++) {
-      const property = properties[index];
-      Objproperties[property] = cache[property];
-    }
+    // for (let index = 0; index < properties.length; index++) {
+    //   const property = properties[index];
+    //   Objproperties[property] = cache[property];
+    // }
 
-    emiter.emit("refresh", Objproperties);
+    emiter.emit("refresh", cache);
 
     if (properties) {
       properties.forEach(async (p: any) => {
-        emiter.emit("refresh:" + p, Objproperties);
+        emiter.emit("refresh:" + p, cache);
       });
     } else {
       for (const p in description) {
         if (Object.hasOwnProperty.call(description, p)) {
-          emiter.emit("refresh:" + p, Objproperties);
+          emiter.emit("refresh:" + p, cache);
         }
       }
     }

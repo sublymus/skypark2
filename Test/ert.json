@@ -1,333 +1,57 @@
-{
-    "obj": {
-        "user": {},
-        "name": {
-            "trim": true,
-            "minlength": [
-                3,
-                "MINIMAL_LENGTH"
-            ],
-            "maxlength": [
-                20,
-                "trop long"
-            ],
-            "required": true
-        },
-        "email": {
-            "trim": true,
-            "unique": true,
-            "required": true
-        },
-        "password": {
-            "required": true
-        },
-        "telephone": {
-            "required": true,
-            "type":"String"
-        },
-        "address": {
-            "ref": "adress"
-        },
-        "favorites": {
-            "ref": "favorites"
-        },
-        "profile": {
-            "ref": "profile"
-        }
-    },
-    "paths": {
-        "user": {
-            "path": "user",
-            "instance": "ObjectID",
-            "validators": [],
-            "getters": [],
-            "setters": [],
-            "_presplitPath": [
-                "user"
-            ],
-            "options": {},
-            "_index": null
-        },
-        "name": {
-            "enumValues": [],
-            "regExp": null,
-            "path": "name",
-            "instance": "String",
-            "validators": [
-                {
-                    "message": "Path `{PATH}` is required.",
-                    "type": "required"
-                },
-                {
-                    "message": "trop court",
-                    "type": "minlength",
-                    "minlength": 3
-                },
-                {
-                    "message": "trop long",
-                    "type": "maxlength",
-                    "maxlength": 20
-                }
-            ],
-            "getters": [],
-            "setters": [
-                null
-            ],
-            "_presplitPath": [
-                "name"
-            ],
-            "options": {
-                "trim": true,
-                "minlength": [
-                    3,
-                    "trop court"
-                ],
-                "maxlength": [
-                    20,
-                    "trop long"
-                ],
-                "required": true
+[
+    {
+      "mode": "post",
+      "date": 1702554443448,
+      "data": [
+        {
+          "_id": "6574335fd36e51409d4e85c7",
+          "message": "6574335fd36e51409d4e85c8",
+          "like": [],
+          "shared": [],
+          "statPost": {
+            "likes": 0,
+            "comments": 6,
+            "shares": 0,
+            "totalCommentsCount": 7,
+            "isLiked": false
+          },
+          "comments": [
+            "657ae6aa840e7ab0a6fce0d1",
+            "657ae7863b21f12020190fa3",
+            "657ae852e7351db7151820b6",
+            "657ae875033d2aa24e450a0a",
+            "657ae878033d2aa24e450aa4",
+            "657ae88a033d2aa24e450b4a"
+          ],
+          "__parentModel": "quarter_6574315fbcc532855c9ce279_Thread_post",
+          "__key": "6574315fbcc532855c9ce42e",
+          "__createdAt": 1702114143605,
+          "__updatedProperty": [
+            "comments",
+            "__updatedAt"
+          ],
+          "__parentList": [
+            {
+              "modelPath": "app",
+              "id": "6574315fbcc532855c9ce224",
+              "_id": "6574315fbcc532855c9ce45c"
             },
-            "_index": null,
-            "isRequired": true,
-            "originalRequiredValue": true
-        },
-        "email": {
-            "enumValues": [],
-            "regExp": null,
-            "path": "email",
-            "instance": "String",
-            "validators": [
-                {
-                    "message": "Path `{PATH}` is required.",
-                    "type": "required"
-                }
-            ],
-            "getters": [],
-            "setters": [
-                null
-            ],
-            "_presplitPath": [
-                "email"
-            ],
-            "options": {
-                "trim": true,
-                "unique": true,
-                "required": true
+            {
+              "modelPath": "entreprise",
+              "id": "6574315fbcc532855c9ce226",
+              "_id": "6574315fbcc532855c9ce45d"
             },
-            "_index": {
-                "unique": true
-            },
-            "isRequired": true,
-            "originalRequiredValue": true
+            {
+              "modelPath": "quarter",
+              "id": "6574315fbcc532855c9ce279",
+              "_id": "6574335fd36e51409d4e85d3"
+            }
+          ],
+          "__updatedAt": 1702553738625,
+          "__v": 6
         },
-        "password": {
-            "enumValues": [],
-            "regExp": null,
-            "path": "password",
-            "instance": "String",
-            "validators": [
-                {
-                    "message": "Path `{PATH}` is required.",
-                    "type": "required"
-                }
-            ],
-            "getters": [],
-            "setters": [],
-            "_presplitPath": [
-                "password"
-            ],
-            "options": {
-                "required": true
-            },
-            "_index": null,
-            "isRequired": true,
-            "originalRequiredValue": true
-        },
-        "telephone": {
-            "enumValues": [],
-            "regExp": null,
-            "path": "telephone",
-            "instance": "String",
-            "validators": [
-                {
-                    "message": "Path `{PATH}` is required.",
-                    "type": "required"
-                }
-            ],
-            "getters": [],
-            "setters": [],
-            "_presplitPath": [
-                "telephone"
-            ],
-            "options": {
-                "required": true
-            },
-            "_index": null,
-            "isRequired": true,
-            "originalRequiredValue": true
-        },
-        "address": {
-            "path": "address",
-            "instance": "ObjectID",
-            "validators": [],
-            "getters": [],
-            "setters": [],
-            "_presplitPath": [
-                "address"
-            ],
-            "options": {
-                "ref": "adress"
-            },
-            "_index": null
-        },
-        "favorites": {
-            "path": "favorites",
-            "instance": "ObjectID",
-            "validators": [],
-            "getters": [],
-            "setters": [],
-            "_presplitPath": [
-                "favorites"
-            ],
-            "options": {
-                "ref": "favorites"
-            },
-            "_index": null
-        },
-        "profile": {
-            "path": "profile",
-            "instance": "ObjectID",
-            "validators": [],
-            "getters": [],
-            "setters": [],
-            "_presplitPath": [
-                "profile"
-            ],
-            "options": {
-                "ref": "profile"
-            },
-            "_index": null
-        },
-        "createdDate": {
-            "path": "createdDate",
-            "instance": "Number",
-            "validators": [],
-            "getters": [],
-            "setters": [],
-            "_presplitPath": [
-                "createdDate"
-            ],
-            "options": {},
-            "_index": null
-        },
-        "updatedDate": {
-            "path": "updatedDate",
-            "instance": "Number",
-            "validators": [],
-            "getters": [],
-            "setters": [],
-            "_presplitPath": [
-                "updatedDate"
-            ],
-            "options": {},
-            "_index": null
-        },
-        "_id": {
-            "path": "_id",
-            "instance": "ObjectID",
-            "validators": [],
-            "getters": [],
-            "setters": [
-                null
-            ],
-            "_presplitPath": [
-                "_id"
-            ],
-            "options": {
-                "auto": true,
-                "type": "ObjectId"
-            },
-            "_index": null
-        }
-    },
-    "aliases": {},
-    "subpaths": {},
-    "virtuals": {},
-    "singleNestedPaths": {},
-    "nested": {},
-    "inherits": {},
-    "callQueue": [],
-    "_indexes": [],
-    "methods": {},
-    "methodOptions": {},
-    "statics": {},
-    "tree": {
-        "user": {},
-        "name": {
-            "trim": true,
-            "minlength": [
-                3,
-                "trop court"
-            ],
-            "maxlength": [
-                20,
-                "trop long"
-            ],
-            "required": true
-        },
-        "email": {
-            "trim": true,
-            "unique": true,
-            "required": true
-        },
-        "password": {
-            "required": true
-        },
-        "telephone": {
-            "required": true
-        },
-        "address": {
-            "ref": "adress"
-        },
-        "favorites": {
-            "ref": "favorites"
-        },
-        "profile": {
-            "ref": "profile"
-        },
-        "_id": {
-            "auto": true,
-            "type": "ObjectId"
-        }
-    },
-    "query": {},
-    "childSchemas": [],
-    "plugins": [],
-    "$id": 5,
-    "mapPaths": [],
-    "s": {
-        "hooks": {
-            "_pres": {},
-            "_posts": {}
-        }
-    },
-    "_userProvidedOptions": {},
-    "options": {
-        "typeKey": "type",
-        "id": true,
-        "_id": true,
-        "validateBeforeSave": true,
-        "read": null,
-        "shardKey": null,
-        "discriminatorKey": "__t",
-        "autoIndex": null,
-        "minimize": true,
-        "optimisticConcurrency": false,
-        "versionKey": "__v",
-        "capped": false,
-        "bufferCommands": true,
-        "strictQuery": true,
-        "strict": true
+        null
+      ],
+      "_id": "657aeb4be81282f47804bae3"
     }
-}
+  ]

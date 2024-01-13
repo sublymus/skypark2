@@ -59,7 +59,7 @@ export async function createModelFrom(modelPath: string, description: Descriptio
   };
 
   Model.update = async (data: any): Promise<any> => {
-
+ 
     return await new Promise((rev, rej) => {
       try {
         SQuery.emit(modelPath + ":update", data, (res: any) => {

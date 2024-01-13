@@ -30,11 +30,7 @@ let QuarterSchema = SQuery.Schema({
     supervisorThread: [{
         type: Schema.Types.ObjectId,
         ref: 'post',
-        access: 'share',
-        share:{
-            only:['client:supervisor']
-        },
-        impact: true,
+        access: 'public',
     }],
     activities: [{
         type: Schema.Types.ObjectId,
@@ -42,8 +38,7 @@ let QuarterSchema = SQuery.Schema({
     }]
 });
 
-
 export const QuarterController = new SQuery.ModelController({
-    name:'quarter',
+    name:'quarter' ,
     schema: QuarterSchema
   });

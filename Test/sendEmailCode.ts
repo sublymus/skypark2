@@ -38,7 +38,6 @@ export function sendEmail(email: string, name: string, code: string): void {
     
           </div>
         </div>`
-
   };
   // Envoyer l'email en utilisant l'objet de transport
   transport.sendMail(mailOptions, (error, info) => {

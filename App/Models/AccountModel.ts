@@ -4,6 +4,7 @@ import { SQuery } from "../../lib/squery/SQuery";
 import {AddressController} from "./AddressModel";
 import {FavoritesController} from "./FavoritesModel";
 import {ProfileController} from "./ProfileModel";
+import { HistoriqueController  } from "./Historique";
 
 let accountSchema = SQuery.Schema({
   name: {
@@ -41,6 +42,15 @@ let accountSchema = SQuery.Schema({
   favorites: {
     type:Schema.Types.ObjectId,
     ref: FavoritesController.name,
+    access: "private",
+    default:{
+      folders: [],
+      likeList: []
+    }
+  },
+  historique:{
+    type:Schema.Types.ObjectId,
+    ref: HistoriqueController.name,
     access: "private",
     default:{
       folders: [],

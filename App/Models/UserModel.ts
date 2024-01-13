@@ -18,6 +18,14 @@ let userSchema = SQuery.Schema({
       archives:  [],
     }
   },
+  activity: [{ 
+    type:{
+      mode:String,
+      date:Number,
+      data:{}
+    },
+    access: 'private'
+  }],
   entreprise: {
     type: Schema.Types.ObjectId,
     ref: 'entreprise',

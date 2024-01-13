@@ -12,7 +12,7 @@ let addressSchema = SQuery.Schema({
   },
   quarter: {
     type: Schema.Types.ObjectId,
-    ref: QuarterController.name,
+    ref: 'quarter',
     strictAlien: true,
     impact: false
   },

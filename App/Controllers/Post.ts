@@ -2,7 +2,7 @@
 import { LabelController } from './../Models/LabelModel';
 import Log from "sublymus_logger";
 import { ContextSchema } from "../../lib/squery/Context";
-import { ModelControllerInterface, ResponseSchema, superD } from "../../lib/squery/Initialize";
+import { ModelControllerInterface, ModelInstanceSchema, ResponseSchema, superD } from "../../lib/squery/Initialize";
 import { SQuery } from "../../lib/squery/SQuery";
 import { Local } from "../../lib/squery/SQuery_init";
 import { ModelControllers } from "../Tools/ModelControllers";
@@ -13,6 +13,8 @@ import mongoose from 'mongoose';
 import { ModelController } from '../../lib/squery/SQuery_ModelController';
 import { AccountController } from '../Models/AccountModel';
 import { Controllers } from '../Tools/Controllers';
+import { HistoriqueController } from '../Models/Historique';
+import { formatModelInstance } from '../../lib/squery/ModelCtrlManager';
 type DOC<Ctrl extends ModelControllerInterface<any, any, any, any>> = Ctrl extends ModelController<any, any, infer DES> ? mongoose.Document<any, any, superD<DES>> & superD<DES> & { [k: string]: any } : ModelController<any, any, any>
 export const PostController = new SQuery.Controller({
     name: 'post',
@@ -130,9 +132,19 @@ export const PostController = new SQuery.Controller({
             try {
                 console.log(ctx.data);
 
-                const { like, newPostData, accountShared, postId } = ctx.data;
+                const { like, newPostData, accountShared, postId, favorite } = ctx.data;
                 const post = await PostModelCTRL.model.findOne({ _id: postId });
-                if (!post) {
+                const ph = await PostModelCTRL.model.findOne({ _id: postId });
+                const phdata =  await formatModelInstance({
+                    ...ctx,
+                    service:'read'
+                },PostModelCTRL,ph as any as ModelInstanceSchema,2,true);
+                await phdata.populate({
+                    path:'message',
+                    select:'text _id account files targets status',
+                })
+                
+                if (!post || !ph) {
                     return {
                         error: "NOT_FOUND",
                         status: 404,
@@ -140,11 +152,15 @@ export const PostController = new SQuery.Controller({
                         message: "Post not found"
                     }
                 }
+                ph.__parentList = undefined;
                 if (!ctx.login.id) {
                     throw new Error("CurrentUser don't exist");
                 }
+                const account = await AccountController.model.findOne({_id:ctx.login.id});
+                const historique = await HistoriqueController.model.findOne({_id:account?.historique});
                 let change = false;
 
+                const datas:{modelName:string,value:string,mode:string,id:string,data:any}[]= [];
                 /*************************     LIKE       ********************** */
 
                 if (like == true) {
@@ -154,39 +170,33 @@ export const PostController = new SQuery.Controller({
                     if (!include) {
                         post['like']?.push(ctx.login.id);
                         change = true;
-
+                        datas.push({
+                            modelName:'post',
+                            id:postId,
+                            mode:'like',
+                            value:'true',
+                            data:phdata
+                        })
                     }
                 } else if (like == false) {
+                    const include = post.like?.find((some_id: any) => {
+                        if (some_id.toString() == ctx.login.id) return true;
+                    })
+                    if (include) {
+                        datas.push({
+                            modelName:'post',
+                            id:postId,
+                            mode:'like',
+                            value:'false',
+                            data:phdata
+                        })
+                    }
                     post['like'] = post['like']?.filter((some_id: any) => {
                         return !(some_id.toString() == ctx.login.id);
                     }) || [];
                     change = true;
-                }
-                if (change) {
-                    const account = await ModelControllers['account'].model.findOne({ _id: ctx.login.id });
-                    const favorites = await ModelControllers['favorites'].model.findOne({ _id: account?.favorites?.toString() });
-                    if (favorites) {
-
-                        if (like == true) {
-                            //@ts-ignore
-                            favorites.elements = [...favorites.elements, {
-                                //@ts-ignore
-                                id: post._id.toString(),
-                                //@ts-ignore
-                                modelName: 'post'
-                            }]
-                        }
-                        
-                        if (like == false) {
-                            //@ts-ignore
-                            favorites.elements = [...favorites.elements?.filter((val) => {
-                                //@ts-ignore
-                                return val.id != post._id.toString();
-                            })]
-                        }
-                        await favorites?.save()
-                    }
-                    await post.save();
+                    
+                   
                 }
 
                 /*************************     SHARED      ********************** */
@@ -201,11 +211,49 @@ export const PostController = new SQuery.Controller({
                             post['shared']?.push(code);
                             await post.save()
                             change = true;
+                            datas.push({
+                                modelName:'post',
+                                id:postId,
+                                mode:'shared',
+                                value:accountShared,
+                                data:phdata
+                            });
                         }
                     }
                 }
+                if(historique){
+                    //@ts-ignore
+                    historique.elements?.unshift(...datas);
+                    historique.save();
+                }
+                /*************************    FAVORITES    ***********************/
+                const favorites = await ModelControllers['favorites'].model.findOne({ _id: account?.favorites?.toString() });
+                if (favorites) {
 
+                    if (favorite == true) {
+                        //@ts-ignore
+                        favorites.elements = [...favorites.elements, {
+                            //@ts-ignore
+                            id: post._id.toString(),
+                            //@ts-ignore
+                            modelName: 'post'
+                        }]
+                    }
 
+                    if (favorite == false) {
+                        //@ts-ignore
+                        favorites.elements = [...favorites.elements?.filter((val) => {
+                            //@ts-ignore
+                            return val.id != post._id.toString();
+                        })]
+                    }
+                    await favorites?.save()
+                }
+
+                /************     CHANGE     */
+                if (change) {
+                    await post.save();
+                }
                 /*************************     COMMENT      ********************** */
 
                 let newComment: DOC<typeof PostModelCTRL> | null = null;
@@ -242,7 +290,6 @@ export const PostController = new SQuery.Controller({
                     data = res.response;
                 }
 
-
                 let result = {
                     newCommentId: newComment?._id.toString(),
                     likes: post.like?.length,
@@ -254,7 +301,6 @@ export const PostController = new SQuery.Controller({
                     }) || false
                 };
 
-
                 return {
                     code: "OPERATION_SUCCESS",
                     message: "OPERATION_SUCCESS",
@@ -262,6 +308,8 @@ export const PostController = new SQuery.Controller({
                     status: 200
                 }
             } catch (error: any) {
+                console.log(error);
+                
                 return {
                     error: "OPERATION_FAILED",
                     status: 404,

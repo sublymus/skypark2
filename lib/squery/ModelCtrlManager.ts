@@ -41,7 +41,7 @@ async function formatModelInstance(
   ctx: ContextSchema,
   controller: {model:{modelName:string}},
   modelInstance: ModelInstanceSchema,
-  deep?: number
+  deep?: number,ert?:boolean
 ) {
   const info: PopulateSchema = {
     populate: [],
@@ -54,13 +54,14 @@ async function formatModelInstance(
     modelInstance.__key._id.toString() == ctx.__key, (!Number.isNaN(deep)) ? {
       count: 0,
       max: deep as number
-    } : undefined
+    } : undefined,ert
   );
   await modelInstance.populate(info.populate || []);
   const propertys = info.select?.replaceAll(" ", "").split("-");
   propertys?.forEach((p) => {
     modelInstance[p] = undefined;
   });
+  return modelInstance
 }
 
 function deepPopulate(
@@ -71,7 +72,7 @@ function deepPopulate(
   count?: {
     count: number,
     max: number
-  },
+  },ert?:boolean
 ) {
   const description: DescriptionSchema | undefined =
     Local.ModelControllers[ref]?.model.schema.description;
@@ -99,7 +100,24 @@ function deepPopulate(
 
       };
       if (!Array.isArray(rule)) {
-        rule
+        if(ert)Log('INFO-OWNER',{
+          ctx:{
+            ...ctx,
+            socket:undefined,
+            data:undefined
+          },
+          rule,
+            type: "property",
+            isOwner,
+            property: p,
+            accessValidator:accessValidator({
+              ctx,
+              rule,
+              type: "property",
+              isOwner,
+              property: p,
+            })
+        })
         if (
           !accessValidator({
             ctx,
@@ -114,6 +132,24 @@ function deepPopulate(
         }
         if (rule.ref) exec(rule);
       } else if (Array.isArray(rule) && rule[0].ref) {
+        if(ert)Log('INFO-OWNER',{
+          ctx:{
+            ...ctx,
+            socket:undefined,
+            data:undefined
+          },
+          rule: rule[0],
+            type: "property",
+            isOwner,
+            property: p,
+            accessValidator:accessValidator({
+              ctx,
+              rule:rule[0],
+              type: "property",
+              isOwner,
+              property: p,
+            })
+        })
         if (
           !accessValidator({
             ctx,
@@ -128,6 +164,24 @@ function deepPopulate(
         }
         exec(rule[0]);
       } else if (Array.isArray(rule)) {
+        if(ert) Log('INFO-OWNER',{
+          ctx:{
+            ...ctx,
+            socket:undefined,
+            data:undefined
+          },
+          rule: rule[0],
+          type: "property",
+          isOwner,
+          property: p,
+          accessValidator:accessValidator({
+            ctx,
+            rule:rule[0],
+            type: "property",
+            isOwner,
+            property: p,
+          })
+        })
         if (
           !accessValidator({
             ctx,

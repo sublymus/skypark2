@@ -12,6 +12,7 @@ import { MessageController } from './../Models/MessageModel';
 import { ManagerController } from './../Models/ManagerModel';
 import { FolderController } from './../Models/FolderModel';
 import { FavoritesController } from './../Models/FavoritesModel';
+import { HistoriqueController } from './../Models/Historique';
 import { EntrepriseController } from './../Models/EntrepriseModel';
 import { DiscussionController } from './../Models/DiscussionModel';
 import { BuildingController } from './../Models/BuildingModel';
@@ -46,6 +47,7 @@ export const ModelControllers = SQuery.CollectModelControllers({
    TestController,
    UserController,
    SurveyController,
+   HistoriqueController
 })
 
 

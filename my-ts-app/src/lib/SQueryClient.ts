@@ -91,7 +91,8 @@ export type ArrayData<I extends InstanceInterface> = {
   prevPage: number | null,
   nextPage: number | null
 } | null | undefined;
-export const ArrayDataInit = {
+
+export const getArrayDataInit = ()=>({
   added: [],
   removed: [],
   items: [],
@@ -104,7 +105,8 @@ export const ArrayDataInit = {
   hasNextPage: false,
   prevPage: null,
   nextPage: null
-} as ArrayData<any>;
+} as ArrayData<any>);
+
 type Service = {
   send: {
     [key: string]: any,
