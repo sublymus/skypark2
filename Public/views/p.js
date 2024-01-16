@@ -14,7 +14,6 @@ export const load = {
         address: {
           room: '34',
           city: 'Weston',
-          
           etage: '8',
           description: 'rigth',
         },
@@ -82,7 +81,6 @@ export const load = {
               password: 'm2',
               telephone: '12345678',
               address: {
-  
                 room: '34',
                 city: 'Weston',
                 etage: '8',

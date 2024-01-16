@@ -19,7 +19,7 @@ let MessageSchema = SQuery.Schema({
     }],
     targets: [{
         type: Schema.Types.ObjectId,
-        ref: 'user',
+        ref: 'account',
         impact: false,
     }],
     status: {

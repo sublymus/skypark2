@@ -21,7 +21,7 @@ let accountSchema = SQuery.Schema({
   },
   userTarg: {
     type: String,
-    //unique: true,
+    unique: true,
   },
   status: {
     type: String,// proprietaire, locataire, superviseur , manageur

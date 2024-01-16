@@ -8,10 +8,28 @@ import { formatModelInstance } from "../../lib/squery/ModelCtrlManager";
 import { SQuery } from "../../lib/squery/SQuery";
 import { EXIST_BREAKER, RESPONSE_BREAKER } from "../Tools/Breaker";
 import { Local } from "../../lib/squery/SQuery_init";
+import { AccountController } from "../Models/AccountModel";
 
 export const AppController = new SQuery.Controller({
     name: 'app',
     services: {
+        getAccountFromTag: async (ctx): ResponseSchema => {
+           const {tags} = ctx.data as {tags:string[]}
+           
+           const promises = tags.map((tag)=>
+                new Promise(async(rev , rej)=>{
+                    rev( await AccountController.model.findOne({userTarg:tag}))
+                })
+           );
+           const result = (await Promise.allSettled(promises)).map((r)=>(r as any).value )
+          
+           return {
+            response : result,
+            code:"operationOK",
+            status:200,
+            message:"zoo"
+           }
+        },
         buildingList: async (ctx): ResponseSchema => {
           //  Log('padiezdList', ctx.data);
             const quarter = await QuarterController.model.findOne({ _id: ctx.data.quarterId });
