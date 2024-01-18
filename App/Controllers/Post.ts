@@ -134,17 +134,8 @@ export const PostController = new SQuery.Controller({
 
                 const { like, newPostData, accountShared, postId, favorite } = ctx.data;
                 const post = await PostModelCTRL.model.findOne({ _id: postId });
-                const ph = await PostModelCTRL.model.findOne({ _id: postId });
-                const phdata =  await formatModelInstance({
-                    ...ctx,
-                    service:'read'
-                },PostModelCTRL,ph as any as ModelInstanceSchema,2,true);
-                await phdata.populate({
-                    path:'message',
-                    select:'text _id account files targets status',
-                })
                 
-                if (!post || !ph) {
+                if (!post ) {
                     return {
                         error: "NOT_FOUND",
                         status: 404,
@@ -152,7 +143,7 @@ export const PostController = new SQuery.Controller({
                         message: "Post not found"
                     }
                 }
-                ph.__parentList = undefined;
+               
                 if (!ctx.login.id) {
                     throw new Error("CurrentUser don't exist");
                 }
@@ -175,7 +166,7 @@ export const PostController = new SQuery.Controller({
                             id:postId,
                             mode:'like',
                             value:'true',
-                            data:phdata
+                            data:{}
                         })
                     }
                 } else if (like == false) {
@@ -188,7 +179,7 @@ export const PostController = new SQuery.Controller({
                             id:postId,
                             mode:'like',
                             value:'false',
-                            data:phdata
+                            data:{}
                         })
                     }
                     post['like'] = post['like']?.filter((some_id: any) => {
@@ -216,15 +207,19 @@ export const PostController = new SQuery.Controller({
                                 id:postId,
                                 mode:'shared',
                                 value:accountShared,
-                                data:phdata
+                                data:{}
                             });
                         }
                     }
                 }
                 if(historique){
                     //@ts-ignore
-                    historique.elements?.unshift(...datas);
-                    historique.save();
+                    historique.elements= [...datas, historique.elements];
+                    try {
+                        historique.save();
+                    } catch (error) {
+                        
+                    }
                 }
                 /*************************    FAVORITES    ***********************/
                 const favorites = await ModelControllers['favorites'].model.findOne({ _id: account?.favorites?.toString() });

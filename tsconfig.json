@@ -42,9 +42,7 @@
     // "noUnusedLocals": false, // Report errors on unused local variables.
     // "noUnusedParameters": false, // Report errors on unused parameters in functions
 
-    "types": [
-      "node"
-    ]
+    
   },
 
   "include": [".//*.ts"],

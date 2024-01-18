@@ -109,47 +109,9 @@ PostController.pre('create', async ({ ctx }) => {
   if (!res.response) return res 
   const account = await AccountController.model.findOne({_id:ctx.login.id});
   const historique = await HistoriqueController.model.findOne({_id:account?.historique});
-  const post = await PostController.model.findOne({ _id: res.response });
-  Log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@','ok');
-  if(post)post.__parentList = undefined
-  const data =  await formatModelInstance({
-    ...ctx,
-    service:'read'
-  },PostController,post as any as ModelInstanceSchema,2,true);
-  
-  await data.populate({
-    path:'message',
-    select:'text _id account files targets status',
-  })
-  Log('data',data)
-  if(post) Log('INFO',{ modelName:'post', id: res.response,mode:'create' ,value:'true',data});
   
   //@ts-ignore
-  historique?.elements?.unshift({ modelName:'post', id: res.response,mode:'create' ,value:'true',data});
+  historique?.elements?.unshift({ modelName:'post', id: res.response,mode:'create' ,value:'true',data:{}});
   historique?.save();
-  // if (!res.error) {
-  //   const post = await PostController.model.findOne({ _id: res.response });
-  //   const user = await UserController.model.findOne({ _id: ctx.signup.id });
-  //   //@ts-ignore
-  //   const promises = post?.__parentList?.filter((d) => d.modelPath == 'post').map((d) => {
-  //     return new Promise(async (rev, rej) => {
-  //       const res = await PostController.services.read({ ...ctx, data: { id: d.id } });
-  //       if (res?.response) return rev(res.response);
-  //       rev(null);
-  //     });
-  //   })
-  //   //@ts-ignore
-  //   const data = promises && ((await Promise.allSettled(promises)).map(v => v.value).filter(v=>v!=null&&v!=undefined));
-  //   Log("DATA",data);
-  //   user?.activity?.push({
-  //     //@ts-ignore
-  //     mode: 'post',
-  //     //@ts-ignore
-  //     data: [...data, await formatModelInstance(ctx,PostController,post,1)],
-  //     //@ts-ignore
-  //     date: Date.now()
-  //   });
-  //   await user?.save();
-  //   Log('USER', user)
-  // } 
+  
 })

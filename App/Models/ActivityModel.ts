@@ -31,7 +31,6 @@ let ActivitySchema = SQuery.Schema({
   listAbonne: [
     {
       type: String,
-      access: "secret",
     },
   ],
   listen: {
@@ -79,14 +78,9 @@ ActivityController.pre("update", async ({ ctx, more }) => {
     const activity = await ActivityController.model.findOne({
       _id: ctx.data.id,
     });
-    const ah = await ActivityController.model.findOne({
-      _id: ctx.data.id,
-    });
-    if (!activity || !ah) return;
-    ah.listAbonne = undefined;
-      ah.__key = undefined;
-      ah.__updatedProperty = undefined;
-      ah.__parentList  = undefined;
+   
+    if (!activity) return;
+    
     const account = await AccountController.model.findOne({
       _id: ctx.login.id,
     });
@@ -99,7 +93,7 @@ ActivityController.pre("update", async ({ ctx, more }) => {
       activity.listAbonne = [...activity.listAbonne, ctx.login.id];
     
       //@ts-ignore
-      historique?.elements?.unshift({modelName: "activity", id: ctx.data.id, mode: "listen", value: "true",data:ah});
+      historique?.elements?.unshift({modelName: "activity", id: ctx.data.id, mode: "listen", value: "true",data:{}});
     } else {
       delete ctx.data.listen;
       activity.listAbonne = [
@@ -108,7 +102,7 @@ ActivityController.pre("update", async ({ ctx, more }) => {
         }),
       ];
       //@ts-ignore
-      historique?.elements?.unshift({modelName: "activity", id: ctx.data.id, mode: "listen", value: "false",data:ah});
+      historique?.elements?.unshift({modelName: "activity", id: ctx.data.id, mode: "listen", value: "false",data:{}});
     }
     
     await activity.save();
