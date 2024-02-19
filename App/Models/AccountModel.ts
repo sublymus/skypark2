@@ -1,10 +1,11 @@
 import mongoose, { Schema } from "mongoose";
 import { ContextSchema } from "../../lib/squery/Context";
 import { SQuery } from "../../lib/squery/SQuery";
-import {AddressController} from "./AddressModel";
-import {FavoritesController} from "./FavoritesModel";
-import {ProfileController} from "./ProfileModel";
-import { HistoriqueController  } from "./Historique";
+import { AddressController } from "./AddressModel";
+import { FavoritesController } from "./FavoritesModel";
+import { ProfileController } from "./ProfileModel";
+import { HistoriqueController } from "./Historique";
+import { NotificationController } from "./NotificationModel";
 
 let accountSchema = SQuery.Schema({
   name: {
@@ -24,7 +25,7 @@ let accountSchema = SQuery.Schema({
     unique: true,
   },
   status: {
-    type: String,// proprietaire, locataire, superviseur , manageur
+    type: String, // proprietaire, locataire, superviseur , manageur
   },
   password: {
     type: String,
@@ -40,40 +41,47 @@ let accountSchema = SQuery.Schema({
     ref: AddressController.name,
   },
   favorites: {
-    type:Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: FavoritesController.name,
     access: "private",
-    default:{
+    default: {
       folders: [],
-      likeList: []
-    }
+      likeList: [],
+    },
   },
-  historique:{
-    type:Schema.Types.ObjectId,
+  historique: {
+    type: Schema.Types.ObjectId,
     ref: HistoriqueController.name,
     access: "private",
-    default:{
+    default: {
       folders: [],
-      likeList: []
-    }
+      likeList: [],
+    },
+  },
+  notification: {
+    type: Schema.Types.ObjectId,
+    ref: NotificationController.name,
+    access: "private",
+    default: {
+      elements: [],
+    },
   },
   profile: {
     type: Schema.Types.ObjectId,
     ref: ProfileController.name,
-    default:{
+    default: {
       imgProfile: [],
       banner: [],
-    }
+    },
   },
 });
 
 export const AccountController = new SQuery.ModelController({
-  name:'account',
+  name: "account",
   schema: accountSchema,
 });
 
-
-AccountController.pre("create", async function youyou ({ ctx })  {
+AccountController.pre("create", async function youyou({ ctx }) {
   const userTarg = getTarg(ctx);
   const account = await AccountController.model.findOne({
     userTarg: userTarg,

@@ -11,7 +11,6 @@ let profileSchema = SQuery.Schema({
   }],
 
   banner: [{
-    access:'private',
     type: SQuery.FileType,
     file: {
       length: [0, 4],

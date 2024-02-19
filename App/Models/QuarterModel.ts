@@ -30,7 +30,7 @@ let QuarterSchema = SQuery.Schema({
     supervisorThread: [{
         type: Schema.Types.ObjectId,
         ref: 'post',
-        access: 'public',
+        access: 'public'
     }],
     activities: [{
         type: Schema.Types.ObjectId,

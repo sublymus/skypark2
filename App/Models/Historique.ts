@@ -9,7 +9,7 @@ let HistoriqueSchema = SQuery.Schema({
       modelName:String,
       mode:String,
       value:String,
-      data:Schema.Types.Mixed
+      // data:Schema.Types.Mixed
     }
   }]
 });

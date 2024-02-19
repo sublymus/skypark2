@@ -10,11 +10,11 @@ let ActivitySchema = SQuery.Schema({
   poster: {
     type: Schema.Types.ObjectId,
     ref: ProfileController.name,
-   // required: true,
-   default:{
-    imgProfile:[],
-    banner:[]
-   }
+    // required: true,
+    default: {
+      imgProfile: [],
+      banner: [],
+    },
   },
   channel: [
     {
@@ -78,9 +78,9 @@ ActivityController.pre("update", async ({ ctx, more }) => {
     const activity = await ActivityController.model.findOne({
       _id: ctx.data.id,
     });
-   
+
     if (!activity) return;
-    
+
     const account = await AccountController.model.findOne({
       _id: ctx.login.id,
     });
@@ -91,9 +91,18 @@ ActivityController.pre("update", async ({ ctx, more }) => {
       delete ctx.data.listen;
       //@ts-ignore
       activity.listAbonne = [...activity.listAbonne, ctx.login.id];
-    
+
       //@ts-ignore
-      historique?.elements?.unshift({modelName: "activity", id: ctx.data.id, mode: "listen", value: "true",data:{}});
+      historique?.elements?.unshift({
+        //@ts-ignore
+        modelName: "activity",
+        //@ts-ignore
+        id: ctx.data.id,
+        //@ts-ignore
+        mode: "listen",
+        //@ts-ignore
+        value: "true",
+      });
     } else {
       delete ctx.data.listen;
       activity.listAbonne = [
@@ -102,9 +111,18 @@ ActivityController.pre("update", async ({ ctx, more }) => {
         }),
       ];
       //@ts-ignore
-      historique?.elements?.unshift({modelName: "activity", id: ctx.data.id, mode: "listen", value: "false",data:{}});
+      historique?.elements?.unshift({
+        //@ts-ignore
+        modelName: "activity",
+        //@ts-ignore
+        id: ctx.data.id,
+        //@ts-ignore
+        mode: "listen",
+        //@ts-ignore
+        value: "false",
+      });
     }
-    
+
     await activity.save();
     historique?.save();
   }
